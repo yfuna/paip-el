@@ -1,0 +1,3 @@
+[submodule "vanilla-paip"]
+	path = vanilla-paip
+	url = https://github.com/yfuna/vanilla-paip.git
