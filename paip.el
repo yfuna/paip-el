@@ -1,41 +1,75 @@
-;;; -*- Mode: Lisp; Syntax: Common-Lisp -*-
-;;; Code from Paradigms of AI Programming
-;;; Copyright (c) 1991 Peter Norvig
+;; I will comment out original text, keep them as is, and make comments with [YF] marks.
 
-;;; File auxfns.lisp: Auxiliary functions used by all other programs
-;;; Load this file before running any other programs.
+;; ;;; -*- Mode: Lisp; Syntax: Common-Lisp -*-
+;; ;;; Code from Paradigms of AI Programming
+;; ;;; Copyright (c) 1991 Peter Norvig
 
-;;;; Implementation-Specific Details
+;; ;;; File auxfns.lisp: Auxiliary functions used by all other programs
+;; ;;; Load this file before running any other programs.
 
-(eval-when (eval compile load)
-  ;; Make it ok to place a function definition on a built-in LISP symbol.
-  #+(or Allegro EXCL)
-  (dolist (pkg '(excl common-lisp common-lisp-user))
-    (setf (excl:package-definition-lock (find-package pkg)) nil))
+(eval-when-compile
+  (require 'cl-lib))
+;; [YF] First of all, you should turn on CL.
 
-  ;; Don't warn if a function is defined in multiple files --
-  ;; this happens often since we refine several programs.
-  #+Lispworks
-  (setq *PACKAGES-FOR-WARN-ON-REDEFINITION* nil)
+(require 'ert)
+;; [YF] Will write some test while porting.
 
-  #+LCL 
-   (compiler-options :warnings nil)
-  )
+;; ;;;; Implementation-Specific Details
 
-;;;; REQUIRES
+;; (eval-when (eval compile load)
+;;   ;; Make it ok to place a function definition on a built-in LISP symbol.
+;;   #+(or Allegro EXCL)
+;;   (dolist (pkg '(excl common-lisp common-lisp-user))
+;;     (setf (excl:package-definition-lock (find-package pkg)) nil))
+;;
+;;   ;; Don't warn if a function is defined in multiple files --
+;;   ;; this happens often since we refine several programs.
+;;   #+Lispworks
+;;   (setq *PACKAGES-FOR-WARN-ON-REDEFINITION* nil)
+;;
+;;   #+LCL 
+;;    (compiler-options :warnings nil)
+;;   )
+;; 
 
-;;; The function REQUIRES is used in subsequent files to state dependencies
-;;; between files.  The current definition just loads the required files,
-;;; assumming they match the pathname specified in *PAIP-DIRECTORY*.
-;;; You should change that to match where you have stored the files.
-;;; A more sophisticated REQUIRES would only load it if it has not yet
-;;; been loaded, and would search in different directories if needed.
+;; [YF] I think EL is okay to place a function definition on a
+;; built-in ELISP symbol. So we don't need this chunk of code.
 
-(defun requires (&rest files)
+;; ;;;; REQUIRES
+
+;; ;;; The function REQUIRES is used in subsequent files to state dependencies
+;; ;;; between files.  The current definition just loads the required files,
+;; ;;; assumming they match the pathname specified in *PAIP-DIRECTORY*.
+;; ;;; You should change that to match where you have stored the files.
+;; ;;; A more sophisticated REQUIRES would only load it if it has not yet
+;; ;;; been loaded, and would search in different directories if needed.
+
+;; (defun requires (&rest files)
+;;   "The arguments are files that are required to run an application."
+;;   (mapc #'load-paip-file files))
+
+(defun paip-requires (&rest files)
   "The arguments are files that are required to run an application."
-  (mapc #'load-paip-file files))
+  (mapc #'paip-load-paip-file files))
+;; [YF] I'm not sure if I will use this function in elisp version
+;; because elisp has load-path and the require function.
+;;
+;; [YF] I will follow ELM naming convention. The name of feature of
+;; this file is 'paip'. I don't use '--' convention for
+;; non-command functions. Because all functions here are non-command
+;; and using '--' for all functions is meaningless.
 
-(defvar *paip-files*
+;; (defvar *paip-files*
+;;   `("auxfns" "tutor" "examples" 
+;;     "intro" "simple" "overview" "gps1" "gps" "eliza1" "eliza" "patmatch" 
+;;     "eliza-pm" "search" "gps-srch" "student" "macsyma" "macsymar" "unify" 
+;;     "prolog1" "prolog" "prologc1" "prologc2" "prologc" "prologcp" 
+;;     "clos" "krep1" "krep2" "krep" "cmacsyma" "mycin" "mycin-r" "waltz" 
+;;     "othello" "othello2" "syntax1" "syntax2" "syntax3" "unifgram" 
+;;     "grammar" "lexicon" "interp1" "interp2" "interp3" 
+;;     "compile1" "compile2" "compile3" "compopt"))
+
+(defvar paip-*paip-files*
   `("auxfns" "tutor" "examples" 
     "intro" "simple" "overview" "gps1" "gps" "eliza1" "eliza" "patmatch" 
     "eliza-pm" "search" "gps-srch" "student" "macsyma" "macsymar" "unify" 
@@ -44,125 +78,353 @@
     "othello" "othello2" "syntax1" "syntax2" "syntax3" "unifgram" 
     "grammar" "lexicon" "interp1" "interp2" "interp3" 
     "compile1" "compile2" "compile3" "compopt"))
+;; [YF] *paip-auxfns-paip-files* is better? I'm unsure. Currently, I
+;; go with this notation. Additionaly, I've decided not to make
+;; lexical scoping defalut. So all bindindgs are special and it's
+;; meaningless to keep these asterisks. I keep these in case of I
+;; change my decision about scoping in the future.
 
-(defparameter *paip-directory*
-  (make-pathname :name nil :type nil
-		 :defaults (or (and (boundp '*load-truename*) *load-truename*)
-			       (truename ""))) ;;??? Maybe Change this
-  "The location of the source files for this book.  If things don't work,
+;; (defparameter *paip-directory*
+;;   (make-pathname :name nil :type nil
+;; 		 :defaults (or (and (boundp '*load-truename*) *load-truename*)
+;; 			       (truename ""))) ;;??? Maybe Change this
+;;   "The location of the source files for this book.  If things don't work,
+;;   change it to reflect the location of the files on your computer.")
+
+(defvar paip-*paip-directory*
+  (expand-file-name "~/dev/paip-el"))
+  "The location of the source files for this book. If things don't work,
   change it to reflect the location of the files on your computer.")
+;; [YF] EL doesn't have defparameter. But, in the end, defparameter is
+;; same as defvar in CL.
 
-(defparameter *paip-source* 
-  (make-pathname :name nil :type "lisp" ;;???  Maybe Change this
-		 :defaults *paip-directory*)) 
+;; (defparameter *paip-source* 
+;;   (make-pathname :name nil :type "lisp" ;;???  Maybe Change this
+;; 		 :defaults *paip-directory*)) 
 
-(defparameter *paip-binary*
-  (make-pathname
-   :name nil
-   :type (first (list #+LCL (first *load-binary-pathname-types*)
-		      #+Lispworks system::*binary-file-type*
-		      #+MCL "fasl"
-		      #+Allegro excl:*fasl-default-type*
-		      #+(or AKCL KCL) "o"
-		      #+CMU "sparcf"
-		      #+CLISP "fas"
-		      "bin"))  ;;???  Maybe Change this
-   :directory (append (pathname-directory *paip-source*) '("bin"))
-   :defaults *paip-directory*))
+(defvar paip-*paip-source* 
+  paip-*paip-directory*)
+;; [YF] I go with paip-auxfns-*paip-directory*.
 
-(defun paip-pathname (name &optional (type :lisp))
-  (make-pathname :name name 
-		 :defaults (ecase type
-			     ((:lisp :source) *paip-source*)
-			     ((:binary :bin) *paip-binary*))))
+;; (defparameter *paip-binary*
+;;   (make-pathname
+;;    :name nil
+;;    :type (first (list #+LCL (first *load-binary-pathname-types*)
+;; 		      #+Lispworks system::*binary-file-type*
+;; 		      #+MCL "fasl"
+;; 		      #+Allegro excl:*fasl-default-type*
+;; 		      #+(or AKCL KCL) "o"
+;; 		      #+CMU "sparcf"
+;; 		      #+CLISP "fas"
+;; 		      "bin"))  ;;???  Maybe Change this
+;;    :directory (append (pathname-directory *paip-source*) '("bin"))
+;;    :defaults *paip-directory*))
 
-(defun compile-all-paip-files ()
-  (mapc #'compile-paip-file *paip-files*))
+(defvar paip-*paip-binary*
+  paip-*paip-source*)
+;; [YF] I go with paip-auxfns-*paip-source*. CL version looks to
+;; locate compiled files in 'bin' directory. But I decided to put
+;; compiled files in the same directory with sources to use EL's
+;; built-in handling about '.el' and '.elc' files in a same directory.
 
-(defun compile-paip-file (name)
-  (let ((path (paip-pathname name :lisp)))
+;; (defun paip-pathname (name &optional (type :lisp))
+;;   (make-pathname :name name 
+;; 		 :defaults (ecase type
+;; 			     ((:lisp :source) *paip-source*)
+;; 			     ((:binary :bin) *paip-binary*))))
+
+(defun paip-paip-pathname (name &optional (type :lisp))
+  (cl-ecase type
+    ((:lisp :source)
+     (concat paip-*paip-source* "/" name ".el"))
+    ((:binary :bin)
+     (concat paip-*paip-binary* "/" name ".elc"))))
+
+;; (defun compile-all-paip-files ()
+;;   (mapc #'compile-paip-file *paip-files*))
+
+(defun paip-compile-all-paip-files ()
+  (cl-mapc 'byte-compile-file paip-*paip-files*))
+;; [YF] cl-mapc says it's more general than elip's mapc.
+
+;; (defun compile-paip-file (name)
+;;   (let ((path (paip-pathname name :lisp)))
+;;     (load path)
+;;     (compile-file path :output-file (paip-pathname name :binary))))
+
+(defun paip-compile-paip-file (name)
+  (let ((path (paip-paip-pathname name :lisp)))
     (load path)
-    (compile-file path :output-file (paip-pathname name :binary))))
+    (byte-compile-file path)))
+;; [YF] EL's suffix for compiled files is '.elc' by default. I'm not
+;; sure if I need to keep (load path) before compiling. For now I keep
+;; this.
 
-(defun load-paip-file (file)
+;; (defun load-paip-file (file)
+;;   "Load the binary file if it exists and is newer, else load the source."
+;;   (let* ((src (paip-pathname file :lisp))
+;; 	 (src-date (file-write-date src))
+;; 	 (bin (paip-pathname file :binary))
+;; 	 (bin-date (file-write-date bin)))
+;;     (load (if (and (probe-file bin) src-date bin-date (>= bin-date src-date))
+;; 	      bin
+;; 	    src))))
+
+(defun paip-load-paip-file (file)
   "Load the binary file if it exists and is newer, else load the source."
-  (let* ((src (paip-pathname file :lisp))
-	 (src-date (file-write-date src))
-	 (bin (paip-pathname file :binary))
-	 (bin-date (file-write-date bin)))
-    (load (if (and (probe-file bin) src-date bin-date (>= bin-date src-date))
-	      bin
-	    src))))
+  (unless (member paip-*paip-directory* load-path)
+    (add-to-list load-path paip-*paip-directory*))
+  (load file))
+;; [YF] Note that FILE should be a name without a suffix.
+
 
 ;;;; Macros (formerly in auxmacs.lisp: that file no longer needed)
 
-(eval-when (load eval compile)
-  (defmacro once-only (variables &rest body)
+;; (eval-when (load eval compile)
+
+(cl-eval-when (load eval compile)
+
+  ;; (defmacro once-only (variables &rest body)
+  ;;   "Returns the code built by BODY.  If any of VARIABLES
+  ;; might have side effects, they are evaluated once and stored
+  ;; in temporary variables that are then passed to BODY."
+  ;;   (assert (every #'symbolp variables))
+  ;;   (let ((temps nil))
+  ;;     (dotimes (i (length variables)) (push (gensym) temps))
+  ;;     `(if (every #'side-effect-free? (list .,variables))
+  ;; 	(progn .,body)
+  ;; 	(list 'let
+  ;; 	 ,`(list ,@(mapcar #'(lambda (tmp var)
+  ;; 			       `(list ',tmp ,var))
+  ;; 			   temps variables))
+  ;; 	 (let ,(mapcar #'(lambda (var tmp) `(,var ',tmp))
+  ;; 		       variables temps)
+  ;; 	   .,body)))))
+
+  (defmacro paip-once-only (variables &rest body)
     "Returns the code built by BODY.  If any of VARIABLES
   might have side effects, they are evaluated once and stored
   in temporary variables that are then passed to BODY."
-    (assert (every #'symbolp variables))
-    (let ((temps nil))
-      (dotimes (i (length variables)) (push (gensym) temps))
-      `(if (every #'side-effect-free? (list .,variables))
-	(progn .,body)
-	(list 'let
-	 ,`(list ,@(mapcar #'(lambda (tmp var)
-			       `(list ',tmp ,var))
-			   temps variables))
-	 (let ,(mapcar #'(lambda (var tmp) `(,var ',tmp))
-		       variables temps)
-	   .,body)))))
+    (cl-assert (cl-every 'symbolp variables))
+    (lexical-let ((temps nil))
+      (cl-dotimes (i (length variables)) (push (cl-gensym) temps))
+      `(if (every 'side-effect-free? (list .,variables))
+	   (progn .,body)
+	 (list 'let
+	       ,`(list ,@(cl-mapcar (lambda (tmp var)
+				      `(list ',tmp ,var))
+				    temps variables))
+	       (lexical-let ,(cl-mapcar (lambda (var tmp) `(,var ',tmp))
+					variables temps)
+		 .,body)))))
 
-  (defun side-effect-free? (exp)
+  ;; (defun side-effect-free? (exp)
+  ;;   "Is exp a constant, variable, or function,
+  ;; or of the form (THE type x) where x is side-effect-free?"
+  ;;   (or (atom exp) (constantp exp)
+  ;; 	(starts-with exp 'function)
+  ;; 	(and (starts-with exp 'the)
+  ;; 	     (side-effect-free? (third exp)))))
+  ;;
+  ;; [YF] I need to implement consntatp. Here is the definition in CLHS:
+  ;;  
+  ;; - - - - - - - - - - - - - - - 
+  ;; Syntax:
+  ;;
+  ;; constantp form &optional environment => generalized-boolean
+  ;;
+  ;; Arguments and Values:
+  ;;
+  ;; form---a form.
+  ;;
+  ;; environment---an environment object. The default is nil.
+  ;;
+  ;; generalized-boolean---a generalized boolean.
+  ;;
+  ;; Description:
+  ;;
+  ;; Returns true if form can be determined by the implementation to be
+  ;; a constant form in the indicated environment; otherwise, it returns
+  ;; false indicating either that the form is not a constant form or
+  ;; that it cannot be determined whether or not form is a constant
+  ;; form.
+  ;;
+  ;; The following kinds of forms are considered constant forms:
+  ;;
+  ;; * Self-evaluating objects (such as numbers, characters, and the
+  ;; various kinds of arrays) are always considered constant forms and
+  ;; must be recognized as such by constantp.
+  ;; * Constant variables, such as keywords, symbols defined by Common
+  ;; Lisp as constant (such as nil, t, and pi), and symbols declared as
+  ;; constant by the user in the indicated environment using defconstant
+  ;; are always considered constant forms and must be recognized as such
+  ;; by constantp.
+  ;; * quote forms are always considered constant forms and must be
+  ;; recognized as such by constantp.
+  ;; * An implementation is permitted, but not required, to detect
+  ;;additional constant forms. If it does, it is also permitted, but not
+  ;;required, to make use of information in the environment. Examples of
+  ;;constant forms for which constantp might or might not return true
+  ;;are: (sqrt pi), (+ 3 2), (length '(a b c)), and (let ((x 7)) (zerop
+  ;;x)).
+  ;;
+  ;; If an implementation chooses to make use of the environment
+  ;; information, such actions as expanding macros or performing
+  ;; function inlining are permitted to be used, but not required;
+  ;; however, expanding compiler macros is not permitted.
+  ;;
+  ;; Examples:
+  ;;
+  ;;  (constantp 1) =>  true
+  ;;  (constantp 'temp) =>  false
+  ;;  (constantp ''temp)) =>  true
+  ;;  (defconstant this-is-a-constant 'never-changing) =>  THIS-IS-A-CONSTANT 
+  ;;  (constantp 'this-is-a-constant) =>  true
+  ;;  (constantp "temp") =>  true
+  ;;  (setq a 6) =>  6 
+  ;;  (constantp a) =>  true
+  ;;  (constantp '(sin pi)) =>  implementation-dependent
+  ;;  (constantp '(car '(x))) =>  implementation-dependent
+  ;;  (constantp '(eql x x)) =>  implementation-dependent
+  ;;  (constantp '(typep x 'nil)) =>  implementation-dependent
+  ;;  (constantp '(typep x 't)) =>  implementation-dependent
+  ;;  (constantp '(values this-is-a-constant)) =>  implementation-dependent
+  ;;  (constantp '(values 'x 'y)) =>  implementation-dependent
+  ;;  (constantp '(let ((a '(a b c))) (+ (length a) 6))) =>  implementation-dependent
+  ;;
+  ;; - - - - - - - - - - - - - - - 
+  ;;
+  ;; EL manual says:
+  ;; 
+  ;; 9.2.1 Self-Evaluating Forms
+  ;; ---------------------------
+  ;;
+  ;; A "self-evaluating form" is any form that is not a list or symbol.
+  ;; Self-evaluating forms evaluate to themselves: the result of evaluation
+  ;; is the same object that was evaluated. 
+  ;; ...
+  ;;
+  ;; EL's defconst is actually same as defvar and not constant.
+  ;;
+  ;; So this may be sufficient:
+  (defun paip-constantp (exp)
+    "An implementation of constantp in CL. Returns true if form
+can be determined by the implementation to be a constant form in
+the indicated environment; otherwise, it returns false indicating
+either that the form is not a constant form or that it cannot be
+determined whether or not form is a constant form."
+    (if (symbolp exp)
+	(or (keywordp exp)
+	    (null exp)
+	    (eql t exp))
+      (if (listp exp)
+	  (eql 'quote (first exp))
+	t)))
+
+  (ert-deftest test-paip-constantp ()
+    (should (paip-constantp 1))
+    (should (not (paip-constantp 'temp))
+    (should (paip-constantp ''temp))
+    (should (paip-constantp "temp"))
+    (let ((a 6))
+      (should (paip-constantp a)))
+    (should (not (paip-constantp '(setq a 6))))))
+
+  (defun paip-side-effect-free? (exp)
     "Is exp a constant, variable, or function,
-  or of the form (THE type x) where x is side-effect-free?"
-    (or (atom exp) (constantp exp)
-	(starts-with exp 'function)
-	(and (starts-with exp 'the)
-	     (side-effect-free? (third exp)))))
+or of the form (THE type x) where x is side-effect-free?"
+    (or (atom exp) (paip-constantp exp)
+	(paip-starts-with exp 'function)
+	(and (paip-starts-with exp 'the)
+	     (paip-side-effect-free? (third exp)))))
 
-  (defmacro funcall-if (fn arg)
-    (once-only (fn)
-	       `(if ,fn (funcall ,fn ,arg) ,arg)))
+  ;; (defmacro funcall-if (fn arg)
+  ;;   (once-only (fn)
+  ;; 		    `(if ,fn (funcall ,fn ,arg) ,arg)))
 
-  (defmacro read-time-case (first-case &rest other-cases)
-    "Do the first case, where normally cases are
-  specified with #+ or possibly #- marks."
-    (declare (ignore other-cases))
-    first-case)
+  (defmacro paip-funcall-if (fn arg)
+    (paip-once-only (fn)
+		    `(if ,fn (funcall ,fn ,arg) ,arg)))
 
-  (defun rest2 (x)
+  ;; (defmacro read-time-case (first-case &rest other-cases)
+  ;;   "Do the first case, where normally cases are
+  ;; specified with #+ or possibly #- marks."
+  ;;   (declare (ignore other-cases))
+  ;;   first-case)
+  ;;
+  ;; [YF] EL doesn't have read time case facility. For now, just
+  ;; ignore this macro.
+
+  ;; (defun rest2 (x)
+  ;;   "The rest of a list after the first TWO elements."
+  ;;   (rest (rest x)))
+
+  (defun paip-rest2 (x)
     "The rest of a list after the first TWO elements."
     (rest (rest x)))
 
-  (defun find-anywhere (item tree)
+  ;; (defun find-anywhere (item tree)
+  ;;   "Does item occur anywhere in tree?"
+  ;;   (if (atom tree)
+  ;; 	(if (eql item tree) tree)
+  ;;     (or (find-anywhere item (first tree))
+  ;; 	  (find-anywhere item (rest tree)))))
+
+  (defun paip-find-anywhere (item tree)
     "Does item occur anywhere in tree?"
     (if (atom tree)
 	(if (eql item tree) tree)
-	(or (find-anywhere item (first tree))
-	    (find-anywhere item (rest tree)))))
+      (or (paip-find-anywhere item (first tree))
+	  (paip-find-anywhere item (rest tree)))))
 
-  (defun starts-with (list x)
+  ;; (defun starts-with (list x)
+  ;;   "Is x a list whose first element is x?"
+  ;;   (and (consp list) (eql (first list) x)))
+
+  (defun paip-starts-with (list x)
     "Is x a list whose first element is x?"
     (and (consp list) (eql (first list) x)))
   )
 
+
 ;;;; Auxiliary Functions
 
-(setf (symbol-function 'find-all-if) #'remove-if-not)
+;;(setf (symbol-function 'find-all-if) #'remove-if-not)
 
-(defun find-all (item sequence &rest keyword-args
-                 &key (test #'eql) test-not &allow-other-keys)
+(defalias 'paip-find-all-if 'cl-remove-if-not)
+
+;; (defun find-all (item sequence &rest keyword-args
+;;                  &key (test #'eql) test-not &allow-other-keys)
+;;   "Find all those elements of sequence that match item,
+;;   according to the keywords.  Doesn't alter sequence."
+;;   (if test-not
+;;       (apply #'remove item sequence 
+;;              :test-not (complement test-not) keyword-args)
+;;       (apply #'remove item sequence
+;;              :test (complement test) keyword-args)))
+
+(cl-defun paip-find-all (item sequence &rest keyword-args
+			      &key (test 'eql) test-not &allow-other-keys)
   "Find all those elements of sequence that match item,
   according to the keywords.  Doesn't alter sequence."
   (if test-not
-      (apply #'remove item sequence 
-             :test-not (complement test-not) keyword-args)
-      (apply #'remove item sequence
-             :test (complement test) keyword-args)))
+      (apply 'remove item sequence 
+             :test-not (paip-complement test-not) keyword-args)
+      (apply 'remove item sequence
+             :test (paip-complement test) keyword-args)))
 
-(defun partition-if (pred list)
+;; (defun partition-if (pred list)
+;;   "Return 2 values: elements of list that satisfy pred,
+;;   and elements that don't."
+;;   (let ((yes-list nil)
+;;         (no-list nil))
+;;     (dolist (item list)
+;;       (if (funcall pred item)
+;;           (push item yes-list)
+;;           (push item no-list)))
+;;     (values (nreverse yes-list) (nreverse no-list))))
+
+(defun paip-partition-if (pred list)
   "Return 2 values: elements of list that satisfy pred,
   and elements that don't."
   (let ((yes-list nil)
@@ -171,14 +433,23 @@
       (if (funcall pred item)
           (push item yes-list)
           (push item no-list)))
-    (values (nreverse yes-list) (nreverse no-list))))
+    (list (nreverse yes-list) (nreverse no-list))))
+;; [YF] Use a list instead of multiple values.
 
-(defun maybe-add (op exps &optional if-nil)
+;; (defun maybe-add (op exps &optional if-nil)
+;;   "For example, (maybe-add 'and exps t) returns
+;;   t if exps is nil, exps if there is only one,
+;;   and (and exp1 exp2...) if there are several exps."
+;;   (cond ((null exps) if-nil)
+;;         ((length=1 exps) (first exps))
+;;         (t (cons op exps))))
+
+(defun paip-maybe-add (op exps &optional if-nil)
   "For example, (maybe-add 'and exps t) returns
   t if exps is nil, exps if there is only one,
   and (and exp1 exp2...) if there are several exps."
   (cond ((null exps) if-nil)
-        ((length=1 exps) (first exps))
+        ((paip-length=1 exps) (first exps))
         (t (cons op exps))))
 
 ;;; ==============================
@@ -456,9 +727,14 @@
 
 ;;; ==============================
 
-(defun length=1 (x) 
+;; (defun length=1 (x) 
+;;   "Is x a list of length 1?"
+;;   (and (consp x) (null (cdr x))))
+
+(defun paip-length=1 (x) 
   "Is x a list of length 1?"
   (and (consp x) (null (cdr x))))
+
 
 (defun rest3 (list)
   "The rest of a list after the first THREE elements."
@@ -568,11 +844,17 @@
 
 )
 
-(unless (fboundp 'complement)
-(defun complement (fn)
-  "If FN returns y, then (complement FN) returns (not y)."
-  #'(lambda (&rest args) (not (apply fn args))))
-)
+;; (unless (fboundp 'complement)
+;;   (defun complement (fn)
+;;     "If FN returns y, then (complement FN) returns (not y)."
+;;     #'(lambda (&rest args) (not (apply fn args))))
+;;   )
+
+(unless (fboundp 'paip-complement)
+  (defun paip-complement (fn)
+    "If FN returns y, then (complement FN) returns (not y)."
+    (lambda (&rest args) (not (apply fn args))))
+  )
 
 (unless (fboundp 'with-compilation-unit)
 (defmacro with-compilation-unit (options &body body)
@@ -686,3 +968,6 @@
                                (funcall-if key (pop seq))))))
              result))))
 )
+
+
+(provide 'paip)
