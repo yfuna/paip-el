@@ -92,7 +92,7 @@
 ;;   change it to reflect the location of the files on your computer.")
 
 (defvar paip-*paip-directory*
-  (expand-file-name "~/dev/paip-el"))
+  (expand-file-name "~/dev/paip-el")
   "The location of the source files for this book. If things don't work,
   change it to reflect the location of the files on your computer.")
 ;; [YF] EL doesn't have defparameter. But, in the end, defparameter is
@@ -153,7 +153,7 @@
 ;;     (compile-file path :output-file (paip-pathname name :binary))))
 
 (defun paip-compile-paip-file (name)
-  (let ((path (paip-paip-pathname name :lisp)))
+  (lexical-let ((path (paip-paip-pathname name :lisp)))
     (load path)
     (byte-compile-file path)))
 ;; [YF] EL's suffix for compiled files is '.elc' by default. I'm not
@@ -427,7 +427,7 @@ or of the form (THE type x) where x is side-effect-free?"
 (defun paip-partition-if (pred list)
   "Return 2 values: elements of list that satisfy pred,
   and elements that don't."
-  (let ((yes-list nil)
+  (lexical-let ((yes-list nil)
         (no-list nil))
     (dolist (item list)
       (if (funcall pred item)
@@ -454,21 +454,36 @@ or of the form (THE type x) where x is side-effect-free?"
 
 ;;; ==============================
 
-(defun seq-ref (seq index)
+;; (defun seq-ref (seq index)
+;;   "Return code that indexes into a sequence, using
+;;   the pop-lists/aref-vectors strategy."
+;;   `(if (listp ,seq)
+;;        (prog1 (first ,seq)
+;;               (setq ,seq (the list (rest ,seq))))
+;;        (aref ,seq ,index)))
+
+(defun paip-seq-ref (seq index)
   "Return code that indexes into a sequence, using
   the pop-lists/aref-vectors strategy."
   `(if (listp ,seq)
        (prog1 (first ,seq)
-              (setq ,seq (the list (rest ,seq))))
-       (aref ,seq ,index)))
+              (setq ,seq (cl-the list (rest ,seq))))
+     (aref ,seq ,index)))
 
-(defun maybe-set-fill-pointer (array new-length)
+;; (defun maybe-set-fill-pointer (array new-length)
+;;   "If this is an array with a fill pointer, set it to
+;;   new-length, if that is longer than the current length."
+;;   (if (and (arrayp array)
+;;            (array-has-fill-pointer-p array))
+;;       (setf (fill-pointer array) 
+;;             (max (fill-pointer array) new-length))))
+
+(defun paip-maybe-set-fill-pointer (array new-length)
   "If this is an array with a fill pointer, set it to
   new-length, if that is longer than the current length."
-  (if (and (arrayp array)
-           (array-has-fill-pointer-p array))
-      (setf (fill-pointer array) 
-            (max (fill-pointer array) new-length))))
+  nil)
+;; [YF] EL's arrays don't have fill pointers.
+
 
 ;;; ==============================
 
@@ -477,196 +492,456 @@ or of the form (THE type x) where x is side-effect-free?"
 ;;; Therefore, it would be best to rename the function SYMBOL to something 
 ;;; else.  This has not been done (for compatibility with the book).  
 
-(defun symbol (&rest args)
+;; (defun symbol (&rest args)
+;;   "Concatenate symbols or strings to form an interned symbol"
+;;   (intern (format nil "~{~a~}" args)))
+
+(defun paip-symbol (&rest args)
   "Concatenate symbols or strings to form an interned symbol"
-  (intern (format nil "~{~a~}" args)))
+  (intern (apply 'concat
+		 (mapcar (lambda (x)
+			   (format "%s" x))
+			 args))))
 
-(defun new-symbol (&rest args)
+;; (defun new-symbol (&rest args)
+;;   "Concatenate symbols or strings to form an uninterned symbol"
+;;   (make-symbol (format nil "~{~a~}" args)))
+
+(defun paip-new-symbol (&rest args)
   "Concatenate symbols or strings to form an uninterned symbol"
-  (make-symbol (format nil "~{~a~}" args)))
+  (make-symbol (apply 'concat
+		 (mapcar (lambda (x)
+			   (format "%s" x))
+			 args))))
 
-(defun last1 (list)
+;; (defun last1 (list)
+;;   "Return the last element (not last cons cell) of list"
+;;   (first (last list)))
+
+(defun paip-last1 (list)
   "Return the last element (not last cons cell) of list"
   (first (last list)))
 
+(ert-deftest test-paip-last1 ()
+  (should (equal (paip-last1 nil) nil))
+  (should (equal (paip-last1 '(1)) 1))
+  (should (equal (paip-last1 '(1 2)) 2))
+  (should (equal (paip-last1 '(1 2 3)) 3))
+  (should (equal (paip-last1 '((1))) '(1))))
+
 ;;; ==============================
 
-(defun mappend (fn list)
+;; (defun mappend (fn list)
+;;   "Append the results of calling fn on each element of list.
+;;   Like mapcon, but uses append instead of nconc."
+;;   (apply #'append (mapcar fn list)))
+
+(defun paip-mappend (fn list)
   "Append the results of calling fn on each element of list.
   Like mapcon, but uses append instead of nconc."
-  (apply #'append (mapcar fn list)))
+  (apply 'append (mapcar fn list)))
 
-(defun mklist (x) 
+;; (defun mklist (x) 
+;;   "If x is a list return it, otherwise return the list of x"
+;;   (if (listp x) x (list x)))
+
+(defun paip-mklist (x) 
   "If x is a list return it, otherwise return the list of x"
   (if (listp x) x (list x)))
 
-(defun flatten (exp)
-  "Get rid of imbedded lists (to one level only)."
-  (mappend #'mklist exp))
+;; (defun flatten (exp)
+;;   "Get rid of imbedded lists (to one level only)."
+;;   (mappend #'mklist exp))
 
-(defun random-elt (seq) 
+(defun paip-flatten (exp)
+  "Get rid of imbedded lists (to one level only)."
+  (paip-mappend 'mklist exp))
+
+;; (defun random-elt (seq) 
+;;   "Pick a random element out of a sequence."
+;;   (elt seq (random (length seq))))
+
+(defun paip-random-elt (seq) 
   "Pick a random element out of a sequence."
   (elt seq (random (length seq))))
 
 ;;; ==============================
 
-(defun member-equal (item list)
-  (member item list :test #'equal))
+;; (defun member-equal (item list)
+;;   (member item list :test #'equal))
+
+(defun paip-member-equal (item list)
+  (member item list))
+;; [YF] EL's member uses equal to compare items.
 
 ;;; ==============================
 
+;; (defun compose (&rest functions)
+;;   #'(lambda (x)
+;;       (reduce #'funcall functions :from-end t :initial-value x)))
+
 (defun compose (&rest functions)
-  #'(lambda (x)
-      (reduce #'funcall functions :from-end t :initial-value x)))
+  (lambda (x)
+    (cl-reduce 'funcall functions :from-end t :initial-value x)))
 
 ;;;; The Debugging Output Facility:
 
-(defvar *dbg-ids* nil "Identifiers used by dbg")
+;; (defvar *dbg-ids* nil "Identifiers used by dbg")
 
-(defun dbg (id format-string &rest args)
+(defvar paip-*dbg-ids* nil "Identifiers used by dbg")
+
+;; (defun dbg (id format-string &rest args)
+;;   "Print debugging info if (DEBUG ID) has been specified."
+;;   (when (member id *dbg-ids*)
+;;     (fresh-line *debug-io*)
+;;     (apply #'format *debug-io* format-string args)))
+
+(defun paip-dbg (id format-string &rest args)
   "Print debugging info if (DEBUG ID) has been specified."
-  (when (member id *dbg-ids*)
-    (fresh-line *debug-io*)
-    (apply #'format *debug-io* format-string args)))
+  (when (member id paip-*dbg-ids*)
+    (message (apply 'format format-string args))))
 
-(defun debug (&rest ids)
+;; (defun debug (&rest ids)
+;;   "Start dbg output on the given ids."
+;;   (setf *dbg-ids* (union ids *dbg-ids*)))
+
+(defun paip-debug (&rest ids)
   "Start dbg output on the given ids."
-  (setf *dbg-ids* (union ids *dbg-ids*)))
+  (setf paip-*dbg-ids* (cl-union ids *dbg-ids*)))
 
-(defun undebug (&rest ids)
+;; (defun undebug (&rest ids)
+;;   "Stop dbg on the ids.  With no ids, stop dbg altogether."
+;;   (setf *dbg-ids* (if (null ids) nil
+;;                       (set-difference *dbg-ids* ids))))
+
+(defun paip-undebug (&rest ids)
   "Stop dbg on the ids.  With no ids, stop dbg altogether."
-  (setf *dbg-ids* (if (null ids) nil
-                      (set-difference *dbg-ids* ids))))
+  (setf paip-*dbg-ids* (if (null ids) nil
+                      (cl-set-difference paip-*dbg-ids* ids))))
 
 ;;; ==============================
 
-(defun dbg-indent (id indent format-string &rest args)
+;; (defun dbg-indent (id indent format-string &rest args)
+;;   "Print indented debugging info if (DEBUG ID) has been specified."
+;;   (when (member id *dbg-ids*)
+;;     (fresh-line *debug-io*)
+;;     (dotimes (i indent) (princ "  " *debug-io*))
+;;     (apply #'format *debug-io* format-string args)))
+
+(defun paip-dbg-indent (id indent format-string &rest args)
   "Print indented debugging info if (DEBUG ID) has been specified."
-  (when (member id *dbg-ids*)
-    (fresh-line *debug-io*)
-    (dotimes (i indent) (princ "  " *debug-io*))
-    (apply #'format *debug-io* format-string args)))
+  (when (member id paip-*dbg-ids*)
+    (lexical-let (spaces)
+      (cl-dotimes (i indent)
+	(push "  " spaces))
+      (message
+       (apply 'format (concat "%s" format-string)
+	      (apply 'concat spaces)
+	      args)))))
 
 ;;;; PATTERN MATCHING FACILITY
 
-(defconstant fail nil)
-(defconstant no-bindings '((t . t)))
+;; (defconstant fail nil)
 
-(defun pat-match (pattern input &optional (bindings no-bindings))
+(defconst paip-fail nil)
+
+;; (defconstant no-bindings '((t . t)))
+
+(defconst paip-no-bindings '((t . t)))
+
+;; (defun pat-match (pattern input &optional (bindings no-bindings))
+;;   "Match pattern against input in the context of the bindings"
+;;   (cond ((eq bindings fail) fail)
+;;         ((variable-p pattern) (match-variable pattern input bindings))
+;;         ((eql pattern input) bindings)
+;;         ((and (consp pattern) (consp input))
+;;          (pat-match (rest pattern) (rest input)
+;;                     (pat-match (first pattern) (first input) bindings)))
+;;         (t fail)))
+
+(cl-defun paip-pat-match (pattern input &optional (bindings paip-no-bindings))
   "Match pattern against input in the context of the bindings"
-  (cond ((eq bindings fail) fail)
-        ((variable-p pattern) (match-variable pattern input bindings))
+  (cond ((eq bindings paip-fail) paip-fail)
+        ((paip-variable-p pattern) (paip-match-variable pattern input bindings))
         ((eql pattern input) bindings)
         ((and (consp pattern) (consp input))
-         (pat-match (rest pattern) (rest input)
-                    (pat-match (first pattern) (first input) bindings)))
-        (t fail)))
+         (paip-pat-match (rest pattern) (rest input)
+                    (paip-pat-match (first pattern) (first input) bindings)))
+        (t paip-fail)))
 
-(defun match-variable (var input bindings)
+
+;; (defun match-variable (var input bindings)
+;;   "Does VAR match input?  Uses (or updates) and returns bindings."
+;;   (let ((binding (get-binding var bindings)))
+;;     (cond ((not binding) (extend-bindings var input bindings))
+;;           ((equal input (binding-val binding)) bindings)
+;;           (t fail))))
+
+(defun paip-match-variable (var input bindings)
   "Does VAR match input?  Uses (or updates) and returns bindings."
-  (let ((binding (get-binding var bindings)))
-    (cond ((not binding) (extend-bindings var input bindings))
-          ((equal input (binding-val binding)) bindings)
-          (t fail))))
+  (lexical-let ((binding (paip-get-binding var bindings)))
+    (cond ((not binding) (paip-extend-bindings var input bindings))
+          ((equal input (paip-binding-val binding)) bindings)
+          (t paip-fail))))
 
-(defun make-binding (var val) (cons var val))
+;; (defun make-binding (var val) (cons var val))
 
-(defun binding-var (binding)
+(defun paip-make-binding (var val) (cons var val))
+
+;; (defun binding-var (binding)
+;;   "Get the variable part of a single binding."
+;;   (car binding))
+
+(defun paip-binding-var (binding)
   "Get the variable part of a single binding."
   (car binding))
 
-(defun binding-val (binding)
+;; (defun binding-val (binding)
+;;   "Get the value part of a single binding."
+;;   (cdr binding))
+
+(defun paip-binding-val (binding)
   "Get the value part of a single binding."
   (cdr binding))
 
-(defun get-binding (var bindings)
+;; (defun get-binding (var bindings)
+;;   "Find a (variable . value) pair in a binding list."
+;;   (assoc var bindings))
+
+(defun paip-get-binding (var bindings)
   "Find a (variable . value) pair in a binding list."
   (assoc var bindings))
 
-(defun lookup (var bindings)
-  "Get the value part (for var) from a binding list."
-  (binding-val (get-binding var bindings)))
+;; (defun lookup (var bindings)
+;;   "Get the value part (for var) from a binding list."
+;;   (binding-val (get-binding var bindings)))
 
-(defun extend-bindings (var val bindings)
+(defun paip-lookup (var bindings)
+  "Get the value part (for var) from a binding list."
+  (paip-binding-val (paip-get-binding var bindings)))
+
+;; (defun extend-bindings (var val bindings)
+;;   "Add a (var . value) pair to a binding list."
+;;   (cons (cons var val)
+;;         ;; Once we add a "real" binding,
+;;         ;; we can get rid of the dummy no-bindings
+;;         (if (eq bindings no-bindings)
+;;             nil
+;;             bindings)))
+
+(defun paip-extend-bindings (var val bindings)
   "Add a (var . value) pair to a binding list."
   (cons (cons var val)
         ;; Once we add a "real" binding,
         ;; we can get rid of the dummy no-bindings
-        (if (eq bindings no-bindings)
+        (if (eq bindings paip-no-bindings)
             nil
             bindings)))
 
-(defun variable-p (x)
+;; (defun variable-p (x)
+;;   "Is x a variable (a symbol beginning with `?')?"
+;;   (and (symbolp x) (equal (elt (symbol-name x) 0) #\?)))
+
+(defun paip-variable-p (x)
   "Is x a variable (a symbol beginning with `?')?"
-  (and (symbolp x) (equal (elt (symbol-name x) 0) #\?)))
+  (and (symbolp x) (equal (elt (symbol-name x) 0) \?)))
 
 ;;; ==============================
 
 ;;;; The Memoization facility:
 
-(defmacro defun-memo (fn args &body body)
+;; (defmacro defun-memo (fn args &body body)
+;;   "Define a memoized function."
+;;   `(memoize (defun ,fn ,args . ,body)))
+
+(defmacro paip-defun-memo (fn args &body body)
   "Define a memoized function."
-  `(memoize (defun ,fn ,args . ,body)))
+  `(paip-memoize (cl-defun ,fn ,args . ,body)))
 
-(defun memo (fn &key (key #'first) (test #'eql) name)
+;; (defun memo (fn &key (key #'first) (test #'eql) name)
+;;   "Return a memo-function of fn."
+;;   (let ((table (make-hash-table :test test)))
+;;     (setf (get name 'memo) table)
+;;     #'(lambda (&rest args)
+;;         (let ((k (funcall key args)))
+;;           (multiple-value-bind (val found-p)
+;;               (gethash k table)
+;;             (if found-p val
+;;                 (setf (gethash k table) (apply fn args))))))))
+
+(cl-defun paip-memo (fn &key (key 'first) (test 'eql) name)
   "Return a memo-function of fn."
-  (let ((table (make-hash-table :test test)))
+  (lexical-let ((table (make-hash-table :test test)))
     (setf (get name 'memo) table)
-    #'(lambda (&rest args)
-        (let ((k (funcall key args)))
-          (multiple-value-bind (val found-p)
-              (gethash k table)
-            (if found-p val
-                (setf (gethash k table) (apply fn args))))))))
+    (lambda (&rest args)
+      (lexical-let* ((k (funcall key args))
+		     (val (gethash k table :paip-hash-default)))
+	(if (eql val :paip-hash-default)
+	    (setf (gethash k table) (apply fn args))
+	  val)))))
 
-(defun memoize (fn-name &key (key #'first) (test #'eql))
+;; (defun memoize (fn-name &key (key #'first) (test #'eql))
+;;   "Replace fn-name's global definition with a memoized version."
+;;   (clear-memoize fn-name)
+;;   (setf (symbol-function fn-name)
+;;         (memo (symbol-function fn-name)
+;;               :name fn-name :key key :test test)))
+
+(cl-defun memoize (fn-name &key (key 'first) (test 'eql))
   "Replace fn-name's global definition with a memoized version."
-  (clear-memoize fn-name)
+  (paip-clear-memoize fn-name)
   (setf (symbol-function fn-name)
-        (memo (symbol-function fn-name)
+        (paip-memo (symbol-function fn-name)
               :name fn-name :key key :test test)))
 
-(defun clear-memoize (fn-name)
+;; (defun clear-memoize (fn-name)
+;;   "Clear the hash table from a memo function."
+;;   (let ((table (get fn-name 'memo)))
+;;     (when table (clrhash table))))
+
+(defun paip-clear-memoize (fn-name)
   "Clear the hash table from a memo function."
-  (let ((table (get fn-name 'memo)))
+  (lexical-let ((table (get fn-name 'memo)))
     (when table (clrhash table))))
 
 ;;;; Delayed computation:
 
-(defstruct delay value (computed? nil))
+;; (defstruct delay value (computed? nil))
 
-(defmacro delay (&rest body)
+(cl-defstruct pai-delay value (computed? nil))
+
+;; (defmacro delay (&rest body)
+;;   "A computation that can be executed later by FORCE."
+;;   `(make-delay :value #'(lambda () . ,body)))
+
+(defmacro paip-delay (&rest body)
   "A computation that can be executed later by FORCE."
-  `(make-delay :value #'(lambda () . ,body)))
+  `(make-paip-delay :value (lambda () . ,body)))
 
-(defun force (delay)
+;; (defun force (delay)
+;;   "Do a delayed computation, or fetch its previously-computed value."
+;;   (if (delay-computed? delay)
+;;       (delay-value delay)
+;;       (prog1 (setf (delay-value delay) (funcall (delay-value delay)))
+;;              (setf (delay-computed? delay) t))))
+
+(defun paip-force (delay)
   "Do a delayed computation, or fetch its previously-computed value."
-  (if (delay-computed? delay)
-      (delay-value delay)
-      (prog1 (setf (delay-value delay) (funcall (delay-value delay)))
-             (setf (delay-computed? delay) t))))
+  (if (paip-delay-computed? delay)
+      (paip-delay-value delay)
+      (prog1 (setf (paip-delay-value delay) (funcall (paip-delay-value delay)))
+             (setf (paip-delay-computed? delay) t))))
 
 ;;;; Defresource:
 
-(defmacro defresource (name &key constructor (initial-copies 0)
-                       (size (max initial-copies 10)))
-  (let ((resource (symbol '* (symbol name '-resource*)))
+;; (defmacro defresource (name &key constructor (initial-copies 0)
+;;                        (size (max initial-copies 10)))
+;;   (let ((resource (symbol '* (symbol name '-resource*)))
+;;         (deallocate (symbol 'deallocate- name))
+;;         (allocate (symbol 'allocate- name)))
+;;     `(progn
+;;        (defparameter ,resource (make-array ,size :fill-pointer 0))
+;;        (defun ,allocate ()
+;;          "Get an element from the resource pool, or make one."
+;;          (if (= (fill-pointer ,resource) 0)
+;;              ,constructor
+;;              (vector-pop ,resource)))
+;;        (defun ,deallocate (,name)
+;;          "Place a no-longer-needed element back in the pool."
+;;          (vector-push-extend ,name ,resource))
+;;        ,(if (> initial-copies 0)
+;;             `(mapc #',deallocate (loop repeat ,initial-copies 
+;;                                        collect (,allocate))))
+;;        ',name)))
+
+;; [YF] We need vectors with fill pointers. So let's implement it. I
+;; decided to use paip-elp- suffix to show it needed because of
+;; porting to EL.
+
+(cl-defun paip-elp-make-array (size &optional (:fill-pointer 0) :initial-element)
+  (cons fill-pointer (make-vector size)))
+(defun paip-elp-fill-pointer (array)
+  (car array))
+(defun paip-elp-vector-push (elm vector)
+  (let ((pos (car vector)))
+    (setf ;; TBW
+     )))
+
+(let ((x (paip-elp-make-array 5 :fill-pointer 0)))
+  (paip-elp-vector-push 'a x) ; ==> 0
+  x                       ; ==> #(A)
+  (paip-elp-vector-push 'b x) ; ==> 1
+  x                       ; ==> #(A B)
+  (paip-elp-vector-push 'c x) ; ==> 2
+  x                       ; ==> #(A B C)
+  (paip-elp-vector-pop x)     ; ==> C
+  x                       ; ==> #(A B)
+  (paip-elp-vector-pop x)     ; ==> B
+  x                       ; ==> #(A)
+  (paip-elp-vector-pop x)      ; ==> A
+  x                       ; ==> #()
+  )
+
+(paip-elp-vector-push (setq fable (list 'fable))
+		      (setq fa (paip-elp-make-array 8 
+                                   :fill-pointer 2
+                                   :initial-element 'first-one))) =>  2 
+(paip-elp-fill-pointer fa) =>  3 
+(eq (aref fa 2) fable) =>  true
+(paip-elp-vector-push-extend #\X
+			     (setq aa 
+				   (paip-elp-make-array 5
+							:element-type 'character
+							:adjustable t
+							:fill-pointer 3))) =>  3 
+(paip-elp-fill-pointer aa) =>  4 
+(paip-elp-vector-push-extend #\Y aa 4) =>  4 
+(paip-elp-array-total-size aa) =>  at least 5 
+(paip-elp-vector-push-extend #\Z aa 4) =>  5 
+(paip-elp-array-total-size aa) =>  9 ;(or more)
+
+(paip-elp-vector-push (setq fable (list 'fable))
+		      (setq fa (paip-elp-make-array 8
+						    :fill-pointer 2
+						    :initial-element 'sisyphus))) =>  2 
+(paip-elp-fill-pointer fa) =>  3 
+(eq (paip-elp-vector-pop fa) fable) =>  true
+(paip-elp-vector-pop fa) =>  SISYPHUS 
+(paip-elp-fill-pointer fa) =>  1 
+
+
+
+(cl-defmacro defresource (name &key constructor (initial-copies 0)
+			       (size (max initial-copies 10)))
+  (lexical-let ((resource (symbol '* (symbol name '-resource*)))
         (deallocate (symbol 'deallocate- name))
         (allocate (symbol 'allocate- name)))
     `(progn
-       (defparameter ,resource (make-array ,size :fill-pointer 0))
+       (defvar ,resource (make-vector ,size))
        (defun ,allocate ()
          "Get an element from the resource pool, or make one."
-         (if (= (fill-pointer ,resource) 0)
+         (if (= (fill-pointer ,resource) 0) ; [YF] TODO: How to deal with this fill-pointer?
              ,constructor
-             (vector-pop ,resource)))
+	   (vector-pop ,resource)))
        (defun ,deallocate (,name)
          "Place a no-longer-needed element back in the pool."
-         (vector-push-extend ,name ,resource))
+         (vector-push-extend ,name ,resource)) ; [YF] EL's vector is not ext
        ,(if (> initial-copies 0)
             `(mapc #',deallocate (loop repeat ,initial-copies 
                                        collect (,allocate))))
        ',name)))
+
+;; (defmacro with-resource ((var resource &optional protect) &rest body)
+;;   "Execute body with VAR bound to an instance of RESOURCE."
+;;   (let ((allocate (symbol 'allocate- resource))
+;;         (deallocate (symbol 'deallocate- resource)))
+;;     (if protect
+;;         `(let ((,var nil))
+;;            (unwind-protect (progn (setf ,var (,allocate)) ,@body)
+;;              (unless (null ,var) (,deallocate ,var))))
+;;         `(let ((,var (,allocate)))
+;;            ,@body
+;;            (,deallocate var)))))
 
 (defmacro with-resource ((var resource &optional protect) &rest body)
   "Execute body with VAR bound to an instance of RESOURCE."
@@ -735,10 +1010,13 @@ or of the form (THE type x) where x is side-effect-free?"
   "Is x a list of length 1?"
   (and (consp x) (null (cdr x))))
 
+;; (defun rest3 (list)
+;;   "The rest of a list after the first THREE elements."
+;;   (cdddr list))
 
 (defun rest3 (list)
   "The rest of a list after the first THREE elements."
-  (cdddr list))
+  (cl-cdddr list))
 
 ;;; ==============================
 
