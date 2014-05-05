@@ -997,9 +997,9 @@ or of the form (THE type x) where x is side-effect-free?"
 
 (cl-defmacro defresource (name &key constructor (initial-copies 0)
 			       (size (max initial-copies 10)))
-  (let ((resource (symbol '* (symbol name '-resource*)))
-        (deallocate (symbol 'deallocate- name))
-        (allocate (symbol 'allocate- name)))
+  (let ((resource (paip-symbol '* (symbol name '-resource*)))
+        (deallocate (paip-symbol 'deallocate- name))
+        (allocate (paip-symbol 'allocate- name)))
     `(progn
        (defvar ,resource (paip-aux-make-array ,size :fill-poinetr 0))
        (defun ,allocate ()
@@ -1029,8 +1029,8 @@ or of the form (THE type x) where x is side-effect-free?"
 
 (defmacro with-resource ((var resource &optional protect) &rest body)
   "Execute body with VAR bound to an instance of RESOURCE."
-  (let ((allocate (symbol 'allocate- resource))
-        (deallocate (symbol 'deallocate- resource)))
+  (let ((allocate (paip-symbol 'allocate- resource))
+        (deallocate (paip-symbol 'deallocate- resource)))
     (if protect
         `(let ((,var nil))
            (unwind-protect (progn (setf ,var (,allocate)) ,@body)
@@ -1143,50 +1143,93 @@ or of the form (THE type x) where x is side-effect-free?"
 
 ;;; ==============================
 
-(defun unique-find-if-anywhere (predicate tree
+;; (defun unique-find-if-anywhere (predicate tree
+;;                                 &optional found-so-far)
+;;   "Return a list of leaves of tree satisfying predicate,
+;;   with duplicates removed."
+;;   (if (atom tree)
+;;       (if (funcall predicate tree)
+;;           (adjoin tree found-so-far)
+;;           found-so-far)
+;;       (unique-find-if-anywhere
+;;         predicate
+;;         (first tree)
+;;         (unique-find-if-anywhere predicate (rest tree)
+;;                                  found-so-far))))
+
+(defun paip-unique-find-if-anywhere (predicate tree
                                 &optional found-so-far)
   "Return a list of leaves of tree satisfying predicate,
   with duplicates removed."
   (if (atom tree)
       (if (funcall predicate tree)
-          (adjoin tree found-so-far)
+          (cl-adjoin tree found-so-far)
           found-so-far)
-      (unique-find-if-anywhere
+      (paip-unique-find-if-anywhere
         predicate
         (first tree)
-        (unique-find-if-anywhere predicate (rest tree)
+        (paip-unique-find-if-anywhere predicate (rest tree)
                                  found-so-far))))
 
-(defun find-if-anywhere (predicate tree)
+;; (defun find-if-anywhere (predicate tree)
+;;   "Does predicate apply to any atom in the tree?"
+;;   (if (atom tree)
+;;       (funcall predicate tree)
+;;       (or (find-if-anywhere predicate (first tree))
+;;           (find-if-anywhere predicate (rest tree)))))
+
+(defun paip-find-if-anywhere (predicate tree)
   "Does predicate apply to any atom in the tree?"
   (if (atom tree)
       (funcall predicate tree)
-      (or (find-if-anywhere predicate (first tree))
-          (find-if-anywhere predicate (rest tree)))))
+      (or (paip-find-if-anywhere predicate (first tree))
+          (paip-find-if-anywhere predicate (rest tree)))))
 
 ;;; ==============================
 
-(defmacro define-enumerated-type (type &rest elements)
+;; (defmacro define-enumerated-type (type &rest elements)
+;;   "Represent an enumerated type with integers 0-n."
+;;   `(progn
+;;      (deftype ,type () '(integer 0 ,(- (length elements) 1)))
+;;      (defun ,(symbol type '->symbol) (,type)
+;;        (elt ',elements ,type))
+;;      (defun ,(symbol 'symbol-> type) (symbol)
+;;        (position symbol ',elements))
+;;      ,@(loop for element in elements
+;;              for i from 0
+;;              collect `(defconstant ,element ,i))))
+
+(defmacro paip-define-enumerated-type (type &rest elements)
   "Represent an enumerated type with integers 0-n."
   `(progn
-     (deftype ,type () '(integer 0 ,(- (length elements) 1)))
-     (defun ,(symbol type '->symbol) (,type)
+     (cl-deftype ,type () '(integer 0 ,(- (length elements) 1)))
+     (defun ,(paip-symbol type '->symbol) (,type)
        (elt ',elements ,type))
-     (defun ,(symbol 'symbol-> type) (symbol)
+     (defun ,(paip-symbol 'symbol-> type) (paip-symbol)
        (position symbol ',elements))
-     ,@(loop for element in elements
+     ,@(cl-loop for element in elements
              for i from 0
-             collect `(defconstant ,element ,i))))
+             collect `(defconst ,element ,i))))
 
 ;;; ==============================
 
-(defun not-null (x) (not (null x)))
+;; (defun not-null (x) (not (null x)))
 
-(defun first-or-nil (x)
+(defun paip-not-null (x) (not (null x)))
+
+;; (defun first-or-nil (x)
+;;   "The first element of x if it is a list; else nil."
+;;   (if (consp x) (first x) nil))
+
+(defun paip-first-or-nil (x)
   "The first element of x if it is a list; else nil."
   (if (consp x) (first x) nil))
 
-(defun first-or-self (x)
+;; (defun first-or-self (x)
+;;   "The first element of x, if it is a list; else x itself."
+;;   (if (consp x) (first x) x))
+
+(defun paip-first-or-self (x)
   "The first element of x, if it is a list; else x itself."
   (if (consp x) (first x) x))
 
@@ -1194,19 +1237,67 @@ or of the form (THE type x) where x is side-effect-free?"
 
 ;;;; CLtL2 and ANSI CL Compatibility
 
-(unless (fboundp 'defmethod)
-(defmacro defmethod (name args &rest body)
-  `(defun ',name ',args ,@body))
-)
+;; (unless (fboundp 'defmethod)
+;; (defmacro defmethod (name args &rest body)
+;;   `(defun ',name ',args ,@body))
+;; )
+;; [YF] For now, I rely on eieio about CLOS in EL.
 
-(unless (fboundp 'map-into)
-(defun map-into (result-sequence function &rest sequences)
+;; (unless (fboundp 'map-into)
+;; (defun map-into (result-sequence function &rest sequences)
+;;   "Destructively set elements of RESULT-SEQUENCE to the results
+;;   of applying FUNCTION to respective elements of SEQUENCES."
+;;   (let ((arglist (make-list (length sequences)))
+;;         (n (if (listp result-sequence)
+;;                most-positive-fixnum
+;;                (array-dimension result-sequence 0))))
+;;     ;; arglist is made into a list of args for each call
+;;     ;; n is the length of the longest vector
+;;     (when sequences
+;;       (setf n (min n (loop for seq in sequences
+;;                            minimize (length seq)))))
+;;     ;; Define some shared functions:
+;;     (flet
+;;       ((do-one-call (i)
+;;          (loop for seq on sequences
+;;                for arg on arglist
+;;                do (if (listp (first seq))
+;;                       (setf (first arg)
+;;                             (pop (first seq)))
+;;                       (setf (first arg)
+;;                             (aref (first seq) i))))
+;;          (apply function arglist))
+;;        (do-result (i)
+;;          (if (and (vectorp result-sequence)
+;;                   (array-has-fill-pointer-p result-sequence))
+;;              (setf (fill-pointer result-sequence) 
+;;                    (max i (fill-pointer result-sequence))))))
+;;       (declare (inline do-one-call))
+;;       ;; Decide if the result is a list or vector,
+;;       ;; and loop through each element
+;;       (if (listp result-sequence)
+;;           (loop for i from 0 to (- n 1)
+;;                 for r on result-sequence
+;;                 do (setf (first r)
+;;                          (do-one-call i))
+;;                 finally (do-result i))
+;;           (loop for i from 0 to (- n 1)
+;;                 do (setf (aref result-sequence i)
+;;                          (do-one-call i))
+;;                 finally (do-result i))))
+;;       result-sequence))
+;; )
+
+;; [YF] This function requires a full implementation of
+;; multi-dimenttional arrays. So I will implement this after I have
+;; implemented multi-dimentional arrays in EL.
+(defun paip-map-into (result-sequence function &rest sequences)
   "Destructively set elements of RESULT-SEQUENCE to the results
   of applying FUNCTION to respective elements of SEQUENCES."
   (let ((arglist (make-list (length sequences)))
         (n (if (listp result-sequence)
                most-positive-fixnum
-               (array-dimension result-sequence 0))))
+	     (array-dimension result-sequence 0))))
     ;; arglist is made into a list of args for each call
     ;; n is the length of the longest vector
     (when sequences
@@ -1243,7 +1334,14 @@ or of the form (THE type x) where x is side-effect-free?"
                 finally (do-result i))))
       result-sequence))
 
-)
+(ert-deftest test-paip-map-into ()
+  (setq a (list 1 2 3 4) b (list 10 10 10 10))
+  (should (equal (map-into a #'+ a b)
+		 (11 12 13 14)))
+  (setq k '(one two three))
+  (should (equal (map-into a #'cons k a)
+		 '((one . 11) (two . 12) (three . 13) 14)))
+  )
 
 ;; (unless (fboundp 'complement)
 ;;   (defun complement (fn)
@@ -1251,40 +1349,97 @@ or of the form (THE type x) where x is side-effect-free?"
 ;;     #'(lambda (&rest args) (not (apply fn args))))
 ;;   )
 
-(unless (fboundp 'paip-complement)
-  (defun paip-complement (fn)
-    "If FN returns y, then (complement FN) returns (not y)."
-    (lambda (&rest args) (not (apply fn args))))
-  )
+(defun paip-complement (fn)
+  "If FN returns y, then (complement FN) returns (not y)."
+  (lambda (&rest args) (not (apply fn args))))
 
-(unless (fboundp 'with-compilation-unit)
-(defmacro with-compilation-unit (options &body body)
-  "Do the body, but delay compiler warnings until the end."
-  ;; That way, undefined function warnings that are really
-  ;; just forward references will not be printed at all.
-  ;; This is defined in Common Lisp the Language, 2nd ed.
-  (declare (ignore options))
-  `(,(read-time-case
-       #+Lispm 'compiler:compiler-warnings-context-bind
-       #+Lucid 'with-deferred-warnings
-               'progn)
-    .,body))
-)
+;; (unless (fboundp 'with-compilation-unit)
+;; (defmacro with-compilation-unit (options &body body)
+;;   "Do the body, but delay compiler warnings until the end."
+;;   ;; That way, undefined function warnings that are really
+;;   ;; just forward references will not be printed at all.
+;;   ;; This is defined in Common Lisp the Language, 2nd ed.
+;;   (declare (ignore options))
+;;   `(,(read-time-case
+;;        #+Lispm 'compiler:compiler-warnings-context-bind
+;;        #+Lucid 'with-deferred-warnings
+;;                'progn)
+;;     .,body))
+;; )
+;; [YF] Probably, we don't need this in EL.
 
 ;;;; Reduce
 
+;; (when nil ;; Change this to T if you need REDUCE with :key keyword.
+
 (when nil ;; Change this to T if you need REDUCE with :key keyword.
 
-(defun reduce* (fn seq from-end start end key init init-p)
-  (funcall (if (listp seq) #'reduce-list #'reduce-vect)
+;; (defun reduce* (fn seq from-end start end key init init-p)
+;;   (funcall (if (listp seq) #'reduce-list #'reduce-vect)
+;;            fn seq from-end (or start 0) end key init init-p))
+
+(defun paip-reduce* (fn seq from-end start end key init init-p)
+  (funcall (if (listp seq)
+	       'paip-reduce-list
+	     'paip-reduce-vect)
            fn seq from-end (or start 0) end key init init-p))
 
-(defun reduce (function sequence &key from-end start end key
-               (initial-value nil initial-value-p))
-  (reduce* function sequence from-end start end
-           key initial-value initial-value-p))
+;; (defun reduce (function sequence &key from-end start end key
+;;                (initial-value nil initial-value-p))
+;;   (reduce* function sequence from-end start end
+;;            key initial-value initial-value-p))
 
-(defun reduce-vect (fn seq from-end start end key init init-p)
+(cl-defun paip-reduce (function sequence &key from-end start end key
+				(initial-value nil initial-value-p))
+  (paip-reduce* function sequence from-end start end
+		key initial-value initial-value-p))
+
+;; (defun reduce-vect (fn seq from-end start end key init init-p)
+;;   (if (null end) (setf end (length seq)))
+;;   (assert (<= 0 start end (length seq)) (start end)
+;;           "Illegal subsequence of ~a --- :start ~d :end ~d"
+;;           seq start end)
+;;   (case (- end start)
+;;     (1 (if init-p
+;;            (funcall fn init (funcall-if key (aref seq start)))
+;; 	 (funcall-if key (aref seq start))))
+;;     (0 (if init-p init (funcall fn)))
+;;     (t (if (not from-end)
+;;            (let ((result
+;; 		  (if init-p
+;; 		      (funcall
+;; 		       fn init
+;; 		       (funcall-if key (aref seq start)))
+;; 		    (funcall
+;; 		     fn
+;; 		     (funcall-if key (aref seq start))
+;; 		     (funcall-if key (aref seq (+ start 1)))))))
+;;              (loop for i from (+ start (if init-p 1 2))
+;;                    to (- end 1)
+;;                    do (setf result
+;;                             (funcall
+;; 			     fn result
+;; 			     (funcall-if key (aref seq i)))))
+;;              result)
+;; 	 (let ((result
+;; 		(if init-p
+;; 		    (funcall
+;; 		     fn
+;; 		     (funcall-if key (aref seq (- end 1)))
+;; 		     init)
+;; 		  (funcall
+;; 		   fn
+;; 		   (funcall-if key (aref seq (- end 2)))
+;; 		   (funcall-if key (aref seq (- end 1)))))))
+;; 	   (loop for i from (- end (if init-p 2 3)) downto start
+;; 		 do (setf result
+;; 			  (funcall
+;; 			   fn
+;; 			   (funcall-if key (aref seq i))
+;; 			   result)))
+;; 	   result)))))
+
+(defun paip-reduce-vect (fn seq from-end start end key init init-p)
   (if (null end) (setf end (length seq)))
   (assert (<= 0 start end (length seq)) (start end)
           "Illegal subsequence of ~a --- :start ~d :end ~d"
@@ -1292,82 +1447,125 @@ or of the form (THE type x) where x is side-effect-free?"
   (case (- end start)
     (1 (if init-p
            (funcall fn init (funcall-if key (aref seq start)))
-           (funcall-if key (aref seq start))))
+	 (funcall-if key (aref seq start))))
     (0 (if init-p init (funcall fn)))
     (t (if (not from-end)
-           (let ((result
-                   (if init-p
-                       (funcall
-                         fn init
-                         (funcall-if key (aref seq start)))
-                       (funcall
-                         fn
-                         (funcall-if key (aref seq start))
-                         (funcall-if key (aref seq (+ start 1)))))))
-             (loop for i from (+ start (if init-p 1 2))
-                   to (- end 1)
-                   do (setf result
-                            (funcall
-                              fn result
-                              (funcall-if key (aref seq i)))))
+           (lexical-let ((result
+			  (if init-p
+			      (funcall
+			       fn init
+			       (funcall-if key (aref seq start)))
+			    (funcall
+			     fn
+			     (funcall-if key (aref seq start))
+			     (funcall-if key (aref seq (+ start 1)))))))
+             (cl-loop for i from (+ start (if init-p 1 2))
+		      to (- end 1)
+		      do (setf result
+			       (funcall
+				fn result
+				(funcall-if key (aref seq i)))))
              result)
-           (let ((result
-                   (if init-p
-                       (funcall
-                         fn
-                         (funcall-if key (aref seq (- end 1)))
-                         init)
-                       (funcall
-                         fn
-                         (funcall-if key (aref seq (- end 2)))
-                         (funcall-if key (aref seq (- end 1)))))))
-             (loop for i from (- end (if init-p 2 3)) downto start
-                   do (setf result
-                            (funcall
-                              fn
-                              (funcall-if key (aref seq i))
-                              result)))
-             result)))))
+	 (lexical-let ((result
+			(if init-p
+			    (funcall
+			     fn
+			     (funcall-if key (aref seq (- end 1)))
+			     init)
+			  (funcall
+			   fn
+			   (funcall-if key (aref seq (- end 2)))
+			   (funcall-if key (aref seq (- end 1)))))))
+	   (cl-loop for i from (- end (if init-p 2 3)) downto start
+		    do (setf result
+			     (funcall
+			      fn
+			      (funcall-if key (aref seq i))
+			      result)))
+	   result)))))
 
-(defun reduce-list (fn seq from-end start end key init init-p)
+
+;; (defun reduce-list (fn seq from-end start end key init init-p)
+;;   (if (null end) (setf end (length seq)))
+;;   (cond ((> start 0)
+;;          (reduce-list fn (nthcdr start seq) from-end 0
+;;                       (- end start) key init init-p))
+;;         ((or (null seq) (eql start end))
+;;          (if init-p init (funcall fn)))
+;;         ((= (- end start) 1)
+;;          (if init-p
+;;              (funcall fn init (funcall-if key (first seq)))
+;;              (funcall-if key (first seq))))
+;;         (from-end
+;;          (reduce-vect fn (coerce seq 'vector) t start end
+;;                       key init init-p))
+;;         ((null (rest seq))
+;;          (if init-p
+;;              (funcall fn init (funcall-if key (first seq)))
+;;              (funcall-if key (first seq))))
+;;         (t (let ((result
+;;                    (if init-p
+;;                        (funcall
+;;                          fn init
+;;                          (funcall-if key (pop seq)))
+;;                        (funcall
+;;                          fn
+;;                          (funcall-if key (pop seq))
+;;                          (funcall-if key (pop seq))))))
+;;              (if end
+;;                  (loop repeat (- end (if init-p 1 2)) while seq
+;;                     do (setf result
+;;                              (funcall
+;;                                fn result
+;;                                (funcall-if key (pop seq)))))
+;;                  (loop while seq
+;;                     do (setf result
+;;                              (funcall
+;;                                fn result
+;;                                (funcall-if key (pop seq))))))
+;;              result))))
+
+(defun paip-reduce-list (fn seq from-end start end key init init-p)
   (if (null end) (setf end (length seq)))
   (cond ((> start 0)
-         (reduce-list fn (nthcdr start seq) from-end 0
-                      (- end start) key init init-p))
+         (paip-reduce-list fn (nthcdr start seq) from-end 0
+			   (- end start) key init init-p))
         ((or (null seq) (eql start end))
          (if init-p init (funcall fn)))
         ((= (- end start) 1)
          (if init-p
              (funcall fn init (funcall-if key (first seq)))
-             (funcall-if key (first seq))))
+	   (funcall-if key (first seq))))
         (from-end
-         (reduce-vect fn (coerce seq 'vector) t start end
-                      key init init-p))
+         (paip-reduce-vect fn (coerce seq 'vector) t start end
+			   key init init-p))
         ((null (rest seq))
          (if init-p
              (funcall fn init (funcall-if key (first seq)))
-             (funcall-if key (first seq))))
-        (t (let ((result
-                   (if init-p
-                       (funcall
-                         fn init
-                         (funcall-if key (pop seq)))
-                       (funcall
-                         fn
-                         (funcall-if key (pop seq))
-                         (funcall-if key (pop seq))))))
+	   (funcall-if key (first seq))))
+        (t (lexical-let ((result
+			  (if init-p
+			      (funcall
+			       fn init
+			       (funcall-if key (pop seq)))
+			    (funcall
+			     fn
+			     (funcall-if key (pop seq))
+			     (funcall-if key (pop seq))))))
              (if end
-                 (loop repeat (- end (if init-p 1 2)) while seq
-                    do (setf result
-                             (funcall
-                               fn result
-                               (funcall-if key (pop seq)))))
-                 (loop while seq
-                    do (setf result
-                             (funcall
-                               fn result
-                               (funcall-if key (pop seq))))))
+                 (cl-loop repeat (- end (if init-p 1 2)) while seq
+			  do (setf result
+				   (funcall
+				    fn result
+				    (funcall-if key (pop seq)))))
+	       (cl-loop while seq
+			do (setf result
+				 (funcall
+				  fn result
+				  (funcall-if key (pop seq))))))
              result))))
+
+
 )
 
 
