@@ -808,7 +808,7 @@ or of the form (THE type x) where x is side-effect-free?"
 
 ;; (defstruct delay value (computed? nil))
 
-(cl-defstruct pai-delay value (computed? nil))
+(cl-defstruct paip-delay value (computed? nil))
 
 ;; (defmacro delay (&rest body)
 ;;   "A computation that can be executed later by FORCE."
@@ -834,6 +834,147 @@ or of the form (THE type x) where x is side-effect-free?"
 
 ;;;; Defresource:
 
+;; [YF] We need vectors with fill pointers. So let's implement it. I
+;; decided to use paip-aux- suffix to show it needed because of
+;; porting to EL.
+
+(cl-defun paip-aux-make-array (size &key (fill-pointer 0) initial-element element-type adjustable)
+  (if (> fill-pointer (1- size))
+      (error "The value of the fill poiner exceeded the length")
+    (cons fill-pointer (make-vector size initial-element))))
+
+(ert-deftest test-paip-aux-make-array ()
+  (should (equal (paip-aux-make-array 0)
+		 '(0 . [])))
+  (should (equal (paip-aux-make-array 1)
+		 '(0 . [nil])))
+  (should (equal (paip-aux-make-array 2)
+		 '(0 . [nil nil])))
+  (should (equal (paip-aux-make-array 2 :fill-pointer 1)
+		 '(1 . [nil nil])))
+  (should (equal (paip-aux-make-array 3 :fill-pointer 2 :initial-element 0)
+		 '(2 . [0 0 0])))
+  )
+
+(defun paip-aux-fill-pointer (vector-with-fill-pointer)
+  (car vector-with-fill-pointer))
+
+(defun paip-aux-vector-push (elm vector-with-fill-pointer)
+  (let ((pos (car vector-with-fill-pointer)))
+    (if (> (1+ pos) (length (cdr vector-with-fill-pointer)))
+	(error "The fill pointer is at the end of the vector")
+      (setf (elt (cdr vector-with-fill-pointer) pos) elm)
+      (incf (car vector-with-fill-pointer))
+      pos)))
+
+(defmacro paip-aux-vector-push-extend (elm vector-with-fill-pointer &optional extension)
+  (let ((increase-symbol (make-symbol "increase")))
+    `(progn
+      (if (> (1+ (car ,vector-with-fill-pointer))
+	     (length (cdr ,vector-with-fill-pointer)))
+	  (let ((,increase-symbol (if ,extension
+				      ,extension
+				    (1+ (/ (length (cdr ,vector-with-fill-pointer))
+					   10)))))
+	    (setq ,vector-with-fill-pointer
+		  (cons (car ,vector-with-fill-pointer)
+			(vconcat (cdr ,vector-with-fill-pointer)
+				 (make-vector ,increase-symbol nil))))))
+      (paip-aux-vector-push ,elm ,vector-with-fill-pointer))))
+
+(defun paip-aux-vector-pop (vector-with-fill-pointer)
+  (if (= 0 (car vector-with-fill-pointer))
+      (error "The fill-pointer is 0")
+    (prog1
+	(elt (cdr vector-with-fill-pointer) (decf (car vector-with-fill-pointer)))
+      (setf (elt (cdr vector-with-fill-pointer) (car vector-with-fill-pointer)) nil))))
+
+(ert-deftest test-paip-aux-vector-push/pop ()
+  (setq x (paip-aux-make-array 5 :fill-pointer 0))
+  (should (equal x
+		 '(0 . [nil nil nil nil nil])))
+  (should (equal (paip-aux-vector-push 'a x)
+		 0))
+  (should (equal x
+		 '(1 . [a nil nil nil nil])))
+  (should (equal (paip-aux-vector-push 'b x)
+		 1))
+  (should (equal x
+		 '(2 . [a b nil nil nil])))
+  (should (equal (paip-aux-vector-push 'c x)
+		 2))
+  (should (equal x
+		 '(3 . [a b c nil nil])))
+  (should (equal (paip-aux-vector-pop x)
+		 'c))
+  (should (equal x
+		 '(2 . [a b nil nil nil])))
+  (should (equal (paip-aux-vector-pop x)
+		 'b))
+  (should (equal x
+		 '(1 . [a nil nil nil nil])))
+  (should (equal (paip-aux-vector-pop x)
+		 'a))
+  (should (equal x
+		 '(0 . [nil nil nil nil nil]))))
+  
+;; [YF] The length of CL's arrays is variable: they are not filled
+;; with nil like the above example. For example, they return not [a b
+;; nil nil nil] but #(a b).
+
+(defalias 'paip-aux-length 'paip-aux-fill-pointer
+  "Retrung the length of effective part of the vector.")
+;; [YF] Because of the nil-filling feature of my desing, we need a
+;; special length function for this vector data structure.
+
+(defun paip-aux-array-total-size (vector-with-fill-pointer)
+  "Retrun the total length of ARRAY."
+  (length (cdr vector-with-fill-pointer)))
+
+(ert-deftest test-paip-aux-vector-2 ()
+  (should (equal (paip-aux-vector-push
+		  (setq fable (list 'fable))
+		  (setq fa (paip-aux-make-array
+			    8 
+			    :fill-pointer 2
+			    :initial-element 'first-one)))
+		 2))
+  (should (equal (paip-aux-fill-pointer fa)
+		 3))
+  (should (equal (paip-aux-vector-push-extend
+		  ?X
+		  (setq aa 
+			(paip-aux-make-array
+			 5
+			 :element-type 'character
+			 :adjustable t
+			 :fill-pointer 3)))
+		 3))
+  (should (equal (paip-aux-fill-pointer aa)
+		 4))
+  (should (equal (paip-aux-vector-push-extend ?Y aa 4)
+		 4))
+  (should (>= (paip-aux-array-total-size aa)
+	      5))
+  (should (equal (paip-aux-vector-push-extend ?Z aa 4)
+		 5))
+  (should (>= (paip-aux-array-total-size aa)
+	      9))
+  (should (equal (paip-aux-vector-push
+		  (setq fable (list 'fable))
+		  (setq fa (paip-aux-make-array
+			    8
+			    :fill-pointer 2
+			    :initial-element 'sisyphus)))
+		 2))
+  (should (equal (paip-aux-fill-pointer fa)
+		 3))
+  (should (eq (paip-aux-vector-pop fa) fable))
+  (should (equal (paip-aux-vector-pop fa)
+		 'sisyphus))
+  (should (equal (paip-aux-fill-pointer fa)
+		 1)))
+
 ;; (defmacro defresource (name &key constructor (initial-copies 0)
 ;;                        (size (max initial-copies 10)))
 ;;   (let ((resource (symbol '* (symbol name '-resource*)))
@@ -854,81 +995,24 @@ or of the form (THE type x) where x is side-effect-free?"
 ;;                                        collect (,allocate))))
 ;;        ',name)))
 
-;; [YF] We need vectors with fill pointers. So let's implement it. I
-;; decided to use paip-elp- suffix to show it needed because of
-;; porting to EL.
-
-(cl-defun paip-elp-make-array (size &optional (:fill-pointer 0) :initial-element)
-  (cons fill-pointer (make-vector size)))
-(defun paip-elp-fill-pointer (array)
-  (car array))
-(defun paip-elp-vector-push (elm vector)
-  (let ((pos (car vector)))
-    (setf ;; TBW
-     )))
-
-(let ((x (paip-elp-make-array 5 :fill-pointer 0)))
-  (paip-elp-vector-push 'a x) ; ==> 0
-  x                       ; ==> #(A)
-  (paip-elp-vector-push 'b x) ; ==> 1
-  x                       ; ==> #(A B)
-  (paip-elp-vector-push 'c x) ; ==> 2
-  x                       ; ==> #(A B C)
-  (paip-elp-vector-pop x)     ; ==> C
-  x                       ; ==> #(A B)
-  (paip-elp-vector-pop x)     ; ==> B
-  x                       ; ==> #(A)
-  (paip-elp-vector-pop x)      ; ==> A
-  x                       ; ==> #()
-  )
-
-(paip-elp-vector-push (setq fable (list 'fable))
-		      (setq fa (paip-elp-make-array 8 
-                                   :fill-pointer 2
-                                   :initial-element 'first-one))) =>  2 
-(paip-elp-fill-pointer fa) =>  3 
-(eq (aref fa 2) fable) =>  true
-(paip-elp-vector-push-extend #\X
-			     (setq aa 
-				   (paip-elp-make-array 5
-							:element-type 'character
-							:adjustable t
-							:fill-pointer 3))) =>  3 
-(paip-elp-fill-pointer aa) =>  4 
-(paip-elp-vector-push-extend #\Y aa 4) =>  4 
-(paip-elp-array-total-size aa) =>  at least 5 
-(paip-elp-vector-push-extend #\Z aa 4) =>  5 
-(paip-elp-array-total-size aa) =>  9 ;(or more)
-
-(paip-elp-vector-push (setq fable (list 'fable))
-		      (setq fa (paip-elp-make-array 8
-						    :fill-pointer 2
-						    :initial-element 'sisyphus))) =>  2 
-(paip-elp-fill-pointer fa) =>  3 
-(eq (paip-elp-vector-pop fa) fable) =>  true
-(paip-elp-vector-pop fa) =>  SISYPHUS 
-(paip-elp-fill-pointer fa) =>  1 
-
-
-
 (cl-defmacro defresource (name &key constructor (initial-copies 0)
 			       (size (max initial-copies 10)))
-  (lexical-let ((resource (symbol '* (symbol name '-resource*)))
+  (let ((resource (symbol '* (symbol name '-resource*)))
         (deallocate (symbol 'deallocate- name))
         (allocate (symbol 'allocate- name)))
     `(progn
-       (defvar ,resource (make-vector ,size))
+       (defvar ,resource (paip-aux-make-array ,size :fill-poinetr 0))
        (defun ,allocate ()
          "Get an element from the resource pool, or make one."
-         (if (= (fill-pointer ,resource) 0) ; [YF] TODO: How to deal with this fill-pointer?
+         (if (= (paip-aux-fill-pointer ,resource) 0)
              ,constructor
-	   (vector-pop ,resource)))
+	   (paip-aux-vector-pop ,resource)))
        (defun ,deallocate (,name)
          "Place a no-longer-needed element back in the pool."
-         (vector-push-extend ,name ,resource)) ; [YF] EL's vector is not ext
+         (paip-aux-vector-push-extend ,name ,resource))
        ,(if (> initial-copies 0)
-            `(mapc #',deallocate (loop repeat ,initial-copies 
-                                       collect (,allocate))))
+            `(mapc ',deallocate (cl-loop repeat ,initial-copies 
+					 collect (,allocate))))
        ',name)))
 
 ;; (defmacro with-resource ((var resource &optional protect) &rest body)
@@ -959,42 +1043,81 @@ or of the form (THE type x) where x is side-effect-free?"
 
 ;;; A queue is a (last . contents) pair
 
-(defun queue-contents (q) (cdr q))
+;; (defun queue-contents (q) (cdr q))
 
-(defun make-queue ()
+(defun paip-queue-contents (q) (cdr q))
+
+;; (defun make-queue ()
+;;   "Build a new queue, with no elements."
+;;   (let ((q (cons nil nil)))
+;;     (setf (car q) q)))
+
+(defun paip-make-queue ()
   "Build a new queue, with no elements."
   (let ((q (cons nil nil)))
     (setf (car q) q)))
 
-(defun enqueue (item q)
+;; (defun enqueue (item q)
+;;   "Insert item at the end of the queue."
+;;   (setf (car q)
+;;         (setf (rest (car q))
+;;               (cons item nil)))
+;;   q)
+
+(defun paip-enqueue (item q)
   "Insert item at the end of the queue."
   (setf (car q)
         (setf (rest (car q))
               (cons item nil)))
   q)
 
-(defun dequeue (q)
+;; (defun dequeue (q)
+;;   "Remove an item from the front of the queue."
+;;   (pop (cdr q))
+;;   (if (null (cdr q)) (setf (car q) q))
+;;   q)
+
+(defun paip-dequeue (q)
   "Remove an item from the front of the queue."
   (pop (cdr q))
   (if (null (cdr q)) (setf (car q) q))
   q)
 
-(defun front (q) (first (queue-contents q)))
+;; (defun front (q) (first (queue-contents q)))
 
-(defun empty-queue-p (q) (null (queue-contents q)))
+(defun paip-front (q) (first (paip-queue-contents q)))
 
-(defun queue-nconc (q list)
+;; (defun empty-queue-p (q) (null (queue-contents q)))
+
+(defun paip-empty-queue-p (q) (null (paip-queue-contents q)))
+
+;; (defun queue-nconc (q list)
+;;   "Add the elements of LIST to the end of the queue."
+;;   (setf (car q)
+;;         (last (setf (rest (car q)) list))))
+
+(defun paip-queue-nconc (q list)
   "Add the elements of LIST to the end of the queue."
   (setf (car q)
         (last (setf (rest (car q)) list))))
 
 ;;;; Other:
 
-(defun sort* (seq pred &key key) 
-  "Sort without altering the sequence"
-  (sort (copy-seq seq) pred :key key))
+;; (defun sort* (seq pred &key key) 
+;;   "Sort without altering the sequence"
+;;   (sort (copy-seq seq) pred :key key))
 
-(defun reuse-cons (x y x-y)
+(cl-defun paip-sort* (seq pred &key key) 
+  "Sort without altering the sequence"
+  (cl-sort (copy-sequence seq) pred :key key))
+
+;; (defun reuse-cons (x y x-y)
+;;   "Return (cons x y), or reuse x-y if it is equal to (cons x y)"
+;;   (if (and (eql x (car x-y)) (eql y (cdr x-y)))
+;;       x-y
+;;       (cons x y)))
+
+(defun paip-reuse-cons (x y x-y)
   "Return (cons x y), or reuse x-y if it is equal to (cons x y)"
   (if (and (eql x (car x-y)) (eql y (cdr x-y)))
       x-y
