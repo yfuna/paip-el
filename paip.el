@@ -14,6 +14,11 @@
 (require 'ert)
 ;; [YF] Will write some test while porting.
 
+(add-to-list 'load-path (expand-file-name "."))
+(require 'paipx)
+;; [YF] paipx is a compatibility layer to implement paip software in
+;; EL. Mostly, it implements CL features that EL and cl-lib.el lack.
+
 ;; ;;;; Implementation-Specific Details
 
 ;; (eval-when (eval compile load)
@@ -70,7 +75,7 @@
 ;;     "compile1" "compile2" "compile3" "compopt"))
 
 (defvar paip-*paip-files*
-  `("auxfns" "tutor" "examples" 
+  `("paipx" "paip" "tutor" "examples" 
     "intro" "simple" "overview" "gps1" "gps" "eliza1" "eliza" "patmatch" 
     "eliza-pm" "search" "gps-srch" "student" "macsyma" "macsymar" "unify" 
     "prolog1" "prolog" "prologc1" "prologc2" "prologc" "prologcp" 
@@ -78,7 +83,7 @@
     "othello" "othello2" "syntax1" "syntax2" "syntax3" "unifgram" 
     "grammar" "lexicon" "interp1" "interp2" "interp3" 
     "compile1" "compile2" "compile3" "compopt"))
-;; [YF] *paip-auxfns-paip-files* is better? I'm unsure. Currently, I
+;; [YF] *paip-paip-files* is better? I'm unsure. Currently, I
 ;; go with this notation. Additionaly, I've decided not to make
 ;; lexical scoping defalut. So all bindindgs are special and it's
 ;; meaningless to keep these asterisks. I keep these in case of I
@@ -104,7 +109,7 @@
 
 (defvar paip-*paip-source* 
   paip-*paip-directory*)
-;; [YF] I go with paip-auxfns-*paip-directory*.
+;; [YF] I go with paip-*paip-directory*.
 
 ;; (defparameter *paip-binary*
 ;;   (make-pathname
@@ -122,7 +127,7 @@
 
 (defvar paip-*paip-binary*
   paip-*paip-source*)
-;; [YF] I go with paip-auxfns-*paip-source*. CL version looks to
+;; [YF] I go with paip-*paip-source*. CL version looks to
 ;; locate compiled files in 'bin' directory. But I decided to put
 ;; compiled files in the same directory with sources to use EL's
 ;; built-in handling about '.el' and '.elc' files in a same directory.
@@ -321,15 +326,6 @@ determined whether or not form is a constant form."
 	  (eql 'quote (first exp))
 	t)))
 
-  (ert-deftest test-paip-constantp ()
-    (should (paip-constantp 1))
-    (should (not (paip-constantp 'temp))
-    (should (paip-constantp ''temp))
-    (should (paip-constantp "temp"))
-    (let ((a 6))
-      (should (paip-constantp a)))
-    (should (not (paip-constantp '(setq a 6))))))
-
   (defun paip-side-effect-free? (exp)
     "Is exp a constant, variable, or function,
 or of the form (THE type x) where x is side-effect-free?"
@@ -408,10 +404,11 @@ or of the form (THE type x) where x is side-effect-free?"
   "Find all those elements of sequence that match item,
   according to the keywords.  Doesn't alter sequence."
   (if test-not
-      (apply 'remove item sequence 
+      (apply 'cl-remove item sequence 
              :test-not (paip-complement test-not) keyword-args)
-      (apply 'remove item sequence
+      (apply 'cl-remove item sequence
              :test (paip-complement test) keyword-args)))
+;; [YF] PAIP: 3.19 More about Parameters
 
 ;; (defun partition-if (pred list)
 ;;   "Return 2 values: elements of list that satisfy pred,
@@ -522,13 +519,6 @@ or of the form (THE type x) where x is side-effect-free?"
   "Return the last element (not last cons cell) of list"
   (first (last list)))
 
-(ert-deftest test-paip-last1 ()
-  (should (equal (paip-last1 nil) nil))
-  (should (equal (paip-last1 '(1)) 1))
-  (should (equal (paip-last1 '(1 2)) 2))
-  (should (equal (paip-last1 '(1 2 3)) 3))
-  (should (equal (paip-last1 '((1))) '(1))))
-
 ;;; ==============================
 
 ;; (defun mappend (fn list)
@@ -540,6 +530,7 @@ or of the form (THE type x) where x is side-effect-free?"
   "Append the results of calling fn on each element of list.
   Like mapcon, but uses append instead of nconc."
   (apply 'append (mapcar fn list)))
+;; [YF] PAIP: 1.7 Higher Order Funcgions
 
 ;; (defun mklist (x) 
 ;;   "If x is a list return it, otherwise return the list of x"
@@ -834,146 +825,7 @@ or of the form (THE type x) where x is side-effect-free?"
 
 ;;;; Defresource:
 
-;; [YF] We need vectors with fill pointers. So let's implement it. I
-;; decided to use paip-aux- suffix to show it needed because of
-;; porting to EL.
-
-(cl-defun paip-aux-make-array (size &key (fill-pointer 0) initial-element element-type adjustable)
-  (if (> fill-pointer (1- size))
-      (error "The value of the fill poiner exceeded the length")
-    (cons fill-pointer (make-vector size initial-element))))
-
-(ert-deftest test-paip-aux-make-array ()
-  (should (equal (paip-aux-make-array 0)
-		 '(0 . [])))
-  (should (equal (paip-aux-make-array 1)
-		 '(0 . [nil])))
-  (should (equal (paip-aux-make-array 2)
-		 '(0 . [nil nil])))
-  (should (equal (paip-aux-make-array 2 :fill-pointer 1)
-		 '(1 . [nil nil])))
-  (should (equal (paip-aux-make-array 3 :fill-pointer 2 :initial-element 0)
-		 '(2 . [0 0 0])))
-  )
-
-(defun paip-aux-fill-pointer (vector-with-fill-pointer)
-  (car vector-with-fill-pointer))
-
-(defun paip-aux-vector-push (elm vector-with-fill-pointer)
-  (let ((pos (car vector-with-fill-pointer)))
-    (if (> (1+ pos) (length (cdr vector-with-fill-pointer)))
-	(error "The fill pointer is at the end of the vector")
-      (setf (elt (cdr vector-with-fill-pointer) pos) elm)
-      (incf (car vector-with-fill-pointer))
-      pos)))
-
-(defmacro paip-aux-vector-push-extend (elm vector-with-fill-pointer &optional extension)
-  (let ((increase-symbol (make-symbol "increase")))
-    `(progn
-      (if (> (1+ (car ,vector-with-fill-pointer))
-	     (length (cdr ,vector-with-fill-pointer)))
-	  (let ((,increase-symbol (if ,extension
-				      ,extension
-				    (1+ (/ (length (cdr ,vector-with-fill-pointer))
-					   10)))))
-	    (setq ,vector-with-fill-pointer
-		  (cons (car ,vector-with-fill-pointer)
-			(vconcat (cdr ,vector-with-fill-pointer)
-				 (make-vector ,increase-symbol nil))))))
-      (paip-aux-vector-push ,elm ,vector-with-fill-pointer))))
-
-(defun paip-aux-vector-pop (vector-with-fill-pointer)
-  (if (= 0 (car vector-with-fill-pointer))
-      (error "The fill-pointer is 0")
-    (prog1
-	(elt (cdr vector-with-fill-pointer) (decf (car vector-with-fill-pointer)))
-      (setf (elt (cdr vector-with-fill-pointer) (car vector-with-fill-pointer)) nil))))
-
-(ert-deftest test-paip-aux-vector-push/pop ()
-  (setq x (paip-aux-make-array 5 :fill-pointer 0))
-  (should (equal x
-		 '(0 . [nil nil nil nil nil])))
-  (should (equal (paip-aux-vector-push 'a x)
-		 0))
-  (should (equal x
-		 '(1 . [a nil nil nil nil])))
-  (should (equal (paip-aux-vector-push 'b x)
-		 1))
-  (should (equal x
-		 '(2 . [a b nil nil nil])))
-  (should (equal (paip-aux-vector-push 'c x)
-		 2))
-  (should (equal x
-		 '(3 . [a b c nil nil])))
-  (should (equal (paip-aux-vector-pop x)
-		 'c))
-  (should (equal x
-		 '(2 . [a b nil nil nil])))
-  (should (equal (paip-aux-vector-pop x)
-		 'b))
-  (should (equal x
-		 '(1 . [a nil nil nil nil])))
-  (should (equal (paip-aux-vector-pop x)
-		 'a))
-  (should (equal x
-		 '(0 . [nil nil nil nil nil]))))
-  
-;; [YF] The length of CL's arrays is variable: they are not filled
-;; with nil like the above example. For example, they return not [a b
-;; nil nil nil] but #(a b).
-
-(defalias 'paip-aux-length 'paip-aux-fill-pointer
-  "Retrung the length of effective part of the vector.")
-;; [YF] Because of the nil-filling feature of my desing, we need a
-;; special length function for this vector data structure.
-
-(defun paip-aux-array-total-size (vector-with-fill-pointer)
-  "Retrun the total length of ARRAY."
-  (length (cdr vector-with-fill-pointer)))
-
-(ert-deftest test-paip-aux-vector-2 ()
-  (should (equal (paip-aux-vector-push
-		  (setq fable (list 'fable))
-		  (setq fa (paip-aux-make-array
-			    8 
-			    :fill-pointer 2
-			    :initial-element 'first-one)))
-		 2))
-  (should (equal (paip-aux-fill-pointer fa)
-		 3))
-  (should (equal (paip-aux-vector-push-extend
-		  ?X
-		  (setq aa 
-			(paip-aux-make-array
-			 5
-			 :element-type 'character
-			 :adjustable t
-			 :fill-pointer 3)))
-		 3))
-  (should (equal (paip-aux-fill-pointer aa)
-		 4))
-  (should (equal (paip-aux-vector-push-extend ?Y aa 4)
-		 4))
-  (should (>= (paip-aux-array-total-size aa)
-	      5))
-  (should (equal (paip-aux-vector-push-extend ?Z aa 4)
-		 5))
-  (should (>= (paip-aux-array-total-size aa)
-	      9))
-  (should (equal (paip-aux-vector-push
-		  (setq fable (list 'fable))
-		  (setq fa (paip-aux-make-array
-			    8
-			    :fill-pointer 2
-			    :initial-element 'sisyphus)))
-		 2))
-  (should (equal (paip-aux-fill-pointer fa)
-		 3))
-  (should (eq (paip-aux-vector-pop fa) fable))
-  (should (equal (paip-aux-vector-pop fa)
-		 'sisyphus))
-  (should (equal (paip-aux-fill-pointer fa)
-		 1)))
+;; [YF] We need vectors with fill pointers. I've implemented it in paipx.
 
 ;; (defmacro defresource (name &key constructor (initial-copies 0)
 ;;                        (size (max initial-copies 10)))
@@ -1001,15 +853,15 @@ or of the form (THE type x) where x is side-effect-free?"
         (deallocate (paip-symbol 'deallocate- name))
         (allocate (paip-symbol 'allocate- name)))
     `(progn
-       (defvar ,resource (paip-aux-make-array ,size :fill-poinetr 0))
+       (defvar ,resource (paipx-make-array ,size :fill-poinetr 0))
        (defun ,allocate ()
          "Get an element from the resource pool, or make one."
-         (if (= (paip-aux-fill-pointer ,resource) 0)
+         (if (= (paipx-fill-pointer ,resource) 0)
              ,constructor
-	   (paip-aux-vector-pop ,resource)))
+	   (paipx-vector-pop ,resource)))
        (defun ,deallocate (,name)
          "Place a no-longer-needed element back in the pool."
-         (paip-aux-vector-push-extend ,name ,resource))
+         (paipx-vector-push-extend ,name ,resource))
        ,(if (> initial-copies 0)
             `(mapc ',deallocate (cl-loop repeat ,initial-copies 
 					 collect (,allocate))))
@@ -1027,7 +879,7 @@ or of the form (THE type x) where x is side-effect-free?"
 ;;            ,@body
 ;;            (,deallocate var)))))
 
-(defmacro with-resource ((var resource &optional protect) &rest body)
+(defmacro paip-with-resource ((var resource &optional protect) &rest body)
   "Execute body with VAR bound to an instance of RESOURCE."
   (let ((allocate (paip-symbol 'allocate- resource))
         (deallocate (paip-symbol 'deallocate- resource)))
@@ -1291,57 +1143,48 @@ or of the form (THE type x) where x is side-effect-free?"
 ;; [YF] This function requires a full implementation of
 ;; multi-dimenttional arrays. So I will implement this after I have
 ;; implemented multi-dimentional arrays in EL.
-(defun paip-map-into (result-sequence function &rest sequences)
-  "Destructively set elements of RESULT-SEQUENCE to the results
-  of applying FUNCTION to respective elements of SEQUENCES."
-  (let ((arglist (make-list (length sequences)))
-        (n (if (listp result-sequence)
-               most-positive-fixnum
-	     (array-dimension result-sequence 0))))
-    ;; arglist is made into a list of args for each call
-    ;; n is the length of the longest vector
-    (when sequences
-      (setf n (min n (loop for seq in sequences
-                           minimize (length seq)))))
-    ;; Define some shared functions:
-    (flet
-      ((do-one-call (i)
-         (loop for seq on sequences
-               for arg on arglist
-               do (if (listp (first seq))
-                      (setf (first arg)
-                            (pop (first seq)))
-                      (setf (first arg)
-                            (aref (first seq) i))))
-         (apply function arglist))
-       (do-result (i)
-         (if (and (vectorp result-sequence)
-                  (array-has-fill-pointer-p result-sequence))
-             (setf (fill-pointer result-sequence) 
-                   (max i (fill-pointer result-sequence))))))
-      (declare (inline do-one-call))
-      ;; Decide if the result is a list or vector,
-      ;; and loop through each element
-      (if (listp result-sequence)
-          (loop for i from 0 to (- n 1)
-                for r on result-sequence
-                do (setf (first r)
-                         (do-one-call i))
-                finally (do-result i))
-          (loop for i from 0 to (- n 1)
-                do (setf (aref result-sequence i)
-                         (do-one-call i))
-                finally (do-result i))))
-      result-sequence))
-
-(ert-deftest test-paip-map-into ()
-  (setq a (list 1 2 3 4) b (list 10 10 10 10))
-  (should (equal (map-into a #'+ a b)
-		 (11 12 13 14)))
-  (setq k '(one two three))
-  (should (equal (map-into a #'cons k a)
-		 '((one . 11) (two . 12) (three . 13) 14)))
-  )
+;; (defun paip-map-into (result-sequence function &rest sequences)
+;;   "Destructively set elements of RESULT-SEQUENCE to the results
+;;   of applying FUNCTION to respective elements of SEQUENCES."
+;;   (let ((arglist (make-list (length sequences)))
+;;         (n (if (listp result-sequence)
+;;                most-positive-fixnum
+;; 	     (paip-array-dimension result-sequence 0))))
+;;     ;; arglist is made into a list of args for each call
+;;     ;; n is the length of the longest vector
+;;     (when sequences
+;;       (setf n (min n (loop for seq in sequences
+;;                            minimize (length seq)))))
+;;     ;; Define some shared functions:
+;;     (flet
+;; 	((do-one-call (i)
+;; 		      (cl-loop for seq on sequences
+;; 			    for arg on arglist
+;; 			    do (if (listp (first seq))
+;; 				   (setf (first arg)
+;; 					 (pop (first seq)))
+;; 				 (setf (first arg)
+;; 				       (aref (first seq) i))))
+;; 		      (apply function arglist))
+;; 	 (do-result (i)
+;; 		    (if (and (vectorp result-sequence)
+;; 			     (paip-array-has-fill-pointer-p result-sequence))
+;; 			(setf (paip-fill-pointer result-sequence) 
+;; 			      (max i (fill-pointer result-sequence))))))
+;;       (declare (inline do-one-call))
+;;       ;; Decide if the result is a list or vector,
+;;       ;; and loop through each element
+;;       (if (listp result-sequence)
+;;           (loop for i from 0 to (- n 1)
+;;                 for r on result-sequence
+;;                 do (setf (first r)
+;;                          (do-one-call i))
+;;                 finally (do-result i))
+;; 	(loop for i from 0 to (- n 1)
+;; 	      do (setf (aref result-sequence i)
+;; 		       (do-one-call i))
+;; 	      finally (do-result i))))
+;;     result-sequence))
 
 ;; (unless (fboundp 'complement)
 ;;   (defun complement (fn)
@@ -1349,9 +1192,21 @@ or of the form (THE type x) where x is side-effect-free?"
 ;;     #'(lambda (&rest args) (not (apply fn args))))
 ;;   )
 
-(defun paip-complement (fn)
+(defmacro paip-complement (fn)
   "If FN returns y, then (complement FN) returns (not y)."
-  (lambda (&rest args) (not (apply fn args))))
+  `(lambda (&rest args) (not (apply ,fn args))))
+;; [YF] I couldn't implement this as a fuction in EL. El's lambda is a
+;; macro which doesn't resolute symbols outside it. In this case, fn.
+;; See following example.
+;;
+;; (defun test-lambda (fn)
+;;   (lambda (x) (funcall fn x)))
+;; (test-lambda 'hoge)
+;;   => (lambda (x) (funcall fn x)). Not (lambda (x) (funcall hoge x))).
+;;
+;; Hence we need to implement this as a macro.
+;;
+;; [YF] PAIP: 3.19 More about Parameters
 
 ;; (unless (fboundp 'with-compilation-unit)
 ;; (defmacro with-compilation-unit (options &body body)
