@@ -51,5 +51,5 @@
 (ert-deftest test-paip-find-all ()
   )
 
-(provide 'paip-test)
+(provide 'test-paip)
 
