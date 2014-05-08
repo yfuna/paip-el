@@ -230,7 +230,7 @@
   "Simon, embodied a grandiose vision: a single computer program that could"
   "solve ANY problem.  GPS caused quite a stir ..."
   (:section "4.4 Stage 4: test")
-  ((requires "gps1"))
+  ((require 'paip-gps1))
   "Here are some examples of using GPS"
   "The first example works with a complex chain of steps."
   ((gps '(son-at-home car-needs-battery have-money have-phone-book)
@@ -280,7 +280,7 @@
   "sibling goal,' 'leaping before you look,' and 'recursive subgoal' problems."
   "The most important change is that, instead of printing a message when each"
   "operator is applied, we will instead have GPS return the resulting state."
-  ((requires "gps"))
+  ((require 'paip-gps))
   "We use the list of operators that includes the 'asking the shop their"
   "phone number' operator." 
   ((push (make-op :action 'ask-phone-number
