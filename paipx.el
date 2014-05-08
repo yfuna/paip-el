@@ -1,6 +1,18 @@
 (eval-when-compile
   (require 'cl-lib))
 
+(defvar paipx-*paip-buffer*
+  (get-buffer-create "*paip*")
+  "Default buffer output for paip programs.")
+
+(defmacro paipx-message (&rest args)
+  "Insert args (strings and/or characters) to paip-*paip-buffer*."
+  `(save-excursion
+     (save-current-buffer
+       (set-buffer (get-buffer-create paip-*paip-buffer*))
+       (goto-char (point-max))
+       (insert ,@args))))
+
 (cl-defun paipx-make-array (size &key (fill-pointer 0) initial-element element-type adjustable)
   (if (> fill-pointer (1- size))
       (error "The value of the fill poiner exceeded the length")

@@ -125,7 +125,7 @@
 (defun paip-tutor-find-chapter (number)
   "Given a chapter number, find the chapter structure for it."
   (cl-typecase number
-    (paip-tutor-chapter number) ; If given a chapter, just return it.
+    (paip-tutor-chapter number)	 ; If given a chapter, just return it.
     (t (cl-find number paip-tutor-*chapters*
 		:key 'paip-tutor-chapter-number))))
 
@@ -174,49 +174,59 @@
 ;;     ;; Return nil if there is a unexpected result:
 ;;     (or (eql expected ':anything) (nearly-equal result expected))))
 
-;; [YF] WIP
+;; [YF] A message buffer dedicated to paip programs' outputs will help
+;; porting some functions. So I did it in paipx.
+
 (defun paip-tutor-do-example (example interface)
   "Run an example; print out what's happening unless INTERFACE is nil.
   Return nil if there is a unexpected result."
-  (let* ((stream (output-stream interface))
-	 (*print-pretty* t)
-         (*standard-output* stream)
-         (*trace-output* stream)
-	 (*debug-io* stream)
+  (let* ((stream interface)
+;;	 (*print-pretty* t)
+;;         (*standard-output* stream)
+;;         (*trace-output* stream)
+;;	 (*debug-io* stream)
 	 (expected ':anything)
 	 (result nil))
     (cond ((stringp example)
 	   (when stream
-	     (format stream "~A~%" example)))
-	  ((starts-with example ':section)
-	   (display-section (second example) interface))
+	     (paipx-message (format "%s\n" example))))
+	  ((paip-starts-with example ':section)
+	   (paip-tutor-display-section (second example) interface))
 	  ((consp example)
-	   (let ((exp (copy-tree (first example))) ;; To avoid NCONC problems
+	   (let ((exp (cl-copy-tree (first example)))a ;; To avoid NCONC problems
 		 (page (getf (rest example) '@))
 		 (input (getf (rest example) ':input)))
 	     (setf result nil)
 	     (setf expected (getf (rest example) '=> ':anything))
-	     (set-example example interface)
+	     (paip-tutor-set-example example interface)
              (when page
-               (set-page page interface))
+               (paip-tutor-set-page page interface))
 	     (when stream
-	       (let ((*print-case* ':downcase))
-		 (display-example exp interface)))
-	     (if input
-		 (with-input-from-string (*standard-input* input)
-		   (setf result (eval exp)))
-	         (setf result (eval exp)))
+	       (paip-tutor-display-example exp interface))
+;;	     (if input
+;;		 (with-input-from-string (*standard-input* input)
+;;		   (setf result (eval exp)))
+;;	         (setf result (eval exp)))
+	     (setf result (eval exp))
+	     ;; [YF] I ignore input facility of this library for
+	     ;; now. This is because 1) the number of examples which
+	     ;; use this facility is small, 2) implemnting something
+	     ;; alternative to with-input-from-sting in EL seems
+	     ;; boring, and 3) it seems useless for other purposes.
 	     (when stream
-	       (format stream "~&~S~%" result))
+	       (paip-message (format "\n%s\n" result)))
 	     (unless (or (equal expected ':anything) 
                          (nearly-equal result expected))
 	       (if stream 
-		   (format *terminal-io*
-			   "~%**** expected ~S" expected)
-		   (format *terminal-io*
-			   "~%**** For ~S~%     expected ~S~%      got:~S~%"
-			   exp expected result)))))
-	  ((atom example) (cerror "Bad example: ~A" example example)))
+		   (paip-message
+		    (format "\n**** expected %s" expected))
+		   (paip-message
+		    (format "\n**** For %s\n     expected %s\n      got:%s\n"
+			    exp expected result))))))
+	  ((atom example) (error "Bad example: %s" example))
+	  ;; [YF] It may be possible to write something similar to
+	  ;; cerror with using interactive, but I don't do it for now.
+	  )
     ;; Return nil if there is a unexpected result:
     (or (eql expected ':anything) (nearly-equal result expected))))
 
