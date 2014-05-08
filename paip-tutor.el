@@ -191,8 +191,8 @@
     (cond ((stringp example)
 	   (when stream
 	     (paipx-message (format "%s\n" example))))
-;;	  ((paip-starts-with example ':section)
-;;	   (paip-tutor-display-section (second example) interface))
+	  ((paip-starts-with example ':section)
+	   (paip-tutor-display-section (second example)))
 	  ((consp example)
 	   (let ((exp (cl-copy-tree (first example)))a ;; To avoid NCONC problems
 		 (page (getf (rest example) '@))
