@@ -79,9 +79,11 @@
 		(paip-tutor-do-example example interface))
 	      (paip-tutor-chapter-examples chapter))))
       (if (> n 0)
-	  (message (format "**** %s unexpected result(s) on Chapter %s"
-			   n chapter))
-	  (message (format "Chapter %s done." chapter)))
+	  (paipx-message
+	   (format "**** %s unexpected result(s) on Chapter %s\n"
+		   n chapter))
+	  (paipx-message
+	   (format "Chapter %s done.\n" chapter)))
       n)))
 
 ;; (defstruct (chapter (:print-function 
@@ -194,7 +196,7 @@
 	  ((paip-starts-with example ':section)
 	   (paip-tutor-display-section (second example)))
 	  ((consp example)
-	   (let ((exp (cl-copy-tree (first example)))a ;; To avoid NCONC problems
+	   (let ((exp (cl-copy-tree (first example))) ;; To avoid NCONC problems
 		 (page (getf (rest example) '@))
 		 (input (getf (rest example) ':input)))
 	     (setf result nil)
