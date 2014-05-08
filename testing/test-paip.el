@@ -49,7 +49,8 @@
 		 t)))
 
 (ert-deftest test-paip-find-all ()
-  )
+  (setf nums '(1 2 3 2 1))
+  (paip-find-all 1 nums :test '=))
 
 (provide 'test-paip)
 

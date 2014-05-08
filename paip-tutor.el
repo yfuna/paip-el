@@ -1,3 +1,4 @@
+;; paip-tutor.el
 
 ;; ;;; -*- Mode: Lisp; Syntax: Common-Lisp -*-
 ;; ;;; Code for Paradigms of AI Programming
@@ -53,7 +54,7 @@
   one of the following:
      string                   Serves as documentation
      (:SECTION string)        Says what section of book we're in"
-  `(add-chapter ',chapter-number ',title ',examples))
+  `(paip-tutor-add-chapter ',chapter-number ',title ',examples))
 
 ;; (defun do-chapter (chapter interface)
 ;;   "Run the examples in a chapter.  Return the number of unexpected results."
@@ -112,8 +113,8 @@
     (setf paip-tutor-*chapters* 
 	  (cl-sort 
 	   (cons chapter (cl-delete number paip-tutor-*chapters*
-				 :key 'chapter-number))
-	   '< :key 'chapter-number))
+				 :key 'paip-tutor-chapter-number))
+	   '< :key 'paip-tutor-chapter-number))
     chapter))
 
 ;; (defun find-chapter (number)
@@ -322,3 +323,5 @@
 ;; (defmethod output-stream (interface)
 ;;   ;; The stream on which output will be printed
 ;;   interface)
+
+(provide 'paip-tutor)

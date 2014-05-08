@@ -1,8 +1,11 @@
-;;;; -*- Mode: Lisp; Syntax: Common-Lisp -*-
-;;;; Code from Paradigms of AI Programming
-;;;; Copyright (c) 1991, 1996 Peter Norvig
+;; paip-example.el
 
-(requires "tutor")
+;; ;;;; -*- Mode: Lisp; Syntax: Common-Lisp -*-
+;; ;;;; Code from Paradigms of AI Programming
+;; ;;;; Copyright (c) 1991, 1996 Peter Norvig
+
+;; (requires "tutor")
+(require 'paip-tutor)
 
 (defexamples 1 "Introduction to Lisp"
   "This chapter is for people with little or no experince in Lisp."
@@ -160,8 +163,8 @@
   ((sublis '((old . new)) '(old ((very old)))) => (NEW ((VERY NEW))))
   ((subst 'new 'old 'old) => NEW)
   "Here is an example:"
-  ((english->french '(hello my friend - how are you today?))
-   => (bonjour mon ami - comment va tu today?) @ 77)
+  ((english->french '(hello my friend - how are you today? ))
+   => (bonjour mon ami - comment va tu today? ) @ 77)
   (:section "3.10 Destructive Functions")
   "Consider the following:"
   ((setq x '(a b c)) @ 80)
@@ -426,14 +429,14 @@
   "The hard part is the notion of pattern matching and transformation."
   "All symbols beginning with ? are variables for the pattern matcher."
   "First we see how to substitute variable/value pairs into expressions:"
-  ((sublis '((?X . vacation)) '(what would it mean to you if you got a ?X ?))
-   => (what would it mean to you if you got a VACATION ?) @ 156)
+  ((sublis '((?X . vacation)) '(what would it mean to you if you got a ?X ? ))
+   => (what would it mean to you if you got a VACATION ? ) @ 156)
   "Now a version of pat-match that works with such pairs:"
   ((pat-match '(I need a ?x) '(I need a vacation))  @ 158)
   "Showing how to plug it in:"
   ((sublis (pat-match '(I need a ?x) '(I need a vacation)) 
-	   '(what would it mean to you if you got a ?X ?))
-   => (what would it mean to you if you got a VACATION ?) @ 159)
+	   '(what would it mean to you if you got a ?X ? ))
+   => (what would it mean to you if you got a VACATION ? ) @ 159)
   ((pat-match '(I need a ?x) '(I really need a vacation)) => nil)
   ((pat-match '(this is easy) '(this is easy)) => ((t . t)))
   ((pat-match '(?x is ?x) '((2 + 2) is 4)) => nil)
@@ -453,6 +456,12 @@
   "evaluating (ELIZA) and typing in your end of the conversation.
   Type (good bye) when you are done."
   )
+;; [YF] I added a space between '?' and ')' because '? )' means a
+;; character in EL.
+;;
+;; [YF] Using '?' as a leading character of symbols doesn't work in
+;; EL. Because the EL's reader interpets it as characters. So I go
+;; with '!' instead of '?'.
 
 (defexamples 6 "Building Software Tools"
   "In chapters 4 and 5 we were concerned with buildinng two particular"
@@ -461,27 +470,27 @@
   "abstracted out to form reusable software tools."
   (:section "6.2 A Pattern-Matching tool")
   ((requires "patmatch"))
-  ((pat-match '(x = (?is ?n numberp)) '(x = 34)) => ((?n . 34)) @ 179)
-  ((pat-match '(x = (?is ?n numberp)) '(x = x)) => NIL)
-  ((pat-match '(?x (?or < = >) ?y) '(3 < 4)) => ((?Y . 4) (?X . 3)))
-  ((pat-match '(x = (?and (?is ?n numberp) (?is ?n oddp))) '(x = 3)) 
-   => ((?N . 3)))
-  ((pat-match '(?x /= (?not ?x)) '(3 /= 4)) => ((?X . 3)) @ 180)
-  ((pat-match '(?x > ?y (?if (> ?x ?y))) '(4 > 3)) => ((?Y . 3) (?X . 4)))
-  ((pat-match '(a (?* ?x) d) '(a b c d)) => ((?X B C)) @ 185)
-  ((pat-match '(a (?* ?x) (?* ?y) d) '(a b c d)) => ((?Y B C) (?X)))
-  ((pat-match '(a (?* ?x) (?* ?y) ?x ?y) '(a b c d (b c) (d))) 
-   => ((?Y D) (?X B C)) @ 186)
-  ((pat-match '(?x ?op ?y is ?z (?if (eql (funcall ?op ?x ?y) ?z))) 
+  ((pat-match '(x = (!is !n numberp)) '(x = 34)) => ((!n . 34)) @ 179)
+  ((pat-match '(x = (!is !n numberp)) '(x = x)) => NIL)
+  ((pat-match '(!x (!or < = >) !y) '(3 < 4)) => ((!Y . 4) (!X . 3)))
+  ((pat-match '(x = (!and (!is !n numberp) (!is !n oddp))) '(x = 3)) 
+   => ((!n . 3)))
+  ((pat-match '(!x /= (!not !x)) '(3 /= 4)) => ((!X . 3)) @ 180)
+  ((pat-match '(!x > !y (!if (> !x !y))) '(4 > 3)) => ((!Y . 3) (!X . 4)))
+  ((pat-match '(a (!* !x) d) '(a b c d)) => ((!X B C)) @ 185)
+  ((pat-match '(a (!* !x) (!* !y) d) '(a b c d)) => ((!Y B C) (!X)))
+  ((pat-match '(a (!* !x) (!* !y) !x !y) '(a b c d (b c) (d))) 
+   => ((!Y D) (!X B C)) @ 186)
+  ((pat-match '(!x !op !y is !z (!if (eql (funcall !op !x !y) !z))) 
 	      '(3 + 4 is 7))
-   => ((?Z . 7) (?Y . 4) (?OP . +) (?X . 3)))
-  ((pat-match '(?x ?op ?y (?if (funcall ?op ?x ?y))) '(3 > 4)) => NIL)
-  ((pat-match-abbrev '?x* '(?* ?x)) => (?* ?X) @ 187)
-  ((pat-match-abbrev '?y* '(?* ?y)) => (?* ?Y))
-  ((setf axyd (expand-pat-match-abbrev '(a ?x* ?y* d)))
-   => (A (?* ?X) (?* ?Y) D))
-  ((pat-match axyd '(a b c d)) => ((?Y B C) (?X)))
-  ((pat-match '(((?* ?x) (?* ?y)) ?x ?y) '((a b c d) (a b) (c d))) 
+   => ((!Z . 7) (!Y . 4) (!OP . +) (!X . 3)))
+  ((pat-match '(!x !op !y (!if (funcall !op !x !y))) '(3 > 4)) => NIL)
+  ((pat-match-abbrev '!x* '(!* !x)) => (!* !X) @ 187)
+  ((pat-match-abbrev '!y* '(!* !y)) => (!* !Y))
+  ((setf axyd (expand-pat-match-abbrev '(a !x* !y* d)))
+   => (A (!* !X) (!* !Y) D))
+  ((pat-match axyd '(a b c d)) => ((!Y B C) (!X)))
+  ((pat-match '(((!* !x) (!* !y)) !x !y) '((a b c d) (a b) (c d))) 
    => NIL)
   ((requires "eliza-pm"))
 
@@ -552,7 +561,7 @@
   ((student '(If the number of customers Tom gets is twice the square of
            20 % of the number of advertisements he runs |,| 
            and the number of advertisements is 45 |,|
-           then what is the number of customers Tom gets ?)) => nil @ 231)
+           then what is the number of customers Tom gets ? )) => nil @ 231)
   ((student '(The daily cost of living for a group is the overhead cost plus 
            the running cost for each person times the number of people in 
            the group |.|  This cost for one group equals $ 100 |,|
@@ -561,10 +570,10 @@
            find the overhead and running cost for each person |.|)))
   ((student '(Fran's age divided by Robin's height is one half Kelly's IQ |.|
            Kelly's IQ minus 80 is Robin's height |.|
-           If Robin is 4 feet tall |,| how old is Fran ?)))
+           If Robin is 4 feet tall |,| how old is Fran ? )))
   ((student '(Fran's age divided by Robin's height is one half Kelly's IQ |.|
            Kelly's IQ minus 80 is Robin's height |.|
-           If Robin is 0 feet tall |,| how old is Fran ?)))
+           If Robin is 0 feet tall |,| how old is Fran ? )))
   )
 
 (defexamples 8 "Symbolic Mathematics: A Simplification Program"
@@ -692,41 +701,41 @@
   ((<- (likes Sandy Kim)))
   ((<- (likes Robin cats)))
   "We can also enter rules, which state contingent facts."
-  ((<- (likes Sandy ?x) (likes ?x cats)) @ 351)
-  ((<- (likes Kim ?x) (likes ?x Lee) (likes ?x Kim)))
+  ((<- (likes Sandy !x) (likes !x cats)) @ 351)
+  ((<- (likes Kim !x) (likes !x Lee) (likes !x Kim)))
 
   (:section "11.2 Idea 2: Unification of Logic Variables")
   ((requires "unify"))
-  ((pat-match '(?x + ?y) '(2 + 1)) => ((?y . 1) (?x . 2)) @ 352)
-  ((unify '(?x + 1) '(2 + ?y)) => ((?y . 1) (?x . 2)))
-  ((unify '(f ?x) '(f ?y)) => ((?x . ?y)))
-  ((unify '(?a + ?a = 0) '(?x + ?y = ?y)) => ((?y . 0) (?x . ?y) (?a . ?x)))
-  ((unifier '(?a + ?a = 0) '(?x + ?y = ?y)) => (0 + 0 = 0))
+  ((pat-match '(!x + !y) '(2 + 1)) => ((!y . 1) (!x . 2)) @ 352)
+  ((unify '(!x + 1) '(2 + !y)) => ((!y . 1) (!x . 2)))
+  ((unify '(f !x) '(f !y)) => ((!x . !y)))
+  ((unify '(!a + !a = 0) '(!x + !y = !y)) => ((!y . 0) (!x . !y) (!a . !x)))
+  ((unifier '(!a + !a = 0) '(!x + !y = !y)) => (0 + 0 = 0))
   "Let's try UNIFY on some (more) examples:"
-  ((unify '(?x ?y a) '(?y ?x ?x)) => ((?y . a) (?x . ?y)) @ 357)
-  ((unify '?x '(f ?x)) => nil)
+  ((unify '(!x !y a) '(!y !x !x)) => ((!y . a) (!x . !y)) @ 357)
+  ((unify '!x '(f !x)) => nil)
   ((unify 'a 'a) => ((t . t)))
   "Here are some examples of UNIFIER:"
-  ((unifier '(?x ?y a) '(?y ?x ?x)) => (a a a))
-  ((unifier '((?a * ?x ^ 2) + (?b * ?x) + ?c) 
-	    '(?z + (4 * 5) + 3))
-   => ((?a * 5 ^ 2) + (4 * 5) + 3))
+  ((unifier '(!x !y a) '(!y !x !x)) => (a a a))
+  ((unifier '((!a * !x ^ 2) + (!b * !x) + !c) 
+	    '(!z + (4 * 5) + 3))
+   => ((!a * 5 ^ 2) + (4 * 5) + 3))
 
   "Programming with Prolog"
   "First we define the MEMBER relation in Prolog:"
-  ((<- (member ?item (?item . ?rest))) @ 358)
-  ((<- (member ?item (?x . ?rest)) (member ?item ?rest)))
+  ((<- (member !item (!item . !rest))) @ 358)
+  ((<- (member !item (!x . !rest)) (member !item !rest)))
   "Now we can make some queries:"
-  ((?- (member 2 (1 2 3))))
-  ((?- (member 2 (1 2 3 2 1))))
-  ((?- (member ?x (1 2 3))))
+  ((!- (member 2 (1 2 3))))
+  ((!- (member 2 (1 2 3 2 1))))
+  ((!- (member !x (1 2 3))))
   "Let's add one more rule to the Sandy and the cats facts:"
-  ((<- (likes ?x ?x)) @ 363)
+  ((<- (likes !x !x)) @ 363)
   "Now we can ask some queries:"
-  ((?- (likes Sandy ?who)) @ 365)
-  ((?- (likes ?who Sandy)))
-  ((?- (likes Robin Lee)))
-  ((?- (likes ?x ?y) (likes ?y ?x)) @ 366)
+  ((!- (likes Sandy !who)) @ 365)
+  ((!- (likes !who Sandy)))
+  ((!- (likes Robin Lee)))
+  ((!- (likes !x !y) (likes !y !x)) @ 366)
 
   (:section "11.3 Idea 3: Automatic Backtracking")
   "Now we load the version that does automatic backtracking one step at a time"
@@ -738,48 +747,48 @@
   ((requires "prolog"))
   "Let's add the definition of the relation LENGTH:"
   ((<- (length () 0)) @ 370)
-  ((<- (length (?x . ?y) (1+ ?n)) (length ?y ?n)))
+  ((<- (length (!x . !y) (1+ !n)) (length !y !n)))
   "Here are some queries:"
-  ((?- (length (a b c d) ?n)) :input ";")
-  ((?- (length ?list (1+ (1+ 0)))) :input ";")
-  ((?- (length ?list ?n)) :input ";;.")
-  ((?- (length ?l (1+ (1+ 0))) (member a ?l)) :input ";;")
+  ((!- (length (a b c d) !n)) :input ";")
+  ((!- (length !list (1+ (1+ 0)))) :input ";")
+  ((!- (length !list !n)) :input ";;.")
+  ((!- (length !l (1+ (1+ 0))) (member a !l)) :input ";;")
   "(We won't try the example that leads to an infinite loop.)"
   (:section "11.4 The Zebra Puzzle")
   "First we define the NEXTO and IRIGHT (to the immediate right) relations:"
-  ((<- (nextto ?x ?y ?list) (iright ?x ?y ?list)) @ 374)
-  ((<- (nextto ?x ?y ?list) (iright ?y ?x ?list)))
-  ((<- (iright ?left ?right (?left ?right . ?rest))))
-  ((<- (iright ?left ?right (?x . ?rest)) 
-       (iright ?left ?right ?rest)))
-  ((<- (= ?x ?x)))
+  ((<- (nextto !x !y !list) (iright !x !y !list)) @ 374)
+  ((<- (nextto !x !y !list) (iright !y !x !list)))
+  ((<- (iright !left !right (!left !right . !rest))))
+  ((<- (iright !left !right (!x . !rest)) 
+       (iright !left !right !rest)))
+  ((<- (= !x !x)))
   "Now we define the zebra puzzle:"
-  ((<- (zebra ?h ?w ?z)
+  ((<- (zebra !h !w !z)
        ;; Each house is of the form:
        ;; (house nationality pet cigarette drink house-color)
-       (= ?h ((house norwegian ? ? ? ?)	;1,10
-	      ? 
-	      (house ? ? ? milk ?) ? ?)) ; 9
-       (member (house englishman ? ? ? red) ?h)	; 2
-       (member (house spaniard dog ? ? ?) ?h) ; 3
-       (member (house ? ? ? coffee green) ?h) ; 4
-       (member (house ukrainian ? ? tea ?) ?h) ; 5
-       (iright (house ? ? ? ? ivory)	; 6
-	       (house ? ? ? ? green) ?h)
-       (member (house ? snails winston ? ?) ?h)	; 7
-       (member (house ? ? kools ? yellow) ?h) ; 8
-       (nextto (house ? ? chesterfield ? ?) ;11
-	       (house ? fox ? ? ?) ?h)
-       (nextto (house ? ? kools ? ?)	;12
-	       (house ? horse ? ? ?) ?h)
-       (member (house ? ? luckystrike oj ?) ?h)	;13
-       (member (house japanese ? parliaments ? ?) ?h) ;14
-       (nextto (house norwegian ? ? ? ?) ;15
-	       (house ? ? ? ? blue) ?h)
-       (member (house ?w ? ? water ?) ?h) ;Q1
-       (member (house ?z zebra ? ? ?) ?h))) ;Q2
+       (= !h ((house norwegian ! ! ! ! )	;1,10
+	      ! 
+	      (house ! ! ! milk ! ) ! ! )) ; 9
+       (member (house englishman ! ! ! red) !h)	; 2
+       (member (house spaniard dog ! ! ! ) !h) ; 3
+       (member (house ! ! ! coffee green) !h) ; 4
+       (member (house ukrainian ! ! tea ! ) !h) ; 5
+       (iright (house ! ! ! ! ivory)	; 6
+	       (house ! ! ! ! green) !h)
+       (member (house ! snails winston ! ! ) !h)	; 7
+       (member (house ! ! kools ! yellow) !h) ; 8
+       (nextto (house ! ! chesterfield ! ! ) ;11
+	       (house ! fox ! ! ! ) !h)
+       (nextto (house ! ! kools ! ! )	;12
+	       (house ! horse ! ! ! ) !h)
+       (member (house ! ! luckystrike oj ! ) !h)	;13
+       (member (house japanese ! parliaments ! ! ) !h) ;14
+       (nextto (house norwegian ! ! ! ! ) ;15
+	       (house ! ! ! ! blue) !h)
+       (member (house !w ! ! water ! ) !h) ;Q1
+       (member (house !z zebra ! ! ! ) !h))) ;Q2
   "If you want to test this out, run the following query:"
-  "   ((?- (zebra ?houses ?water-drinker ?zebra-owner)))"
+  "   ((!- (zebra !houses !water-drinker !zebra-owner)))"
   "It is not included as an example because it takes a minute or so to run."
   )
 
@@ -1001,8 +1010,9 @@
   ((conc nil '(a b c)) => (A B C) @ 455)
   ((conc '(a b c) nil) => (A B C))
   ((conc '(a b c) '(d e f)) => (A B C D E F))
-  ((conc '#(a b c) '#(d e f)) => #(A B C D E F))
+  ((conc '[a b c] '[d e f]) => [A B C D E F]) ; [YF] Replaced '#()' with '[]'.
   )
+
 
 (defexamples 14 "Knowledge Representation and Reasoning"
   "In this chapter we explore means of indexing facts so that they can be"
@@ -1018,9 +1028,9 @@
   "with figure 14.1 on page 474."
   ((test-index) @ 478)
   "Here is an example of fetching from the index"
-  ((fetch '(p ? c)) @ 480 =>
+  ((fetch '(p ! c)) @ 480 =>
    (((P B C) (P A C))
-    ((P A ?X))))
+    ((P A !X))))
   "We can make a change to rename variables before indexing facts."
   ((defun index (key)
      "Store key in a dtree node.  Key must be (predicate . args);
@@ -1030,14 +1040,14 @@
   "We have to reindex:"
   ((test-index))
   "We are now ready to test the retrieval mechanism:"
-  ((fetch '(p ?x c)) @ 481)
-  ((retrieve '(p ?x c)) @ 481)
-  ((retrieve-matches '(p ?x c)) =>
+  ((fetch '(p !x c)) @ 481)
+  ((retrieve '(p !x c)) @ 481)
+  ((retrieve-matches '(p !x c)) =>
    ((P A C) (P A C) (P B C)))
-  ((retrieve-matches '(p ?x (?fn c))) =>
-   ((P A (?FN C)) (P A (F C)) (P B (F C))))
-  ((query-bind (?x ?fn) '(p ?x (?fn c))
-	       (format t "~&P holds between ~a and ~a of c." ?x ?fn)) @ 482)
+  ((retrieve-matches '(p !x (!fn c))) =>
+   ((P A (!FN C)) (P A (F C)) (P B (F C))))
+  ((query-bind (!x !fn) '(p !x (!fn c))
+	       (format t "~&P holds between ~a and ~a of c." !x !fn)) @ 482)
 
   (:section "14.10 Solutions to the Expressiveness Problems")
   "In this section we introduce a frame-like language, using the primitives"
@@ -1054,17 +1064,17 @@
   ((add-fact '(val latin-name dog canis-familiaris)))
   "Now retrieve-fact is used to answer three questions: What kinds of animals"
   "are there?"
-  ((retrieve-fact '(sub ?kind animal)) =>
-   (((?KIND . DOG))
-    ((?KIND . BEAR))))
+  ((retrieve-fact '(sub !kind animal)) =>
+   (((!KIND . DOG))
+    ((!KIND . BEAR))))
   "What are the Latin names of each kind of animal?"
-  ((retrieve-fact '(and (sub ?kind animal)
-                       (val latin-name ?kind ?latin))) =>
-   (((?LATIN . CANIS-FAMILIARIS) (?KIND . DOG))
-    ((?LATIN . URSIDAE) (?KIND . BEAR))))
+  ((retrieve-fact '(and (sub !kind animal)
+                       (val latin-name !kind !latin))) =>
+   (((!LATIN . CANIS-FAMILIARIS) (!KIND . DOG))
+    ((!LATIN . URSIDAE) (!KIND . BEAR))))
   "What are the colors of each individual bear?"
-  ((retrieve-fact '(and (ind ?x bear) (val color ?x ?c))) @ 489 =>
-   (((?C . BROWN) (?X . YOGI))))
+  ((retrieve-fact '(and (ind !x bear) (val color !x !c))) @ 489 =>
+   (((!C . BROWN) (!X . YOGI))))
   ((test-bears) @ 492)
   )
 
@@ -1076,7 +1086,7 @@
   "We represent polynomials as vectors, with the variable in element 0,"
   "and the coefficients starting in element 1 and going up from there."
   "Here is the representation of 5x^3 + 10x^2 + 20x + 30"
-  ('#(x 30 20 10 5) @ 511)
+  ('[x 30 20 10 5] @ 511)
   "Here are some examples (without the interactive loop):"
   ((canon '(3 + x + 4 - x)) => 7 @ 521)
   ((canon '(x + y + y + x)) => ((2 * x) + (2 * y)))
@@ -1361,53 +1371,53 @@
   (:section "20.3 A Simple Grammar in DCG Format")
   "Here is the trivial grammar from page 688 in DCG format:"
   ((clear-db))
-  ((rule (S (?pred ?subj)) -->
-	 (NP ?agr ?subj)
-	 (VP ?agr ?pred)) @ 692)
-  ((rule (NP ?agr (?det ?n)) -->
-	 (Det ?agr ?det)
-	 (N ?agr ?n)))
+  ((rule (S (!pred !subj)) -->
+	 (NP !agr !subj)
+	 (VP !agr !pred)) @ 692)
+  ((rule (NP !agr (!det !n)) -->
+	 (Det !agr !det)
+	 (N !agr !n)))
   ((rule (NP 3sg (the male))          --> (:word he)) @ 693)
   ((rule (NP ~3sg (some objects))     --> (:word they)))
   ((rule (VP 3sg sleep)               --> (:word sleeps)))
   ((rule (VP ~3sg sleep)              --> (:word sleep)))
-  ((rule (Det ?any the)               --> (:word the)))
+  ((rule (Det !any the)               --> (:word the)))
   ((rule (N 3sg (young male human))   --> (:word boy)))
   ((rule (N 3sg (young female human)) --> (:word girl)))
   "We can parse some of the sentences from page 689 (but in DCG format)."
   "Parsing:"
-  ((?- (S ?sem (He sleeps) ())) :input ".")
+  ((!- (S !sem (He sleeps) ())) :input ".")
   "Generating:"
-  ((?- (S (sleep (the male)) ?words  ())) :input ".")
+  ((!- (S (sleep (the male)) !words  ())) :input ".")
   "Enumerating:"
-  ((?- (S ?sem ?words ())) :input ";;;;")
+  ((!- (S !sem !words ())) :input ";;;;")
   "If we want the interpretation of 'Terry kisses Jean' to be"
   "(kiss Terry Jean) not ((lambda (x) (kiss x Jean)) Terry), then we need"
   "a way to unify semantic components together.  Here's one way:"
   ((clear-db))
-  ((rule (S ?pred) -->
-	 (NP ?agr ?subj)
-	 (VP ?agr ?subj ?pred)) @ 694)
-  ((rule (VP ?agr ?subj ?pred) -->
-	 (Verb/tr ?agr ?subj ?pred ?obj)
-	 (NP ?any-agr ?obj)))
-  ((rule (VP ?agr ?subj ?pred) -->
-	 (Verb/intr ?agr ?subj ?pred)))
+  ((rule (S !pred) -->
+	 (NP !agr !subj)
+	 (VP !agr !subj !pred)) @ 694)
+  ((rule (VP !agr !subj !pred) -->
+	 (Verb/tr !agr !subj !pred !obj)
+	 (NP !any-agr !obj)))
+  ((rule (VP !agr !subj !pred) -->
+	 (Verb/intr !agr !subj !pred)))
 
-  ((rule (Verb/tr ~3sg ?x (kiss ?x ?y) ?y) --> (:word kiss)))
-  ((rule (Verb/tr 3sg ?x (kiss ?x ?y) ?y) --> (:word kisses)))
-  ((rule (Verb/tr ?any  ?x (kiss ?x ?y) ?y) --> (:word kissed)))
+  ((rule (Verb/tr ~3sg !x (kiss !x !y) !y) --> (:word kiss)))
+  ((rule (Verb/tr 3sg !x (kiss !x !y) !y) --> (:word kisses)))
+  ((rule (Verb/tr !any  !x (kiss !x !y) !y) --> (:word kissed)))
 
-  ((rule (Verb/intr ~3sg ?x (sleep ?x)) --> (:word sleep)))
-  ((rule (Verb/intr 3sg ?x (sleep ?x)) --> (:word sleeps)))
-  ((rule (Verb/intr ?any  ?x (sleep ?x)) --> (:word slept)))
+  ((rule (Verb/intr ~3sg !x (sleep !x)) --> (:word sleep)))
+  ((rule (Verb/intr 3sg !x (sleep !x)) --> (:word sleeps)))
+  ((rule (Verb/intr !any  !x (sleep !x)) --> (:word slept)))
 
   "Here are the rules for noun phrases and nouns"
-  ((rule (NP ?agr ?sem) -->
-	 (Name ?agr ?sem)))
-  ((rule (NP ?agr (?det-sem ?noun-sem)) -->
-	 (Det ?agr ?det-sem)
-	 (Noun ?agr ?noun-sem)))
+  ((rule (NP !agr !sem) -->
+	 (Name !agr !sem)))
+  ((rule (NP !agr (!det-sem !noun-sem)) -->
+	 (Det !agr !det-sem)
+	 (Noun !agr !noun-sem)))
 
   ((rule (Name 3sg Terry) --> (:word Terry)))
   ((rule (Name 3sg Jean)  --> (:word Jean)))
@@ -1417,69 +1427,69 @@
   ((rule (Noun ~3sg (group (young male human)))   --> (:word boys)))
   ((rule (Noun ~3sg (group (young female human))) --> (:word girls)))
 
-  ((rule (Det ?any the)  --> (:word the)))
+  ((rule (Det !any the)  --> (:word the)))
   ((rule (Det 3sg a) --> (:word a)))
 
   "This grammar and lexicon generates more sentences, although it is still"
   "rather limited.  Here are some examples:"
 
-  ((?- (S ?sem (The boys kiss a girl) ())) @ 695 :input ";.")
-  ((?- (S ?sem (The girls kissed the girls) ())) :input ";.")
-  ((?- (S ?sem (Terry kissed the girl) ())) :input ";.")
-  ((?- (S ?sem (The girls kisses the boys) ())) :input ";.")
-  ((?- (S ?sem (Terry kissed a girls) ())) :input ";.")
-  ((?- (S ?sem (Terry sleeps Jean) ())) :input ";.")
+  ((!- (S !sem (The boys kiss a girl) ())) @ 695 :input ";.")
+  ((!- (S !sem (The girls kissed the girls) ())) :input ";.")
+  ((!- (S !sem (Terry kissed the girl) ())) :input ";.")
+  ((!- (S !sem (The girls kisses the boys) ())) :input ";.")
+  ((!- (S !sem (Terry kissed a girls) ())) :input ";.")
+  ((!- (S !sem (Terry sleeps Jean) ())) :input ";.")
 
   (:section "20.4 A DCG Grammar with Quantifiers")
   ((clear-db))
-  ((rule (Det ?any ?x ?p ?q (the ?x (and ?p ?q)))    --> (:word the)) @ 697)
-  ((rule (Det 3sg  ?x ?p ?q (exists ?x (and ?p ?q))) --> (:word a)))
-  ((rule (Det 3sg  ?x ?p ?q (all    ?x (-> ?p ?q)))  --> (:word every)))
+  ((rule (Det !any !x !p !q (the !x (and !p !q)))    --> (:word the)) @ 697)
+  ((rule (Det 3sg  !x !p !q (exists !x (and !p !q))) --> (:word a)))
+  ((rule (Det 3sg  !x !p !q (all    !x (-> !p !q)))  --> (:word every)))
 
-  ((rule (Noun 3sg ?x (picture ?x)) --> (:word picture)) @ 698)
-  ((rule (Noun 3sg ?x (story ?x)) --> (:word story)))
-  ((rule (Noun 3sg ?x (and (young ?x) (male ?x) (human ?x))) -->
+  ((rule (Noun 3sg !x (picture !x)) --> (:word picture)) @ 698)
+  ((rule (Noun 3sg !x (story !x)) --> (:word story)))
+  ((rule (Noun 3sg !x (and (young !x) (male !x) (human !x))) -->
 	 (:word boy)))
 
-  ((rule (NP ?agr ?x ?pred ?pred) -->
-	 (Name ?agr ?name)))
+  ((rule (NP !agr !x !pred !pred) -->
+	 (Name !agr !name)))
 
-  ((rule (NP ?agr ?x ?pred ?np) -->
-	 (Det ?agr ?x ?noun&rel ?pred ?np)
-	 (Noun ?agr ?x ?noun)
-	 (rel-clause ?agr ?x ?noun ?noun&rel)))
+  ((rule (NP !agr !x !pred !np) -->
+	 (Det !agr !x !noun&rel !pred !np)
+	 (Noun !agr !x !noun)
+	 (rel-clause !agr !x !noun !noun&rel)))
 
-  ((rule (rel-clause ?agr ?x ?np ?np) --> ))
-  ((rule (rel-clause ?agr ?x ?np (and ?np ?rel)) -->
+  ((rule (rel-clause !agr !x !np !np) --> ))
+  ((rule (rel-clause !agr !x !np (and !np !rel)) -->
 	 (:word that)
-	 (VP ?agr ?x ?rel)))
+	 (VP !agr !x !rel)))
 
-  ((rule (Verb/tr ~3sg ?x ?y (paint ?x ?y)) --> (:word paint)) @ 699)
-  ((rule (Verb/tr 3sg  ?x ?y (paint ?x ?y)) --> (:word paints)))
-  ((rule (Verb/tr ?any ?x ?y (paint ?x ?y)) --> (:word painted)))
+  ((rule (Verb/tr ~3sg !x !y (paint !x !y)) --> (:word paint)) @ 699)
+  ((rule (Verb/tr 3sg  !x !y (paint !x !y)) --> (:word paints)))
+  ((rule (Verb/tr !any !x !y (paint !x !y)) --> (:word painted)))
 
-  ((rule (Verb/intr ~3sg ?x (sleep ?x)) --> (:word sleep)))
-  ((rule (Verb/intr 3sg  ?x (sleep ?x)) --> (:word sleeps)))
-  ((rule (Verb/intr ?any ?x (sleep ?x)) --> (:word slept)))
+  ((rule (Verb/intr ~3sg !x (sleep !x)) --> (:word sleep)))
+  ((rule (Verb/intr 3sg  !x (sleep !x)) --> (:word sleeps)))
+  ((rule (Verb/intr !any !x (sleep !x)) --> (:word slept)))
 
-  ((rule (Verb/intr 3sg  ?x (sells ?x)) --> (:word sells)))
-  ((rule (Verb/intr 3sg  ?x (stinks ?x)) --> (:word stinks)))
+  ((rule (Verb/intr 3sg  !x (sells !x)) --> (:word sells)))
+  ((rule (Verb/intr 3sg  !x (stinks !x)) --> (:word stinks)))
 
-  ((rule (VP ?agr ?x ?vp) -->
-	 (Verb/tr ?agr ?x ?obj ?verb)
-	 (NP ?any-agr ?obj ?verb ?vp)))
+  ((rule (VP !agr !x !vp) -->
+	 (Verb/tr !agr !x !obj !verb)
+	 (NP !any-agr !obj !verb !vp)))
 
-  ((rule (VP ?agr ?x ?vp) -->
-	 (Verb/intr ?agr ?x ?vp)))
+  ((rule (VP !agr !x !vp) -->
+	 (Verb/intr !agr !x !vp)))
 
-  ((rule (S ?np) -->
-	 (NP ?agr ?x ?vp ?np)
-	 (VP ?agr ?x ?vp)))
+  ((rule (S !np) -->
+	 (NP !agr !x !vp !np)
+	 (VP !agr !x !vp)))
 
   "Now we define a function to show the output from a query."
   "In the book, you just saw the output of such a function."
   ((defun do-s (words)
-     (top-level-prove `((S ?sem ,words ())))))
+     (top-level-prove `((S !sem ,words ())))))
 
   ((do-s '(Every picture paints a story)) :input "." @ 699)
   ((do-s '(Every boy that paints a picture sleeps)) :input ".")
@@ -1489,38 +1499,38 @@
 
   (:section "20.5 Preserving Quantifier Scope Ambiguity")
   ((clear-db))
-  ((rule (S (and ?np ?vp)) -->
-	 (NP ?agr ?x ?np)
-	 (VP ?agr ?x ?vp)) @ 701)
+  ((rule (S (and !np !vp)) -->
+	 (NP !agr !x !np)
+	 (VP !agr !x !vp)) @ 701)
 
-  ((rule (VP ?agr ?x (and ?verb ?obj)) -->
-	 (Verb/tr ?agr ?x ?o ?verb)
-	 (NP ?any-agr ?o ?obj)))
+  ((rule (VP !agr !x (and !verb !obj)) -->
+	 (Verb/tr !agr !x !o !verb)
+	 (NP !any-agr !o !obj)))
 
-  ((rule (VP ?agr ?x ?verb) -->
-	 (Verb/intr ?agr ?x ?verb)))
+  ((rule (VP !agr !x !verb) -->
+	 (Verb/intr !agr !x !verb)))
 
-  ((rule (NP ?agr ?name t) -->
-	 (Name ?agr ?name)))
+  ((rule (NP !agr !name t) -->
+	 (Name !agr !name)))
 
-  ((rule (NP ?agr ?x ?det) -->
-	 (Det ?agr ?x (and ?noun ?rel) ?det)
-	 (Noun ?agr ?x ?noun)
-	 (rel-clause ?agr ?x ?rel)))
+  ((rule (NP !agr !x !det) -->
+	 (Det !agr !x (and !noun !rel) !det)
+	 (Noun !agr !x !noun)
+	 (rel-clause !agr !x !rel)))
 
-  ((rule (rel-clause ?agr ?x t) --> ))
-  ((rule (rel-clause ?agr ?x ?rel) -->
+  ((rule (rel-clause !agr !x t) --> ))
+  ((rule (rel-clause !agr !x !rel) -->
 	 (:word that)
-	 (VP ?agr ?x ?rel)))
+	 (VP !agr !x !rel)))
 
   ((rule (Name 3sg Terry)                     --> (:word Terry)))
   ((rule (Name 3sg Jean)                      --> (:word Jean)))
-  ((rule (Det 3sg  ?x ?restr (all ?x ?restr)) --> (:word every)))
-  ((rule (Noun 3sg ?x (man ?x))               --> (:word man)))
-  ((rule (Verb/tr 3sg ?x ?y (love ?x ?y))     --> (:word loves)))
-  ((rule (Verb/intr 3sg ?x (lives ?x))        --> (:word lives)))
-  ((rule (Det 3sg  ?x ?res (exists ?x ?res))  --> (:word a)))
-  ((rule (Noun 3sg ?x (woman ?x))             --> (:word woman)))
+  ((rule (Det 3sg  !x !restr (all !x !restr)) --> (:word every)))
+  ((rule (Noun 3sg !x (man !x))               --> (:word man)))
+  ((rule (Verb/tr 3sg !x !y (love !x !y))     --> (:word loves)))
+  ((rule (Verb/intr 3sg !x (lives !x))        --> (:word lives)))
+  ((rule (Det 3sg  !x !res (exists !x !res))  --> (:word a)))
+  ((rule (Noun 3sg !x (woman !x))             --> (:word woman)))
 
   "Here is an example of the new representation:"
   ((do-s '(every man loves a woman)) :input "." @ 701)
@@ -1531,7 +1541,7 @@
   ((requires "grammar" "lexicon"))
   ((prolog-compile-symbols))
   (:section "21.10 Word Categories")
-  ((?- (word sees verb ?infl ?senses)) :input ".")
+  ((!- (word sees verb !infl !senses)) :input ".")
   ((try S John promised Kim to persuade Lee to sleep) :input ";;;.")
   (:section "21.14 Examples")
   ((try S When did John promise Kim to persuade Lee to sleep) 
@@ -1649,3 +1659,6 @@
   ((requires "compile3"  "compopt"))
   ((comp-show '(begin (if (if t 1 (f x)) (set! x 2)) x)) @ 818)
   )
+
+(provide 'paip-examples)
+
