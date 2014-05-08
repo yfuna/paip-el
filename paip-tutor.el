@@ -73,15 +73,15 @@
 (defun paip-tutor-do-chapter (chapter interface)
   "Run the examples in a chapter.  Return the number of unexpected results."
   (let ((chapter (paip-tutor-find-chapter chapter)))
-    (paip-tutor-set-chapter chapter interface)
+    (paip-tutor-set-chapter chapter)
     (let ((n (count-if-not 
 	      (lambda (example)
-		(do-example example interface))
+		(paip-tutor-do-example example interface))
 	      (paip-tutor-chapter-examples chapter))))
       (if (> n 0)
-	  (message (format "**** %d unexpected result(s) on Chapter %d"
+	  (message (format "**** %s unexpected result(s) on Chapter %s"
 			   n chapter))
-	  (message (format "Chapter %d done." chapter)))
+	  (message (format "Chapter %s done." chapter)))
       n)))
 
 ;; (defstruct (chapter (:print-function 
@@ -191,19 +191,19 @@
     (cond ((stringp example)
 	   (when stream
 	     (paipx-message (format "%s\n" example))))
-	  ((paip-starts-with example ':section)
-	   (paip-tutor-display-section (second example) interface))
+;;	  ((paip-starts-with example ':section)
+;;	   (paip-tutor-display-section (second example) interface))
 	  ((consp example)
 	   (let ((exp (cl-copy-tree (first example)))a ;; To avoid NCONC problems
 		 (page (getf (rest example) '@))
 		 (input (getf (rest example) ':input)))
 	     (setf result nil)
 	     (setf expected (getf (rest example) '=> ':anything))
-	     (paip-tutor-set-example example interface)
+;;	     (paip-tutor-set-example example interface)
              (when page
-               (paip-tutor-set-page page interface))
+               (paip-tutor-set-page page))
 	     (when stream
-	       (paip-tutor-display-example exp interface))
+	       (paip-tutor-display-example exp))
 ;;	     (if input
 ;;		 (with-input-from-string (*standard-input* input)
 ;;		   (setf result (eval exp)))
@@ -215,13 +215,13 @@
 	     ;; alternative to with-input-from-sting in EL seems
 	     ;; boring, and 3) it seems useless for other purposes.
 	     (when stream
-	       (paip-message (format "\n%s\n" result)))
+	       (paipx-message (format "\n%s\n" result)))
 	     (unless (or (equal expected ':anything) 
-                         (nearly-equal result expected))
+                         (paip-tutor-nearly-equal result expected))
 	       (if stream 
-		   (paip-message
+		   (paipx-message
 		    (format "\n**** expected %s" expected))
-		   (paip-message
+		   (paipx-message
 		    (format "\n**** For %s\n     expected %s\n      got:%s\n"
 			    exp expected result))))))
 	  ((atom example) (error "Bad example: %s" example))
@@ -229,7 +229,7 @@
 	  ;; cerror with using interactive, but I don't do it for now.
 	  )
     ;; Return nil if there is a unexpected result:
-    (or (eql expected ':anything) (nearly-equal result expected))))
+    (or (eql expected ':anything) (paip-tutor-nearly-equal result expected))))
 
 ;; (defun do-documentation-examples (examples interface)
 ;;   "Go through any documentation strings or (:SECTION ...) examples."
@@ -302,9 +302,17 @@
 ;;   ;; Update the interface to display this chapter
 ;;   (format (output-stream interface) "~2&Chapter ~A~%" chapter))
 
+(defun paip-tutor-set-chapter (chapter)
+  ;; Update the interface to display this chapter
+  (paipx-message (format "\n\nChapter %s\n" chapter)))
+
 ;; (defmethod set-page (page interface)
 ;;   ;; Update the interface to display the page number
 ;;   (format (output-stream interface) "~&; page ~D" page))
+
+(defun paip-tutor-set-page (page)
+  ;; Update the interface to display the page number
+  (paipx-message (format "\n; page \n" page)))
 
 ;; (defmethod set-example (example interface)
 ;;   ;; Update the interface to display this example. The idea is that
@@ -316,9 +324,17 @@
 ;;   ;; Display a prompt and the expression on the interface's output stream
 ;;   (format (output-stream interface) "~&> ~S~%" exp))
 
+(defun paip-tutor-display-example (exp)
+  ;; Display a prompt and the expression on the interface's output stream
+  (paipx-message (format "\n> %s\n" exp)))
+
 ;; (defmethod display-section (section interface)
 ;;   ;; Display the string describing this section somewhere
 ;;   (format (output-stream interface) "~2&Section ~A~%" section))
+
+(defun paip-tutor-display-section (section)
+  ;; Display the string describing this section somewhere
+  (paipx-message (format "\n\nSection %s\n" section)))
 
 ;; (defmethod output-stream (interface)
 ;;   ;; The stream on which output will be printed

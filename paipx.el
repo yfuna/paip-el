@@ -8,12 +8,16 @@
   "Default buffer output for paip programs.")
 
 (defmacro paipx-message (&rest args)
-  "Insert args (strings and/or characters) to paip-*paip-buffer*."
+  "Insert args (strings and/or characters) to paipx-*paip-buffer*."
   `(save-excursion
      (save-current-buffer
-       (set-buffer (get-buffer-create paip-*paip-buffer*))
-       (goto-char (point-max))
-       (insert ,@args))))
+       (set-buffer (get-buffer-create "*paip*"))
+       ;; [YF] Using buffer names is convinient even it's hard coding
+       ;; of a specific value into functions.)
+       (save-excursion
+	 (goto-char (point-max))
+	 (insert ,@args))
+       )))
 
 (cl-defun paipx-make-array (size &key (fill-pointer 0) initial-element element-type adjustable)
   (if (> fill-pointer (1- size))
