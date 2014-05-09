@@ -272,11 +272,13 @@
   (:section "4.9 The Recursive Subgoal Problem")
   "We won't show the problem (because it gets into an infinite loop),"
   "but we will add the new operator to the *school-ops*; we'll use it later."
-  ((push (make-paip-gps1-op :action 'ask-phone-number
-			    :preconds '(in-communication-with-shop)
-			    :add-list '(know-phone-number))
-	 paip-gps1-*school-ops*) @ 122)
-
+;;  ((push (make-paip-gps1-op :action 'ask-phone-number
+;;			    :preconds '(in-communication-with-shop)
+;;			    :add-list '(know-phone-number))
+;;	 paip-gps1-*school-ops*) @ 122)
+;;
+;; [YF] This item makes some above items looping infinitely when you
+;; run this chapter the second time.
   (:section "4.11 GPS Version 2: A More General problem Solver")
   "At this point we are ready to put together a new version of GPS with"
   "solutions for the 'running around the block,' 'prerequisite clobbers"
@@ -290,7 +292,7 @@
 			   :preconds '(in-communication-with-shop)
 			   :add-list '(know-phone-number))
 	 paip-gps-*school-ops*))
-  ((use paip-gps-*school-ops*) => 7 @ 130)
+  ((paip-gps-use paip-gps-*school-ops*) => 7 @ 130)
   "First we make sure the new version works on some of the examples that"
   "version 1 worked on:"
   ((paip-gps-gps
@@ -390,7 +392,7 @@
      (EXECUTING (MOVE B FROM TABLE TO A))))
   ((paip-undebug))
   "Now we move on to the three block world."
-  ((use (make-block-ops '(a b c))) => 18)
+  ((paip-gps-use (paip-gps-make-block-ops '(a b c))) => 18)
   "We try some problems:"
   ((paip-gps-gps
     '((a on b) (b on c) (c on table) (space on a) (space on table))

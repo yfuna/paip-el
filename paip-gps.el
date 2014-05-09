@@ -179,7 +179,7 @@
 (defun paip-gps-apply-op (state goal op goal-stack)
   "Return a new, transformed state if op is applicable."
   (paip-dbg-indent :gps (length goal-stack) "Consider: %s" (paip-gps-op-action op))
-  (let ((state2 (achieve-all state (paip-gps-op-preconds op) 
+  (let ((state2 (paip-gps-achieve-all state (paip-gps-op-preconds op) 
                              (cons goal goal-stack))))
     (unless (null state2)
       ;; Return an updated state
@@ -314,7 +314,7 @@
 
 (cl-defun paip-gps-gps (state goals &optional (paip-gps-*ops* paip-gps-*ops*))
   "General Problem Solver: from state, achieve goals using *ops*."
-  (paip-find-all-if 'action-p
+  (paip-find-all-if 'paip-gps-action-p
                (paip-gps-achieve-all (cons '(start) state) goals nil)))
 
 ;; (defun action-p (x)
@@ -337,9 +337,9 @@
 
 (defun paip-gps-find-path (start end)
   "Search a maze for a path from start to end."
-  (let ((results (GPS `((at ,start)) `((at ,end)))))
+  (let ((results (paip-gps-gps `((at ,start)) `((at ,end)))))
     (unless (null results)
-      (cons start (mapcar 'destination
+      (cons start (mapcar 'paip-gps-destination
                           (cl-remove '(start) results
 				     :test 'equal))))))
 
