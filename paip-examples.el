@@ -233,18 +233,21 @@
   ((require 'paip-gps1))
   "Here are some examples of using GPS"
   "The first example works with a complex chain of steps."
-  ((gps '(son-at-home car-needs-battery have-money have-phone-book)
+  ((paip-gps1-gps
+    '(son-at-home car-needs-battery have-money have-phone-book)
        '(son-at-school)
-       *school-ops*) => SOLVED @ 118)
+       paip-gps1-*school-ops*) => SOLVED @ 118)
   "The next example fails because there is no way to make the car work,"
   "because we can't contact the shop to get the battery fixed."
-  ((gps '(son-at-home car-needs-battery have-money)
+  ((paip-gps1-gps
+    '(son-at-home car-needs-battery have-money)
        '(son-at-school)
-       *school-ops*) => NIL)
+       paip-gps1-*school-ops*) => NIL)
   "The third example is easy, because the car is currently working."
-  ((gps '(son-at-home car-works)
+  ((paip-gps1-gps
+    '(son-at-home car-works)
        '(son-at-school)
-       *school-ops*) => SOLVED)
+       paip-gps1-*school-ops*) => SOLVED)
 
   (:section "4.7 The Clobbered Sibling Goal Problem")
   "In the next example, GPS incorrectly reports success, when in fact it has"
