@@ -591,7 +591,7 @@ or of the form (THE type x) where x is side-effect-free?"
 (defun paip-dbg (id format-string &rest args)
   "Print debugging info if (DEBUG ID) has been specified."
   (when (member id paip-*dbg-ids*)
-    (message (apply 'format format-string args))))
+    (paipx-message (apply 'format format-string args))))
 
 ;; (defun debug (&rest ids)
 ;;   "Start dbg output on the given ids."
@@ -599,7 +599,7 @@ or of the form (THE type x) where x is side-effect-free?"
 
 (defun paip-debug (&rest ids)
   "Start dbg output on the given ids."
-  (setf paip-*dbg-ids* (cl-union ids *dbg-ids*)))
+  (setf paip-*dbg-ids* (cl-union ids paip-*dbg-ids*)))
 
 ;; (defun undebug (&rest ids)
 ;;   "Stop dbg on the ids.  With no ids, stop dbg altogether."
@@ -608,8 +608,9 @@ or of the form (THE type x) where x is side-effect-free?"
 
 (defun paip-undebug (&rest ids)
   "Stop dbg on the ids.  With no ids, stop dbg altogether."
-  (setf paip-*dbg-ids* (if (null ids) nil
-                      (cl-set-difference paip-*dbg-ids* ids))))
+  (setf paip-*dbg-ids*
+	(if (null ids) nil
+	  (cl-set-difference paip-*dbg-ids* ids))))
 
 ;;; ==============================
 
@@ -626,7 +627,7 @@ or of the form (THE type x) where x is side-effect-free?"
     (lexical-let (spaces)
       (cl-dotimes (i indent)
 	(push "  " spaces))
-      (message
+      (paipx-message
        (apply 'format (concat "%s" format-string)
 	      (apply 'concat spaces)
 	      args)))))
