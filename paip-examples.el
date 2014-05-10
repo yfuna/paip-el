@@ -520,33 +520,33 @@
   "We can search through the binary tree, looking for, say, 12 as the goal."
   "With breadth-first search this would yield an infinite loop, so we won't"
   "do it.  Breadth-first search works better:"
-  ((breadth-first-search 1 (is 12) 'binary-tree) => 12 @ 193)
-  ((depth-first-search 1 (is 12) (finite-binary-tree 15)) => 12 @ 193)
+  ((paip-search-breadth-first-search 1 (is 12) 'paip-search-binary-tree) => 12 @ 193)
+  ((paip-search-depth-first-search 1 (is 12) (paip-search-finite-binary-tree 15)) => 12 @ 193)
   "Guiding the Search"
   "Best-first search takes an additional argument which estimates how close"
   "we are to the goal.  We call this the cost function."
-  ((best-first-search 1 (is 12) #'binary-tree (diff 12)) => 12 @ 195)
-  ((best-first-search 1 (is 12) #'binary-tree (price-is-right 12)) => 12)
+  ((paip-search-best-first-search 1 (is 12) 'paip-search-binary-tree (diff 12)) => 12 @ 195)
+  ((paip-search-best-first-search 1 (is 12) 'paip-search-binary-tree (price-is-right 12)) => 12)
   "The function beam-search is just like best-first-search, except that after"
   "we sort the states, we then take only the first beam-width states."
-  ((beam-search 1 (is 12) #'binary-tree (price-is-right 12) 2) => 12)
+  ((paip-search-beam-search 1 (is 12) 'paip-search-binary-tree (price-is-right 12) 2) => 12)
   "As a concrete example of a problem that can be solved by search,"
   "consider planning a flight across North America in a plane whose range is"
   "limited to 1000 kilometers.  Here we plan a trip from SF to Boston."
-  ((path-state (trip (city 'san-francisco) (city 'boston)))
+  ((paip-search-path-state (trip (city 'san-francisco) (city 'boston)))
    => (BOSTON 71.05 42.21) @ 199)
-  ((path-state (trip (city 'boston) (city 'san-francisco)))
+  ((paip-search-path-state (trip (city 'boston) (city 'san-francisco)))
    => (SAN-FRANCISCO 122.26 37.47))
-  ((undebug :search))
-  ((show-city-path (trip (city 'san-francisco) (city 'boston) 1)) @ 201)
-  ((show-city-path (trip (city 'boston) (city 'san-francisco) 1)))
-  ((show-city-path (trip (city 'boston) (city 'san-francisco) 3)) @ 202)
-  ((iter-wide-search 1 (is 12) (finite-binary-tree 15) (diff 12))  => 12 @ 205)
-  ((tree-search '(1) (is 6) #'next2 #'prepend) => 6 @ 208)
-  ((graph-search '(1) (is 6) #'next2 #'prepend) => 6)
-  ((path-states
-    (a*-search (list (make-path :state 1)) (is 6) 
-               #'next2 #'(lambda (x y) 1) (diff 6))) => (6 5 3 1) @ 210)
+  ((paip-undebug :search))
+  ((paip-search-show-city-path (trip (city 'san-francisco) (city 'boston) 1)) @ 201)
+  ((paip-search-show-city-path (trip (city 'boston) (city 'san-francisco) 1)))
+  ((paip-search-show-city-path (trip (city 'boston) (city 'san-francisco) 3)) @ 202)
+  ((paip-search-iter-wide-search 1 (is 12) (finite-binary-tree 15) (diff 12))  => 12 @ 205)
+  ((paip-search-tree-search '(1) (is 6) #'next2 #'prepend) => 6 @ 208)
+  ((paip-search-graph-search '(1) (is 6) #'next2 #'prepend) => 6)
+  ((paip-search-path-states
+    (paip-search-a*-search (list (make-path :state 1)) (is 6) 
+               'next2 (lambda (x y) 1) (diff 6))) => (6 5 3 1) @ 210)
   (:section "6.5 GPS as Search")
   ((requires "gps-srch"))
   ((setf start '((c on a) (a on table) (b on table) (space on c)
