@@ -96,10 +96,11 @@
 ;;   #'(lambda (new old)
 ;;       (sort (append new old) #'< :key cost-fn)))
 
-(defmacro paip-search-orter (cost-fn)
+(defun paip-search-sorter (cost-fn)
   "Return a combiner function that sorts according to cost-fn."
-  `(lambda (new old)
-      (cl-sort (append new old) '< :key ,cost-fn)))
+  (lexical-let ((c cost-fn))
+    (lambda (new old)
+      (cl-sort (append new old) '< :key c))))
   
 ;; (defun best-first-search (start goal-p successors cost-fn)
 ;;   "Search lowest cost states first until goal is reached."
@@ -238,9 +239,9 @@
   (lexical-let ((d dest))
     (paip-search-beam-search
      (make-paip-search-path :state start)
-     (paip-search-is dest :key 'paip-search-path-state)
+     (paip-search-is d :key 'paip-search-path-state)
      (paip-search-path-saver 'paip-search-neighbors 'paip-search-air-distance
-			     (lambda (c) (paip-search-air-distance c dest)))
+			     (lambda (c) (paip-search-air-distance c d)))
      'paip-search-path-total-cost
      beam-width)))
 
@@ -337,20 +338,23 @@
 ;;           (funcall successors old-state)))))
 
 (defun paip-search-path-saver (successors cost-fn cost-left-fn)
-  (lambda (old-path)
-    (let ((old-state (paip-search-path-state old-path)))
-      (mapcar
-       (lambda (new-state)
-	 (let ((old-cost
-		(+ (path-cost-so-far old-path)
-		   (funcall cost-fn old-state new-state))))
-	   (make-paip-search-path
-	    :state new-state
-	    :previous old-path
-	    :cost-so-far old-cost
-	    :total-cost (+ old-cost (funcall cost-left-fn
-					     new-state)))))
-       (funcall successors old-state)))))
+  (lexical-let ((s successors)
+		(cf cost-fn)
+		(clf cost-left-fn))
+      (lambda (old-path)
+	(let ((old-state (paip-search-path-state old-path)))
+	  (mapcar
+	   (lambda (new-state)
+	     (let ((old-cost
+		    (+ (paip-search-path-cost-so-far old-path)
+		       (funcall cf old-state new-state))))
+	       (make-paip-search-path
+		:state new-state
+		:previous old-path
+		:cost-so-far old-cost
+		:total-cost (+ old-cost (funcall clf
+						 new-state)))))
+	   (funcall s old-state))))))
 
 ;; (defun print-path (path &optional (stream t) depth)
 ;;   (declare (ignore depth))
