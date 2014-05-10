@@ -33,6 +33,17 @@
 	  '(-0.4238698890637016 0.6670539626516081 0.6126771809492436)))
   (should (equal (paip-search-deg->radians 180.0)
 	  3.141592653589793))
+  ((paip-search-show-city-path (paip-search-trip (city 'san-francisco) (city 'boston) 1)) @ 201)
+  ((paip-search-show-city-path (trip (city 'boston) (city 'san-francisco) 1)))
+  ((paip-search-show-city-path (trip (city 'boston) (city 'san-francisco) 3)) @ 202)
+  ((paip-search-iter-wide-search 1 (is 12) (finite-binary-tree 15) (diff 12))  => 12 @ 205)
+  ((paip-search-tree-search '(1) (is 6) #'next2 #'prepend) => 6 @ 208)
+  ((paip-search-graph-search '(1) (is 6) #'next2 #'prepend) => 6)
+  ((paip-search-path-states
+    (paip-search-a*-search (list (make-path :state 1)) (is 6) 
+               'next2 (lambda (x y) 1) (diff 6))) => (6 5 3 1) @ 210)
+
+
   )
 
 (provide 'test-paip-search)

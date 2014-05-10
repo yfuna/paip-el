@@ -378,11 +378,11 @@
 (cl-defun paip-search-show-city-path (path &optional (stream t))
   "Show the length of a path, and the cities along it."
   (paipx-message
-   (format "#<Path %s km: %s>"
+   (format "\n#<Path %s km: %s>"
 	   (paip-search-path-total-cost path)
 	   (apply 'concat
 		  (mapcar (lambda (x)
-			    (format "%s" x))
+			    (format "%s - " x))
 			  (reverse (paip-search-map-path 'paip-search-city-name path))))))
   (cl-values))
 
@@ -398,7 +398,7 @@
   (if (null path)
       nil
       (cons (funcall fn (paip-search-path-state path))
-            (map-path fn (paip-search-path-previous path)))))
+            (paip-search-map-path fn (paip-search-path-previous path)))))
 
 ;; (defun iter-wide-search (start goal-p successors cost-fn
 ;;                           &key (width 1) (max 100))
@@ -437,13 +437,13 @@
 ;;              (adjoin (first states) old-states
 ;;                      :test state=)))))
 
-(defun paip-search-graph-search (states goal-p successors combiner
+(cl-defun paip-search-graph-search (states goal-p successors combiner
 					&optional (state= 'eql) old-states)
   "Find a state that satisfies goal-p.  Start with states,
   and search according to successors and combiner.  
   Don't try the same state twice."
   (paip-dbg :search "\n;; Search: %s" states)
-  (cond ((null states) fail)
+  (cond ((null states) paip-fail)
         ((funcall goal-p (first states)) (first states))
         (t (paip-search-graph-search
 	    (funcall
@@ -514,7 +514,7 @@
 ;;          (a*-search paths goal-p successors cost-fn cost-left-fn
 ;;                     state= old-paths)))))
 
-(cl-defun a*-search (paths goal-p successors cost-fn cost-left-fn
+(cl-defun paip-search-a*-search (paths goal-p successors cost-fn cost-left-fn
 			   &optional (state= 'eql) old-paths)
   "Find a path whose state satisfies goal-p.  Start with paths,
   and expand successors, exploring least cost first.
@@ -524,7 +524,8 @@
   (cond
     ((null paths) fail)
     ((funcall goal-p (paip-search-path-state (first paths)))
-     (cl-values (first paths) paths))
+;;     (cl-values (first paths) paths))
+     (first paths))
     (t (let* ((path (pop paths))
               (state (paip-search-path-state path)))
          ;; Update PATHS and OLD-PATHS to reflect
@@ -545,14 +546,14 @@
                 (when (paip-search-better-path path2 old)
                   (setf paths (paip-search-insert-path
                                 path2 (delete old paths)))))
-               ((setf old (find-path state2 old-paths state=))
+               ((setf old (paip-search-find-path state2 old-paths state=))
                 (when (better-path path2 old)
                   (setf paths (paip-search-insert-path path2 paths))
                   (setf old-paths (delete old old-paths))))
                (t (setf paths (paip-search-insert-path path2 paths))))))
          ;; Finally, call A* again with the updated path lists:
          (paip-search-a*-search paths goal-p successors cost-fn cost-left-fn
-                    state= old-paths)))))
+				 state= old-paths)))))
 
 ;; (defun find-path (state paths state=)
 ;;   "Find the path with this state among a list of paths."
@@ -579,7 +580,7 @@
 (defun paip-search-insert-path (path paths)
   "Put path into the right position, sorted by total cost."
   ;; MERGE is a built-in function
-  (cl-merge 'list (list path) paths '< :key 'path-total-cost))
+  (cl-merge 'list (list path) paths '< :key 'paip-search-path-total-cost))
 
 ;; (defun path-states (path)
 ;;   "Collect the states along this path."
@@ -592,9 +593,9 @@
   "Collect the states along this path."
   (if (null path)
       nil
-      (cons (paip-search-path-state path)
-            (paip-search-path-states
-	     (paip-search-path-previous path)))))
+    (cons (paip-search-path-state path)
+	  (paip-search-path-states
+	   (paip-search-path-previous path)))))
 
 ;; (defun search-all (start goal-p successors cost-fn beam-width)
 ;;   "Find all solutions to a search problem, using beam search."
