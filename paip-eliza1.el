@@ -59,7 +59,7 @@
 (defun paip-eliza1-segment-pattern-p (pattern)
   "Is this a segment matching pattern: ((?* var) . pat)"
   (and (consp pattern)
-       (paip-starts-with (first pattern) '?*)))
+       (paip-starts-with (first pattern) '!*)))
 
 ;;; ==============================
 
@@ -206,13 +206,6 @@
 ;;     (print 'eliza>)
 ;;     (write (flatten (use-eliza-rules (read))) :pretty t)))
 
-(defun paip-gps-eliza ()
-  "Respond to user input using pattern matching rules."
-  (loop
-    (print 'eliza>)
-    (write (paip-flatten
-	    (paip-use-eliza-rules (read))) :pretty t)))
-
 ;; (defun use-eliza-rules (input)
 ;;   "Find some rule with which to transform the input."
 ;;   (some #'(lambda (rule)
@@ -222,13 +215,13 @@
 ;;                           (random-elt (rule-responses rule))))))
 ;;         *eliza-rules*))
 
-(defun paip-eliza-use-eliza-rules (input)
+(defun paip-eliza1-use-eliza-rules (input)
   "Find some rule with which to transform the input."
   (cl-some (lambda (rule)
 	     (let ((result (paip-eliza1-pat-match
 			    (paip-eliza1-rule-pattern rule) input)))
 	       (if (not (eq result paip-fail))
-		   (sublis (paip-eliza1-switch-viewpoint result)
+		   (cl-sublis (paip-eliza1-switch-viewpoint result)
 			   (paip-random-elt
 			    (paip-eliza1-rule-responses rule))))))
 	   paip-eliza-*eliza-rules*))
@@ -289,5 +282,6 @@
 ;;;ELIZA> [Abort]
 
 ;;; ==============================
+
 
 (provide 'paip-eliza1)

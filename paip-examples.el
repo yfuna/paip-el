@@ -450,14 +450,14 @@
   "The hard part is the notion of pattern matching and transformation."
   "All symbols beginning with ? are variables for the pattern matcher."
   "First we see how to substitute variable/value pairs into expressions:"
-  ((cl-sublis '((!X . vacation)) '(what would it mean to you if you got a !X ? ))
-   => (what would it mean to you if you got a VACATION ? ) @ 156)
+  ((cl-sublis '((!X . vacation)) '(what would it mean to you if you got a !X \? ))
+   => (what would it mean to you if you got a vacation \? ) @ 156)
   "Now a version of pat-match that works with such pairs:"
   ((paip-eliza1-pat-match '(I need a !x) '(I need a vacation))  @ 158)
   "Showing how to plug it in:"
   ((cl-sublis (paip-eliza1-pat-match '(I need a !x) '(I need a vacation)) 
-	      '(what would it mean to you if you got a !X ? ))
-   => (what would it mean to you if you got a VACATION ? ) @ 159)
+	      '(what would it mean to you if you got a !X \? ))
+   => (what would it mean to you if you got a VACATION \? ) @ 159)
   ((paip-eliza1-pat-match '(I need a !x) '(I really need a vacation)) => nil)
   ((paip-eliza1-pat-match '(this is easy) '(this is easy)) => ((t . t)))
   ((paip-eliza1-pat-match '(!x is !x) '((2 + 2) is 4)) => nil)
@@ -582,7 +582,7 @@
   ((student '(If the number of customers Tom gets is twice the square of
            20 % of the number of advertisements he runs |,| 
            and the number of advertisements is 45 |,|
-           then what is the number of customers Tom gets ? )) => nil @ 231)
+           then what is the number of customers Tom gets \? )) => nil @ 231)
   ((student '(The daily cost of living for a group is the overhead cost plus 
            the running cost for each person times the number of people in 
            the group |.|  This cost for one group equals $ 100 |,|
@@ -591,10 +591,10 @@
            find the overhead and running cost for each person |.|)))
   ((student '(Fran's age divided by Robin's height is one half Kelly's IQ |.|
            Kelly's IQ minus 80 is Robin's height |.|
-           If Robin is 4 feet tall |,| how old is Fran ? )))
+           If Robin is 4 feet tall |,| how old is Fran \? )))
   ((student '(Fran's age divided by Robin's height is one half Kelly's IQ |.|
            Kelly's IQ minus 80 is Robin's height |.|
-           If Robin is 0 feet tall |,| how old is Fran ? )))
+           If Robin is 0 feet tall |,| how old is Fran \? )))
   )
 
 (defexamples 8 "Symbolic Mathematics: A Simplification Program"

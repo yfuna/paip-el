@@ -547,7 +547,7 @@ or of the form (THE type x) where x is side-effect-free?"
 
 (defun paip-flatten (exp)
   "Get rid of imbedded lists (to one level only)."
-  (paip-mappend 'mklist exp))
+  (paip-mappend 'paip-mklist exp))
 
 ;; (defun random-elt (seq) 
 ;;   "Pick a random element out of a sequence."
