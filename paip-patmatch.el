@@ -344,7 +344,7 @@
 ;;     rules))
 
 (cl-defun paip-patmatch-rule-based-translator 
-    (input rules &key (matcher 'pat-match) 
+    (input rules &key (matcher 'paip-patmatch-pat-match) 
 	   (rule-if 'first) (rule-then 'rest) (action 'cl-sublis))
   "Find the first rule in rules that matches input,
   and apply the action to that rule."
