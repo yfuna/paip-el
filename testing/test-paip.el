@@ -26,7 +26,7 @@
 		 (11 12 13 14)))
   (setq k '(one two three))
   (should (equal (map-into a #'cons k a)
-		 '((one . 11) (two . 12) (three . 13) 14)))
+		 '((one . 11) (two . 12) (three . 13) 14))))
 
 (ert-deftest test-paip-mappend ()
   (defun self-and-double (x) (list x (+ x x)))

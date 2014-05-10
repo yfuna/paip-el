@@ -57,7 +57,7 @@
 ;;        (starts-with (first pattern) '?*)))
 
 (defun paip-eliza1-segment-pattern-p (pattern)
-  "Is this a segment matching pattern: ((?* var) . pat)"
+  "Is this a segment matching pattern: ((!* var) . pat)"
   (and (consp pattern)
        (paip-starts-with (first pattern) '!*)))
 

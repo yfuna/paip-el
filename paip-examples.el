@@ -471,18 +471,17 @@
   ((paip-eliza1-pat-match '((!* !p) need (!* !x))
 			'(Mr Hulot and I need a vacation)) @ 160)
   (:section "5.4 The Eliza Program: A Rule-Based Translator")
-;;  ((require 'paip-eliza))
+  ;;  ((require 'paip-eliza))
   "We can't show you an interactive ELIZA session, because the replies are"
   "random, and thus change every time.  You can experiment on your own by"
   "evaluating (ELIZA) and typing in your end of the conversation.
   Type (good bye) when you are done."
   )
-;; [YF] I added a space between '?' and ')' because '? )' means a
-;; character in EL.
+;; [YF] I added '\' in front of single '?'.
 ;;
-;; [YF] Using '?' as a leading character of symbols doesn't work in
-;; EL. Because the EL's reader interpets it as characters. So I go
-;; with '!' instead of '?'.
+;; [YF] Using '?' as a leading character of symbols isn't a good idea
+;; in EL because you need to always escape '?' with '\' So I go with
+;; '!' instead of '?'.
 
 (defexamples 6 "Building Software Tools"
   "In chapters 4 and 5 we were concerned with buildinng two particular"
@@ -490,34 +489,34 @@
   "two programs to discover some common patterns.  Those patterns will be"
   "abstracted out to form reusable software tools."
   (:section "6.2 A Pattern-Matching tool")
-  ((requires "patmatch"))
-  ((pat-match '(x = (!is !n numberp)) '(x = 34)) => ((!n . 34)) @ 179)
-  ((pat-match '(x = (!is !n numberp)) '(x = x)) => NIL)
-  ((pat-match '(!x (!or < = >) !y) '(3 < 4)) => ((!Y . 4) (!X . 3)))
-  ((pat-match '(x = (!and (!is !n numberp) (!is !n oddp))) '(x = 3)) 
+  ((require 'paip-patmatch))
+  ((paip-pat-match '(x = (!is !n numberp)) '(x = 34)) => ((!n . 34)) @ 179)
+  ((paip-pat-match '(x = (!is !n numberp)) '(x = x)) => NIL)
+  ((paip-pat-match '(!x (!or < = >) !y) '(3 < 4)) => ((!Y . 4) (!X . 3)))
+  ((paip-pat-match '(x = (!and (!is !n numberp) (!is !n oddp))) '(x = 3)) 
    => ((!n . 3)))
-  ((pat-match '(!x /= (!not !x)) '(3 /= 4)) => ((!X . 3)) @ 180)
-  ((pat-match '(!x > !y (!if (> !x !y))) '(4 > 3)) => ((!Y . 3) (!X . 4)))
-  ((pat-match '(a (!* !x) d) '(a b c d)) => ((!X B C)) @ 185)
-  ((pat-match '(a (!* !x) (!* !y) d) '(a b c d)) => ((!Y B C) (!X)))
-  ((pat-match '(a (!* !x) (!* !y) !x !y) '(a b c d (b c) (d))) 
+  ((paip-pat-match '(!x /= (!not !x)) '(3 /= 4)) => ((!X . 3)) @ 180)
+  ((paip-pat-match '(!x > !y (!if (> !x !y))) '(4 > 3)) => ((!Y . 3) (!X . 4)))
+  ((paip-pat-match '(a (!* !x) d) '(a b c d)) => ((!X B C)) @ 185)
+  ((paip-pat-match '(a (!* !x) (!* !y) d) '(a b c d)) => ((!Y B C) (!X)))
+  ((paip-pat-match '(a (!* !x) (!* !y) !x !y) '(a b c d (b c) (d))) 
    => ((!Y D) (!X B C)) @ 186)
-  ((pat-match '(!x !op !y is !z (!if (eql (funcall !op !x !y) !z))) 
+  ((paip-pat-match '(!x !op !y is !z (!if (eql (funcall !op !x !y) !z))) 
 	      '(3 + 4 is 7))
    => ((!Z . 7) (!Y . 4) (!OP . +) (!X . 3)))
-  ((pat-match '(!x !op !y (!if (funcall !op !x !y))) '(3 > 4)) => NIL)
-  ((pat-match-abbrev '!x* '(!* !x)) => (!* !X) @ 187)
-  ((pat-match-abbrev '!y* '(!* !y)) => (!* !Y))
+  ((paip-pat-match '(!x !op !y (!if (funcall !op !x !y))) '(3 > 4)) => NIL)
+  ((paip-pat-match-abbrev '!x* '(!* !x)) => (!* !X) @ 187)
+  ((paip-pat-match-abbrev '!y* '(!* !y)) => (!* !Y))
   ((setf axyd (expand-pat-match-abbrev '(a !x* !y* d)))
    => (A (!* !X) (!* !Y) D))
-  ((pat-match axyd '(a b c d)) => ((!Y B C) (!X)))
-  ((pat-match '(((!* !x) (!* !y)) !x !y) '((a b c d) (a b) (c d))) 
+  ((paip-pat-match axyd '(a b c d)) => ((!Y B C) (!X)))
+  ((paip-pat-match '(((!* !x) (!* !y)) !x !y) '((a b c d) (a b) (c d))) 
    => NIL)
-  ((requires "eliza-pm"))
+  ((require 'paip-eliza-pm))
 
   (:section "6.4 A Set of Searching Tools")
-  ((requires "search"))
-  ((debug :search) @ 192)
+  ((require 'paip-search))
+  ((paip-debug :search) @ 192)
   "We can search through the binary tree, looking for, say, 12 as the goal."
   "With breadth-first search this would yield an infinite loop, so we won't"
   "do it.  Breadth-first search works better:"

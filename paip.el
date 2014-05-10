@@ -736,8 +736,8 @@ or of the form (THE type x) where x is side-effect-free?"
 ;;   (and (symbolp x) (equal (elt (symbol-name x) 0) #\?)))
 
 (defun paip-variable-p (x)
-  "Is x a variable (a symbol beginning with `?')?"
-  (and (symbolp x) (equal (elt (symbol-name x) 0) \?)))
+  "Is x a variable (a symbol beginning with `!')?"
+  (and (symbolp x) (equal (elt (symbol-name x) 0) ?!)))
 
 ;;; ==============================
 
