@@ -1,5 +1,9 @@
 ;;; paip-search.el
 
+(eval-when-compile
+  (require 'cl-lib))
+(require 'paip)
+
 ;;;; -*- Mode: Lisp; Syntax: Common-Lisp -*-
 ;;;; Code from Paradigms of AI Programming
 ;;;; Copyright (c) 1991 Peter Norvig
