@@ -724,7 +724,7 @@
   (:section "11.1 Idea 1: A Uniform Data Base")
   ((require 'paip-prolog1))
   "First let's make sure we're dealing with a brand new database."
-  ((clear-db))
+  ((paip-prolog1-clear-db))
   "Facts are entered into the data base with the <- macro"
   ((<- (likes Kim Robin)) @ 350)
   ((<- (likes Sandy Lee)))
