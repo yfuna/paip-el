@@ -774,7 +774,7 @@
   "to the next step, we supply the input (a ; or a .) as in the book."
   "Unfortunately, it is not specified in Common Lisp whether read-char echoes"
   "the character it reads, so you may or may not see the ; and . characters."
-  ((requires "prolog"))
+  ((require 'paip-prolog))
   "Let's add the definition of the relation LENGTH:"
   ((<- (length () 0)) @ 370)
   ((<- (length (!x . !y) (1+ !n)) (length !y !n)))
