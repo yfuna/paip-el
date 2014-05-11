@@ -764,13 +764,15 @@ or of the form (THE type x) where x is side-effect-free?"
 
 (cl-defun paip-memo (fn &key (key 'first) (test 'eql) name)
   "Return a memo-function of fn."
-  (lexical-let ((table (make-hash-table :test test)))
+  (lexical-let ((table (make-hash-table :test test))
+		(lex-fn fn) ; [YF] We need these to make the scope of variables lexical.
+		(lex-key key)) 
     (setf (get name 'memo) table)
     (lambda (&rest args)
-      (lexical-let* ((k (funcall key args))
-		     (val (gethash k table :paip-hash-default)))
+      (let* ((k (funcall lex-key args))
+	     (val (gethash k table :paip-hash-default)))
 	(if (eql val :paip-hash-default)
-	    (setf (gethash k table) (apply fn args))
+	    (setf (gethash k table) (apply lex-fn args))
 	  val)))))
 
 ;; (defun memoize (fn-name &key (key #'first) (test #'eql))
@@ -780,7 +782,7 @@ or of the form (THE type x) where x is side-effect-free?"
 ;;         (memo (symbol-function fn-name)
 ;;               :name fn-name :key key :test test)))
 
-(cl-defun memoize (fn-name &key (key 'first) (test 'eql))
+(cl-defun paip-memoize (fn-name &key (key 'first) (test 'eql))
   "Replace fn-name's global definition with a memoized version."
   (paip-clear-memoize fn-name)
   (setf (symbol-function fn-name)

@@ -688,17 +688,17 @@
   "is important.  This chapter shows some ways to make programs efficient."
   (:section "9.1 Caching Results of Previous Computations: Memoization")
   ((defun fib (n) (if (<= n 1) 1 (+ (fib (- n 1)) (fib (- n 2))))) @ 269)
-  ((setf memo-fib (memo #'fib)) @ 270)
-  ((trace fib))
+  ((setf memo-fib (paip-memo 'fib)) @ 270)
+;;  ((trace fib))
   ((funcall memo-fib 3) => 3 @ 270)
   ((funcall memo-fib 3) => 3)
-  ((untrace fib))
-  ((memoize 'fib) @ 272)
-  ((trace fib))
+;;  ((untrace fib))
+  ((paip-memoize 'fib) @ 272)
+;;  ((trace fib))
   ((fib 5) => 8)
   ((fib 5) => 8)
   ((fib 6) => 13)
-  ((untrace fib))
+;;  ((untrace fib))
 )
 
 (defexamples 10 "Low-Level Efficiency Issues"
@@ -722,7 +722,7 @@
   "In this chapter we develop an interpreter for the Prolog language."
 
   (:section "11.1 Idea 1: A Uniform Data Base")
-  ((requires "prolog1"))
+  ((require 'paip-prolog1))
   "First let's make sure we're dealing with a brand new database."
   ((clear-db))
   "Facts are entered into the data base with the <- macro"
@@ -735,19 +735,19 @@
   ((<- (likes Kim !x) (likes !x Lee) (likes !x Kim)))
 
   (:section "11.2 Idea 2: Unification of Logic Variables")
-  ((requires "unify"))
-  ((pat-match '(!x + !y) '(2 + 1)) => ((!y . 1) (!x . 2)) @ 352)
-  ((unify '(!x + 1) '(2 + !y)) => ((!y . 1) (!x . 2)))
-  ((unify '(f !x) '(f !y)) => ((!x . !y)))
-  ((unify '(!a + !a = 0) '(!x + !y = !y)) => ((!y . 0) (!x . !y) (!a . !x)))
-  ((unifier '(!a + !a = 0) '(!x + !y = !y)) => (0 + 0 = 0))
+  ((require 'paip-unify))
+  ((paip-patmatch-pat-match '(!x + !y) '(2 + 1)) => ((!y . 1) (!x . 2)) @ 352)
+  ((paip-unify-unify '(!x + 1) '(2 + !y)) => ((!y . 1) (!x . 2)))
+  ((paip-unify-unify '(f !x) '(f !y)) => ((!x . !y)))
+  ((paip-unify-unify '(!a + !a = 0) '(!x + !y = !y)) => ((!y . 0) (!x . !y) (!a . !x)))
+  ((paip-unify-unifier '(!a + !a = 0) '(!x + !y = !y)) => (0 + 0 = 0))
   "Let's try UNIFY on some (more) examples:"
-  ((unify '(!x !y a) '(!y !x !x)) => ((!y . a) (!x . !y)) @ 357)
-  ((unify '!x '(f !x)) => nil)
-  ((unify 'a 'a) => ((t . t)))
+  ((paip-unify-unify '(!x !y a) '(!y !x !x)) => ((!y . a) (!x . !y)) @ 357)
+  ((paip-unify-unify '!x '(f !x)) => nil)
+  ((paip-unify-unify 'a 'a) => ((t . t)))
   "Here are some examples of UNIFIER:"
-  ((unifier '(!x !y a) '(!y !x !x)) => (a a a))
-  ((unifier '((!a * !x ^ 2) + (!b * !x) + !c) 
+  ((paip-unify-unifier '(!x !y a) '(!y !x !x)) => (a a a))
+  ((paip-unify-unifier '((!a * !x ^ 2) + (!b * !x) + !c) 
 	    '(!z + (4 * 5) + 3))
    => ((!a * 5 ^ 2) + (4 * 5) + 3))
 
