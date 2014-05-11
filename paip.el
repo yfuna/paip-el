@@ -431,8 +431,8 @@ or of the form (THE type x) where x is side-effect-free?"
       (if (funcall pred item)
           (push item yes-list)
           (push item no-list)))
-    (list (nreverse yes-list) (nreverse no-list))))
-;; [YF] Use a list instead of multiple values.
+    (cl-values (nreverse yes-list) (nreverse no-list))))
+;; [YF] cl-values: Use a list instead of multiple values.
 
 ;; (defun maybe-add (op exps &optional if-nil)
 ;;   "For example, (maybe-add 'and exps t) returns
