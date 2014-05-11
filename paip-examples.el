@@ -574,29 +574,29 @@
     '(if z is 3 \, what is twice z))
    => ((= z 3) (= what (* 2 z))) @ 222)
   (:section "7.2 Solving Algebra Equations")
-;;  ((trace isolate solve) @ 229)
+  ;;  ((trace isolate solve) @ 229)
   ((paip-student-solve-equations
     '((= (+ 3 4) (* (- 5 (+ 2 x)) 7))
       (= (+ (* 3 x) y) 12)))
    => nil)
-;;  ((untrace isolate solve))
+  ;;  ((untrace isolate solve))
   (:section "7.3 Examples")
-  ((paip-student-student '(If the number of customers Tom gets is twice the square of
-           20 % of the number of advertisements he runs \, 
-           and the number of advertisements is 45 \,
-           then what is the number of customers Tom gets \? )) => nil @ 231)
-  ((paip-student-student '(The daily cost of living for a group is the overhead cost plus 
-           the running cost for each person times the number of people in 
-           the group \.  This cost for one group equals $ 100 \,
-           and the number of people in the group is 40 \.
-           If the overhead cost is 10 times the running cost \,
-           find the overhead and running cost for each person \.)))
+  ((paip-student-student '(if the number of customers Tom gets is twice the square of
+			      20.0 % of the number of advertisements he runs \, 
+			      and the number of advertisements is 45.0 \,
+			      then what is the number of customers Tom gets \? )) => nil @ 231)
+  ((paip-student-student '(the daily cost of living for a group is the overhead cost plus 
+			       the running cost for each person times the number of people in 
+			       the group \.  this cost for one group equals $ 100.0 \,
+			       and the number of people in the group is 40.0 \.
+			       if the overhead cost is 10 times the running cost \,
+			       find the overhead and running cost for each person \.)))
   ((paip-student-student '(Fran's age divided by Robin's height is one half Kelly's IQ \.
-           Kelly's IQ minus 80 is Robin's height \.
-           If Robin is 4 feet tall \, how old is Fran \? )))
+				  Kelly's IQ minus 80 is Robin's height \.
+				  if Robin is 4 feet tall \, how old is Fran \? )))
   ((paip-student-student '(Fran's age divided by Robin's height is one half Kelly's IQ \.
-           Kelly's IQ minus 80 is Robin's height \.
-           If Robin is 0 feet tall \, how old is Fran \? )))
+				  Kelly's IQ minus 80 is Robin's height \.
+				  if Robin is 0 feet tall \, how old is Fran \? )))
   )
 
 (defexamples 8 "Symbolic Mathematics: A Simplification Program"

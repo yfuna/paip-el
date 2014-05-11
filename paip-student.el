@@ -312,8 +312,20 @@
 
 (defun paip-student-print-equations (header equations)
   "Print a list of equations."
-  (format "\n%s%s\n" header
-          (mapcar 'paip-student-prefix->infix equations)))
+  (paipx-message
+   (format "\n%s%s\n" header
+	   (concat
+	    "\n"
+	    (apply 'concat
+		   (mapcar
+		    (lambda (list)
+		      (concat
+		       (apply 'concat
+			      (mapcar (lambda (item)
+					(format "%s " item))
+				      list))
+		       "\n"))
+		    (mapcar 'paip-student-prefix->infix equations)))))))
 
 ;; (defconstant operators-and-inverses
 ;;   '((+ -) (- +) (* /) (/ *) (= =)))

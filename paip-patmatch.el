@@ -40,7 +40,7 @@
 (cl-defun paip-patmatch-pat-match (pattern input &optional (bindings paip-no-bindings))
   "Match pattern against input in the context of the bindings"
   (cond ((eq bindings paip-fail) paip-fail)
-        ((paip-patmatch-variable-p pattern)
+        ((paip-variable-p pattern)
          (paip-match-variable pattern input bindings))
         ((eql pattern input) bindings)
         ((paip-patmatch-segment-pattern-p pattern)                
@@ -261,7 +261,7 @@
   "Find the first position that pat1 could possibly match input,
   starting at position start.  If pat1 is non-constant, then just
   return start."
-  (cond ((and (atom pat1) (not (paip-patmatch-variable-p pat1)))
+  (cond ((and (atom pat1) (not (paip-variable-p pat1)))
          (position pat1 input :start start :test 'equal))
         ((<= start (length input)) start) ;*** fix, rjf 10/1/92 (was <)
         (t nil)))
