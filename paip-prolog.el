@@ -285,8 +285,8 @@
 ;; 			 exp))))
 
 (defun paip-prolog-replace-?-vars (exp)
-  "Replace any ? within exp with a var of the form ?123."
-  (cond ((eq exp '\?) (gensym "?"))
+  "Replace any ! within exp with a var of the form !123."
+  (cond ((eq exp '!) (gensym "!"))
 	((atom exp) exp)
 	(t (paip-reuse-cons
 	    (paip-prolog-replace-?-vars (first exp))
