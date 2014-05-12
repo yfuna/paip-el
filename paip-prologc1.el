@@ -1,5 +1,9 @@
 ;;; paip-prologc1.el
 
+(eval-when-compile
+  (require 'cl-lib))
+(require 'paip)
+
 ;;;; -*- Mode: Lisp; Syntax: Common-Lisp -*-
 ;;;; Code from Paradigms of AI Programming
 ;;;; Copyright (c) 1991 Peter Norvig
@@ -76,11 +80,11 @@
 ;;       (write var :stream stream)))
 
 (defun paip-prologc1-print-var (var stream depth)
-  (if (or (and *print-level*
-               (>= depth *print-level*))
-          (var-p (deref var)))
-      (format stream "?~a" (var-name var))
-      (write var :stream stream)))
+  (if (or (and print-level ; 'print-level' is *print-level* in Emacs.
+               (>= depth print-level))
+          (paip-prologc1-var-p (paip-prologc1-deref var)))
+      (print (format "!%s" (paip-prologc1-var-name var)) stream)
+    (print (format "%s" var) stream)))
 
 ;; (defvar *trail* (make-array 200 :fill-pointer 0 :adjustable t))
 
@@ -122,8 +126,8 @@
 ;;   (name (incf *var-counter*))
 ;;   (binding unbound))
 
-(cl-defstruct (var (:constructor ? ())
-                (:print-function paip-prologc1-print-var))
+(cl-defstruct (var (:constructor ! ())
+		   (:print-function paip-prologc1-print-var))
   (name (incf paip-prologc1-*var-counter*))
   (binding paip-prologc1-unbound))
 
@@ -308,7 +312,7 @@
 ;;   `(setf (get ',name 'prolog-compiler-macro)
 ;;          #'(lambda ,arglist .,body)))
 
-(defmacro paip-prologc1-def-prolog-compiler-macro (name arglist &body body)
+(cl-defmacro paip-prologc1-def-prolog-compiler-macro (name arglist &body body)
   "Define a compiler macro for Prolog."
   `(setf (get ',name 'paip-prologc1-prolog-compiler-macro)
          (lambda ,arglist .,body)))
@@ -320,7 +324,7 @@
 ;;         `(if ,(compile-unify (first args) (second args))
 ;;              ,(compile-body body cont)))))
 
-(def-prolog-compiler-macro = (goal body cont)
+(paip-prologc1-def-prolog-compiler-macro = (goal body cont)
   (let ((args (args goal)))
     (if (/= (length args) 2)
         :pass

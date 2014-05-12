@@ -450,25 +450,25 @@
   "The hard part is the notion of pattern matching and transformation."
   "All symbols beginning with ? are variables for the pattern matcher."
   "First we see how to substitute variable/value pairs into expressions:"
-  ((cl-sublis '((!X . vacation)) '(what would it mean to you if you got a !X \? ))
+  ((cl-sublis '((\?X . vacation)) '(what would it mean to you if you got a \?X \? ))
    => (what would it mean to you if you got a vacation \? ) @ 156)
   "Now a version of pat-match that works with such pairs:"
-  ((paip-eliza1-pat-match '(I need a !x) '(I need a vacation))  @ 158)
+  ((paip-eliza1-pat-match '(I need a \?x) '(I need a vacation))  @ 158)
   "Showing how to plug it in:"
-  ((cl-sublis (paip-eliza1-pat-match '(I need a !x) '(I need a vacation)) 
-	      '(what would it mean to you if you got a !X \? ))
+  ((cl-sublis (paip-eliza1-pat-match '(I need a \?x) '(I need a vacation)) 
+	      '(what would it mean to you if you got a \?X \? ))
    => (what would it mean to you if you got a VACATION \? ) @ 159)
-  ((paip-eliza1-pat-match '(I need a !x) '(I really need a vacation)) => nil)
+  ((paip-eliza1-pat-match '(I need a \?x) '(I really need a vacation)) => nil)
   ((paip-eliza1-pat-match '(this is easy) '(this is easy)) => ((t . t)))
-  ((paip-eliza1-pat-match '(!x is !x) '((2 + 2) is 4)) => nil)
-  ((paip-eliza1-pat-match '(!x is !x) '((2 + 2) is (2 + 2))) => ((!x 2 + 2)))
-  ((paip-eliza1-pat-match '(!P need . !X) '(I need a long vacation))
-   => ((!X a long vacation) (!P . I)))
+  ((paip-eliza1-pat-match '(\?x is \?x) '((2 + 2) is 4)) => nil)
+  ((paip-eliza1-pat-match '(\?x is \?x) '((2 + 2) is (2 + 2))) => ((\?x 2 + 2)))
+  ((paip-eliza1-pat-match '(\?P need . \?X) '(I need a long vacation))
+   => ((\?X a long vacation) (\?P . I)))
 
   (:section "5.3 Segment Pattern Matching")
   "We show how to have a variable that will match more than one element."
-  "We call these segment variables, and denote them (!* name)."
-  ((paip-eliza1-pat-match '((!* !p) need (!* !x))
+  "We call these segment variables, and denote them (\?* name)."
+  ((paip-eliza1-pat-match '((\?* \?p) need (\?* \?x))
 			'(Mr Hulot and I need a vacation)) @ 160)
   (:section "5.4 The Eliza Program: A Rule-Based Translator")
   ;;  ((require 'paip-eliza))
@@ -481,7 +481,7 @@
 ;;
 ;; [YF] Using '?' as a leading character of symbols isn't a good idea
 ;; in EL because you need to always escape '?' with '\' So I go with
-;; '!' instead of '?'.
+;; '\?' instead of '?'.
 
 (defexamples 6 "Building Software Tools"
   "In chapters 4 and 5 we were concerned with buildinng two particular"
@@ -490,27 +490,27 @@
   "abstracted out to form reusable software tools."
   (:section "6.2 A Pattern-Matching tool")
   ((require 'paip-patmatch))
-  ((paip-pat-match '(x = (!is !n numberp)) '(x = 34)) => ((!n . 34)) @ 179)
-  ((paip-pat-match '(x = (!is !n numberp)) '(x = x)) => NIL)
-  ((paip-pat-match '(!x (!or < = >) !y) '(3 < 4)) => ((!Y . 4) (!X . 3)))
-  ((paip-pat-match '(x = (!and (!is !n numberp) (!is !n oddp))) '(x = 3)) 
-   => ((!n . 3)))
-  ((paip-pat-match '(!x /= (!not !x)) '(3 /= 4)) => ((!X . 3)) @ 180)
-  ((paip-pat-match '(!x > !y (!if (> !x !y))) '(4 > 3)) => ((!Y . 3) (!X . 4)))
-  ((paip-pat-match '(a (!* !x) d) '(a b c d)) => ((!X B C)) @ 185)
-  ((paip-pat-match '(a (!* !x) (!* !y) d) '(a b c d)) => ((!Y B C) (!X)))
-  ((paip-pat-match '(a (!* !x) (!* !y) !x !y) '(a b c d (b c) (d))) 
-   => ((!Y D) (!X B C)) @ 186)
-  ((paip-pat-match '(!x !op !y is !z (!if (eql (funcall !op !x !y) !z))) 
+  ((paip-pat-match '(x = (\?is \?n numberp)) '(x = 34)) => ((\?n . 34)) @ 179)
+  ((paip-pat-match '(x = (\?is \?n numberp)) '(x = x)) => NIL)
+  ((paip-pat-match '(\?x (\?or < = >) \?y) '(3 < 4)) => ((\?Y . 4) (\?X . 3)))
+  ((paip-pat-match '(x = (\?and (\?is \?n numberp) (\?is \?n oddp))) '(x = 3)) 
+   => ((\?n . 3)))
+  ((paip-pat-match '(\?x /= (\?not \?x)) '(3 /= 4)) => ((\?X . 3)) @ 180)
+  ((paip-pat-match '(\?x > \?y (\?if (> \?x \?y))) '(4 > 3)) => ((\?Y . 3) (\?X . 4)))
+  ((paip-pat-match '(a (\?* \?x) d) '(a b c d)) => ((\?X B C)) @ 185)
+  ((paip-pat-match '(a (\?* \?x) (\?* \?y) d) '(a b c d)) => ((\?Y B C) (\?X)))
+  ((paip-pat-match '(a (\?* \?x) (\?* \?y) \?x \?y) '(a b c d (b c) (d))) 
+   => ((\?Y D) (\?X B C)) @ 186)
+  ((paip-pat-match '(\?x \?op \?y is \?z (\?if (eql (funcall \?op \?x \?y) \?z))) 
 		   '(3 + 4 is 7))
-   => ((!Z . 7) (!Y . 4) (!OP . +) (!X . 3)))
-  ((paip-pat-match '(!x !op !y (!if (funcall !op !x !y))) '(3 > 4)) => NIL)
-  ((paip-pat-match-abbrev '!x* '(!* !x)) => (!* !X) @ 187)
-  ((paip-pat-match-abbrev '!y* '(!* !y)) => (!* !Y))
-  ((setf axyd (expand-pat-match-abbrev '(a !x* !y* d)))
-   => (A (!* !X) (!* !Y) D))
-  ((paip-pat-match axyd '(a b c d)) => ((!Y B C) (!X)))
-  ((paip-pat-match '(((!* !x) (!* !y)) !x !y) '((a b c d) (a b) (c d))) 
+   => ((\?Z . 7) (\?Y . 4) (\?OP . +) (\?X . 3)))
+  ((paip-pat-match '(\?x \?op \?y (\?if (funcall \?op \?x \?y))) '(3 > 4)) => NIL)
+  ((paip-pat-match-abbrev '\?x* '(\?* \?x)) => (\?* \?X) @ 187)
+  ((paip-pat-match-abbrev '\?y* '(\?* \?y)) => (\?* \?Y))
+  ((setf axyd (expand-pat-match-abbrev '(a \?x* \?y* d)))
+   => (A (\?* \?X) (\?* \?Y) D))
+  ((paip-pat-match axyd '(a b c d)) => ((\?Y B C) (\?X)))
+  ((paip-pat-match '(((\?* \?x) (\?* \?y)) \?x \?y) '((a b c d) (a b) (c d))) 
    => NIL)
   ((require 'paip-eliza-pm))
 

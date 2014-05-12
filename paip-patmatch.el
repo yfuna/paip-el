@@ -63,15 +63,15 @@
 ;; (setf (get '??  'segment-match) 'segment-match?)
 ;; (setf (get '?if 'segment-match) 'match-if)
 
-(setf (get '!is  'single-match) 'paip-patmatch-match-is)
-(setf (get '!or  'single-match) 'paip-patmatch-match-or)
-(setf (get '!and 'single-match) 'paip-patmatch-match-and)
-(setf (get '!not 'single-match) 'paip-patmatch-match-not)
+(setf (get '\?is  'single-match) 'paip-patmatch-match-is)
+(setf (get '\?or  'single-match) 'paip-patmatch-match-or)
+(setf (get '\?and 'single-match) 'paip-patmatch-match-and)
+(setf (get '\?not 'single-match) 'paip-patmatch-match-not)
 
-(setf (get '!*  'segment-match) 'paip-patmatch-segment-match)
-(setf (get '!+  'segment-match) 'paip-patmatch-segment-match+)
-(setf (get '!?  'segment-match) 'paip-patmatch-segment-match?)
-(setf (get '!if 'segment-match) 'paip-patmatch-match-if)
+(setf (get '\?*  'segment-match) 'paip-patmatch-segment-match)
+(setf (get '\?+  'segment-match) 'paip-patmatch-segment-match+)
+(setf (get '\??  'segment-match) 'paip-patmatch-segment-match?)
+(setf (get '\?if 'segment-match) 'paip-patmatch-match-if)
 
 ;; (defun segment-pattern-p (pattern)
 ;;   "Is this a segment-matching pattern like ((?* var) . pat)?"
@@ -80,7 +80,7 @@
 ;;        (segment-match-fn (first (first pattern)))))
 
 (defun paip-patmatch-segment-pattern-p (pattern)
-  "Is this a segment-matching pattern like ((!* var) . pat)?"
+  "Is this a segment-matching pattern like ((?* var) . pat)?"
   (and (consp pattern) (consp (first pattern)) 
        (symbolp (first (first pattern)))
        (paip-patmatch-segment-match-fn (first (first pattern)))))
@@ -93,7 +93,7 @@
 
 (defun paip-patmatch-single-pattern-p (pattern)
   "Is this a single-matching pattern?
-  E.g. (!is x predicate) (!and . patterns) (!or . patterns)."
+  E.g. (\?is x predicate) (\?and . patterns) (\?or . patterns)."
   (and (consp pattern)
        (paip-patmatch-single-match-fn (first pattern))))
 

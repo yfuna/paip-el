@@ -20,8 +20,8 @@
 ;;   (and (symbolp x) (equal (elt (symbol-name x) 0) #\?)))
 
 (defun paip-eliza1-variable-p (x)
-  "Is x a variable (a symbol beginning with `!')?"
-  (and (symbolp x) (equal (elt (symbol-name x) 0) ?!)))
+  "Is x a variable (a symbol beginning with `?')?"
+  (and (symbolp x) (equal (elt (symbol-name x) 0) ??)))
 
 ;; (defun pat-match (pattern input &optional (bindings no-bindings))
 ;;   "Match pattern against input in the context of the bindings"
@@ -57,9 +57,9 @@
 ;;        (starts-with (first pattern) '?*)))
 
 (defun paip-eliza1-segment-pattern-p (pattern)
-  "Is this a segment matching pattern: ((!* var) . pat)"
+  "Is this a segment matching pattern: ((?* var) . pat)"
   (and (consp pattern)
-       (paip-starts-with (first pattern) '!*)))
+       (paip-starts-with (first pattern) '\?*)))
 
 ;;; ==============================
 
@@ -125,7 +125,7 @@
 ;;                     b2)))))))
 
 (cl-defun paip-eliza1-segment-match (pattern input bindings &optional (start 0))
-  "Match the segment pattern ((!* var) . pat) against input."
+  "Match the segment pattern ((?* var) . pat) against input."
   (let ((var (second (first pattern)))
         (pat (rest pattern)))
     (if (null pat)
@@ -179,24 +179,24 @@
 ;;     (What other feelings do you have?))))
 
 (defvar paip-eliza1-*eliza-rules*
-  '((((!* !x) hello (!* !y))      
+  '((((\?* \?x) hello (\?* \?y))      
      (How do you do.  Please state your problem.))
-    (((!* !x) I want (!* !y))     
-     (What would it mean if you got !y)
-     (Why do you want !y) (Suppose you got !y soon))
-    (((!* !x) if (!* !y)) 
-     (Do you really think its likely that !y) (Do you wish that !y)
-     (What do you think about !y) (Really-- if !y))
-    (((!* !x) no (!* !y))
-     (Why not!) (You are being a bit negative)
-     (Are you saying "NO" just to be negative!))
-    (((!* !x) I was (!* !y))       
-     (Were you really!) (Perhaps I already knew you were !y)
-     (Why do you tell me you were !y now!))
-    (((!* !x) I feel (!* !y))     
-     (Do you often feel !y !))
-    (((!* !x) I felt (!* !y))     
-     (What other feelings do you have!))))
+    (((\?* \?x) I want (\?* \?y))     
+     (What would it mean if you got \?y)
+     (Why do you want \?y) (Suppose you got \?y soon))
+    (((\?* \?x) if (\?* \?y)) 
+     (Do you really think its likely that \?y) (Do you wish that \?y)
+     (What do you think about \?y) (Really-- if \?y))
+    (((\?* \?x) no (\?* \?y))
+     (Why not\?) (You are being a bit negative)
+     (Are you saying "NO" just to be negative\?))
+    (((\?* \?x) I was (\?* \?y))       
+     (Were you really\?) (Perhaps I already knew you were \?y)
+     (Why do you tell me you were \?y now\?))
+    (((\?* \?x) I feel (\?* \?y))     
+     (Do you often feel \?y \?))
+    (((\?* \?x) I felt (\?* \?y))     
+     (What other feelings do you have\?))))
 
 ;;; ==============================
 
