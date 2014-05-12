@@ -49,11 +49,6 @@
 
 ;; (defun is (value) #'(lambda (x) (eql x value)))
 
-;; (defun paip-search-is (value)
-;;   (lexical-let ((v value))
-;;     (lambda (x)
-;;       (eql x v))))
-
 (defun paip-search-is (value)
   (lexical-let ((v value))
     (lambda (x)
