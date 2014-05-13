@@ -97,5 +97,58 @@
   ;; No.
   )
 
+(ert-deftest test-from-wikipedia ()
+  (<- (cat tom))
+  (\?- (cat tom))
+  ;; Yes.
+  (\?- (cat \?x))
+  ;; ?x = tom
+  (<- (animal \?x) (cat \?x))
+  (\?- (animal \?x))
+  ;; ?x = tom
+  (<- (mother_child trude sally))
+  (<- (father_child tom sally))
+  (<- (father_child tom erica))
+  (<- (father_child mike tom))
+  (<- (sibling \?x \?y) (parent_child \?z \?x) (parent_child \?z \?y))
+  (<- (parent_child \?x \?y) (father_child \?x \?y))
+  (<- (parent_child \?x \?y) (mother_child \?x \?y))
+  (\?- (sibling  sally erica))
+  ;; Yes.
+  )
+
+(ert-deftest test-from-LearnPrologNow ()
+  (<- (woman mia))
+  (<- (woman jody))
+  (<- (woman yalanda))
+  (<- (playAriGuitar jody))
+  (<- (party))
+  (\?- (woman mia))
+  ;; Yes.
+  (\?- (playAriGuitar jody))
+  ;; Yes.
+  (\?- (playAriGuitar mia))
+  ;; No.
+  (\?- (playAriGuitar vincent))
+  ;; No.
+  (\?- (tatoed jody))
+  ;; No.
+  (\?- (party))
+  ;; Yes.
+  (\?- (rockConcert))
+  ;; No.
+
+  (<- (happy yolanda))
+  (<- (listens2Music mia))
+  (<- (listens2Music yolanda) (happy yolanda))
+  (<- (playsAirGuitar mia) (listens2Music mia))
+  (<- (playsAirGuitar yolanda) (listens2Music yolanda))
+  (\?- (playsAirGuitar mia))
+  ;; Yes.
+  (<- (playsAirGuitar mia) (listens2Music mia))
+  (\?- (playsAirGuitar yolanda))
+  ;; Yes.
+  )
+
 (provide 'test-paip-prolog)
 

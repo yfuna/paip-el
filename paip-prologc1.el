@@ -337,7 +337,8 @@
 
 (defun paip-prologc1-compile-unify (x y)
   "Return code that tests if var and term unify."
-  `(paip-prologc1-unify! ,(paip-prologc1-compile-arg x) ,(paip-prologc1-compile-arg y)))
+  `(paip-prologc1-unify!
+    ,(paip-prologc1-compile-arg x) ,(paip-prologc1-compile-arg y)))
 
 ;; (defun compile-arg (arg)
 ;;   "Generate code for an argument to a goal in the body."
@@ -350,7 +351,7 @@
 
 (defun paip-prologc1-compile-arg (arg)
   "Generate code for an argument to a goal in the body."
-  (cond ((variable-p arg) arg)
+  (cond ((paip-variable-p arg) arg)
         ((not (paip-prologc1-has-variable-p arg)) `',arg)
         ((proper-listp arg)
          `(list .,(mapcar 'paip-prologc1-compile-arg arg)))
