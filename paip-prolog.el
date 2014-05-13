@@ -61,8 +61,8 @@
 ;; [YF] I copied the definition of the paip-variable-p from the paip
 ;; module to make sure that we use the definition for this module.
 (defun paip-variable-p (x)
-  "Is x a variable (a symbol beginning with `!')?"
-  (and (symbolp x) (equal (elt (symbol-name x) 0) ?!)))
+  "Is x a variable (a symbol beginning with `?')?"
+  (and (symbolp x) (equal (elt (symbol-name x) 0) ??)))
 
 (defun paip-prolog-add-clause (clause)
   "add a clause to the data base, indexed by head's predicate."
@@ -147,7 +147,7 @@
 
 ;; (defmacro ?- (&rest goals) `(top-level-prove ',(replace-?-vars goals)))
 
-(defmacro !- (&rest goals)
+(defmacro \?- (&rest goals)
   `(paip-prolog-top-level-prove
     ',(paip-prolog-replace-?-vars goals)))
 
@@ -285,8 +285,8 @@
 ;; 			 exp))))
 
 (defun paip-prolog-replace-?-vars (exp)
-  "Replace any ! within exp with a var of the form !123."
-  (cond ((eq exp '!) (gensym "!"))
+  "Replace any ? within exp with a var of the form ?123."
+  (cond ((eq exp '\?) (gensym "?"))
 	((atom exp) exp)
 	(t (paip-reuse-cons
 	    (paip-prolog-replace-?-vars (first exp))

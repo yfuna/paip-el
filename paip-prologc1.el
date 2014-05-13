@@ -83,7 +83,7 @@
   (if (or (and print-level ; 'print-level' is *print-level* in Emacs.
                (>= depth print-level))
           (paip-prologc1-var-p (paip-prologc1-deref var)))
-      (print (format "!%s" (paip-prologc1-var-name var)) stream)
+      (print (format "?%s" (paip-prologc1-var-name var)) stream)
     (print (format "%s" var) stream)))
 
 ;; (defvar *trail* (make-array 200 :fill-pointer 0 :adjustable t))
@@ -126,7 +126,7 @@
 ;;   (name (incf *var-counter*))
 ;;   (binding unbound))
 
-(cl-defstruct (var (:constructor ! ())
+(cl-defstruct (var (:constructor \? ())
 		   (:print-function paip-prologc1-print-var))
   (name (incf paip-prologc1-*var-counter*))
   (binding paip-prologc1-unbound))
@@ -217,9 +217,9 @@
 ;;         collect (new-symbol '?arg i)))
 
 (defun paip-prologc1-make-parameters (arity)
-  "Return the list (!arg1 !arg2 ... !arg-arity)"
+  "Return the list (?arg1 ?arg2 ... ?arg-arity)"
   (cl-loop for i from 1 to arity
-        collect (new-symbol '!arg i)))
+        collect (new-symbol '\?arg i)))
 
 ;; (defun make-predicate (symbol arity)
 ;;   "Return the symbol: symbol/arity"

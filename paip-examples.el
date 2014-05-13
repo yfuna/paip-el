@@ -731,41 +731,41 @@
   ((<- (likes Sandy Kim)))
   ((<- (likes Robin cats)))
   "We can also enter rules, which state contingent facts."
-  ((<- (likes Sandy !x) (likes !x cats)) @ 351)
-  ((<- (likes Kim !x) (likes !x Lee) (likes !x Kim)))
+  ((<- (likes Sandy \?x) (likes \?x cats)) @ 351)
+  ((<- (likes Kim \?x) (likes \?x Lee) (likes \?x Kim)))
 
   (:section "11.2 Idea 2: Unification of Logic Variables")
   ((require 'paip-unify))
-  ((paip-patmatch-pat-match '(!x + !y) '(2 + 1)) => ((!y . 1) (!x . 2)) @ 352)
-  ((paip-unify-unify '(!x + 1) '(2 + !y)) => ((!y . 1) (!x . 2)))
-  ((paip-unify-unify '(f !x) '(f !y)) => ((!x . !y)))
-  ((paip-unify-unify '(!a + !a = 0) '(!x + !y = !y)) => ((!y . 0) (!x . !y) (!a . !x)))
-  ((paip-unify-unifier '(!a + !a = 0) '(!x + !y = !y)) => (0 + 0 = 0))
+  ((paip-patmatch-pat-match '(\?x + \?y) '(2 + 1)) => ((\?y . 1) (\?x . 2)) @ 352)
+  ((paip-unify-unify '(\?x + 1) '(2 + \?y)) => ((\?y . 1) (\?x . 2)))
+  ((paip-unify-unify '(f \?x) '(f \?y)) => ((\?x . \?y)))
+  ((paip-unify-unify '(\?a + \?a = 0) '(\?x + \?y = \?y)) => ((\?y . 0) (\?x . \?y) (\?a . \?x)))
+  ((paip-unify-unifier '(\?a + \?a = 0) '(\?x + \?y = \?y)) => (0 + 0 = 0))
   "Let's try UNIFY on some (more) examples:"
-  ((paip-unify-unify '(!x !y a) '(!y !x !x)) => ((!y . a) (!x . !y)) @ 357)
-  ((paip-unify-unify '!x '(f !x)) => nil)
+  ((paip-unify-unify '(\?x \?y a) '(\?y \?x \?x)) => ((\?y . a) (\?x . \?y)) @ 357)
+  ((paip-unify-unify '\?x '(f \?x)) => nil)
   ((paip-unify-unify 'a 'a) => ((t . t)))
   "Here are some examples of UNIFIER:"
-  ((paip-unify-unifier '(!x !y a) '(!y !x !x)) => (a a a))
-  ((paip-unify-unifier '((!a * !x ^ 2) + (!b * !x) + !c) 
-	    '(!z + (4 * 5) + 3))
-   => ((!a * 5 ^ 2) + (4 * 5) + 3))
+  ((paip-unify-unifier '(\?x \?y a) '(\?y \?x \?x)) => (a a a))
+  ((paip-unify-unifier '((\?a * \?x ^ 2) + (\?b * \?x) + \?c) 
+	    '(\?z + (4 * 5) + 3))
+   => ((\?a * 5 ^ 2) + (4 * 5) + 3))
 
   "Programming with Prolog"
   "First we define the MEMBER relation in Prolog:"
-  ((<- (member !item (!item . !rest))) @ 358)
-  ((<- (member !item (!x . !rest)) (member !item !rest)))
+  ((<- (member \?item (\?item . \?rest))) @ 358)
+  ((<- (member \?item (\?x . \?rest)) (member \?item \?rest)))
   "Now we can make some queries:"
-  ((!- (member 2 (1 2 3))))
-  ((!- (member 2 (1 2 3 2 1))))
-  ((!- (member !x (1 2 3))))
+  ((\?- (member 2 (1 2 3))))
+  ((\?- (member 2 (1 2 3 2 1))))
+  ((\?- (member \?x (1 2 3))))
   "Let's add one more rule to the Sandy and the cats facts:"
-  ((<- (likes !x !x)) @ 363)
+  ((<- (likes \?x \?x)) @ 363)
   "Now we can ask some queries:"
-  ((!- (likes Sandy !who)) @ 365)
-  ((!- (likes !who Sandy)))
-  ((!- (likes Robin Lee)))
-  ((!- (likes !x !y) (likes !y !x)) @ 366)
+  ((\?- (likes Sandy \?who)) @ 365)
+  ((\?- (likes \?who Sandy)))
+  ((\?- (likes Robin Lee)))
+  ((\?- (likes \?x \?y) (likes \?y \?x)) @ 366)
 
   (:section "11.3 Idea 3: Automatic Backtracking")
   "Now we load the version that does automatic backtracking one step at a time"
@@ -777,48 +777,48 @@
   ((require 'paip-prolog))
   "Let's add the definition of the relation LENGTH:"
   ((<- (length () 0)) @ 370)
-  ((<- (length (!x . !y) (1+ !n)) (length !y !n)))
+  ((<- (length (\?x . \?y) (1+ \?n)) (length \?y \?n)))
   "Here are some queries:"
-  ((!- (length (a b c d) !n)) :input ";")
-  ((!- (length !list (1+ (1+ 0)))) :input ";")
-  ((!- (length !list !n)) :input ";;.")
-  ((!- (length !l (1+ (1+ 0))) (member a !l)) :input ";;")
+  ((\?- (length (a b c d) \?n)) :input ";")
+  ((\?- (length \?list (1+ (1+ 0)))) :input ";")
+  ((\?- (length \?list \?n)) :input ";;.")
+  ((\?- (length \?l (1+ (1+ 0))) (member a \?l)) :input ";;")
   "(We won't try the example that leads to an infinite loop.)"
   (:section "11.4 The Zebra Puzzle")
   "First we define the NEXTO and IRIGHT (to the immediate right) relations:"
-  ((<- (nextto !x !y !list) (iright !x !y !list)) @ 374)
-  ((<- (nextto !x !y !list) (iright !y !x !list)))
-  ((<- (iright !left !right (!left !right . !rest))))
-  ((<- (iright !left !right (!x . !rest)) 
-       (iright !left !right !rest)))
-  ((<- (= !x !x)))
+  ((<- (nextto \?x \?y \?list) (iright \?x \?y \?list)) @ 374)
+  ((<- (nextto \?x \?y \?list) (iright \?y \?x \?list)))
+  ((<- (iright \?left \?right (\?left \?right . \?rest))))
+  ((<- (iright \?left \?right (\?x . \?rest)) 
+       (iright \?left \?right \?rest)))
+  ((<- (= \?x \?x)))
   "Now we define the zebra puzzle:"
-  ((<- (zebra !h !w !z)
+  ((<- (zebra \?h \?w \?z)
        ;; Each house is of the form:
        ;; (house nationality pet cigarette drink house-color)
-       (= !h ((house norwegian ! ! ! ! )	;1,10
-	      ! 
-	      (house ! ! ! milk ! ) ! ! )) ; 9
-       (member (house englishman ! ! ! red) !h)	; 2
-       (member (house spaniard dog ! ! ! ) !h) ; 3
-       (member (house ! ! ! coffee green) !h) ; 4
-       (member (house ukrainian ! ! tea ! ) !h) ; 5
-       (iright (house ! ! ! ! ivory)	; 6
-	       (house ! ! ! ! green) !h)
-       (member (house ! snails winston ! ! ) !h)	; 7
-       (member (house ! ! kools ! yellow) !h) ; 8
-       (nextto (house ! ! chesterfield ! ! ) ;11
-	       (house ! fox ! ! ! ) !h)
-       (nextto (house ! ! kools ! ! )	;12
-	       (house ! horse ! ! ! ) !h)
-       (member (house ! ! luckystrike oj ! ) !h)	;13
-       (member (house japanese ! parliaments ! ! ) !h) ;14
-       (nextto (house norwegian ! ! ! ! ) ;15
-	       (house ! ! ! ! blue) !h)
-       (member (house !w ! ! water ! ) !h) ;Q1
-       (member (house !z zebra ! ! ! ) !h))) ;Q2
+       (= \?h ((house norwegian \? \? \? \? )	;1,10
+	      \? 
+	      (house \? \? \? milk \? ) \? \? )) ; 9
+       (member (house englishman \? \? \? red) \?h)	; 2
+       (member (house spaniard dog \? \? \? ) \?h) ; 3
+       (member (house \? \? \? coffee green) \?h) ; 4
+       (member (house ukrainian \? \? tea \? ) \?h) ; 5
+       (iright (house \? \? \? \? ivory)	; 6
+	       (house \? \? \? \? green) \?h)
+       (member (house \? snails winston \? \? ) \?h)	; 7
+       (member (house \? \? kools \? yellow) \?h) ; 8
+       (nextto (house \? \? chesterfield \? \? ) ;11
+	       (house \? fox \? \? \? ) \?h)
+       (nextto (house \? \? kools \? \? )	;12
+	       (house \? horse \? \? \? ) \?h)
+       (member (house \? \? luckystrike oj \? ) \?h)	;13
+       (member (house japanese \? parliaments \? \? ) \?h) ;14
+       (nextto (house norwegian \? \? \? \? ) ;15
+	       (house \? \? \? \? blue) \?h)
+       (member (house \?w \? \? water \? ) \?h) ;Q1
+       (member (house \?z zebra \? \? \? ) \?h))) ;Q2
   "If you want to test this out, run the following query:"
-  "   ((!- (zebra !houses !water-drinker !zebra-owner)))"
+  "   ((\?- (zebra \?houses \?water-drinker \?zebra-owner)))"
   "It is not included as an example because it takes a minute or so to run."
   )
 

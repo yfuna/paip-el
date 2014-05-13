@@ -176,7 +176,7 @@
 
 ;; (defmacro ?- (&rest goals) `(top-level-prove ',goals))
 
-(defmacro !- (&rest goals) `(paip-prolog1-top-level-prove ',goals))
+(defmacro \?- (&rest goals) `(paip-prolog1-top-level-prove ',goals))
 
 ;; (defun top-level-prove (goals)
 ;;   "Prove the goals, and print variables readably."

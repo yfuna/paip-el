@@ -191,7 +191,7 @@
 (defun paip-prologc2-make-parameters (arity)
   "Return the list (?arg1 ?arg2 ... ?arg-arity)"
   (cl-loop for i from 1 to arity
-        collect (new-symbol '!arg i)))
+        collect (new-symbol '\?arg i)))
 
 ;; (defun make-predicate (symbol arity)
 ;;   "Return the symbol: symbol/arity"
