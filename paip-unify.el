@@ -28,8 +28,8 @@
 ;; [YF] I copied the definition of the paip-variable-p from the paip
 ;; module to make sure that we use the definition for this module.
 (defun paip-variable-p (x)
-  "Is x a variable (a symbol beginning with `!')?"
-  (and (symbolp x) (equal (elt (symbol-name x) 0) ?!)))
+  "Is x a variable (a symbol beginning with `?')?"
+  (and (symbolp x) (equal (elt (symbol-name x) 0) ??)))
 
 (cl-defun paip-unify-unify (x y &optional (bindings paip-no-bindings))
   "See if x and y match with given bindings."

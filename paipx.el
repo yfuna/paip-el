@@ -35,8 +35,12 @@
 		 '(2 . [0 0 0])))
   )
 
-(defun paipx-fill-pointer (vector-with-fill-pointer)
-  (car vector-with-fill-pointer))
+;; (defun paipx-fill-pointer (vector-with-fill-pointer)
+;;   (car vector-with-fill-pointer))
+
+(defmacro paipx-fill-pointer (vector-with-fill-pointer)
+  `(car ,vector-with-fill-pointer))
+;; [YF] Made it a macro to use it as a generalized variable.
 
 (defun paipx-vector-push (elm vector-with-fill-pointer)
   (let ((pos (car vector-with-fill-pointer)))

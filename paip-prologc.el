@@ -85,7 +85,7 @@
 
 ;; (defvar *trail* (make-array 200 :fill-pointer 0 :adjustable t))
 
-(defvar paip-prologc-*trail* (make-array 200 :fill-pointer 0))
+(defvar paip-prologc-*trail* (paipx-make-array 200 :fill-pointer 0))
 
 ;; (defun set-binding! (var value)
 ;;   "Set var's binding to value, after saving the variable
@@ -110,10 +110,10 @@
 
 (defun paip-prologc-undo-bindings! (old-trail)
   "Undo all bindings back to a given point in the trail."
-  (cl-loop until (= (fill-pointer paip-prologc-*trail*) old-trail)
-     do (setf (paip-prologc-var-binding
-	       (paipx-vector-pop paip-prologc-*trail*))
-	      paip-prologc-unbound)))
+  (cl-loop until (= (paipx-fill-pointer paip-prologc-*trail*) old-trail)
+	   do (setf (paip-prologc-var-binding
+		     (paipx-vector-pop paip-prologc-*trail*))
+		    paip-prologc-unbound)))
 
 ;; (defvar *var-counter* 0)
 
@@ -124,7 +124,7 @@
 ;;   (name (incf *var-counter*))
 ;;   (binding unbound))
 
-(cl-defstruct (var (:constructor \? ())
+(cl-defstruct (paip-prologc-var (:constructor \? ())
                 (:print-function print-var))
   (name (cl-incf paip-prologc-*var-counter*))
   (binding unbound))
@@ -135,19 +135,19 @@
 ;;   (unless (null clauses)
 ;;     (let ((arity (relation-arity (clause-head (first clauses)))))
 ;;       ;; Compile the clauses with this arity
-;;       (compile-predicate
+;;       (compile-predcate
 ;;         symbol arity (clauses-with-arity clauses #'= arity))
 ;;       ;; Compile all the clauses with any other arity
 ;;       (prolog-compile
 ;;         symbol (clauses-with-arity clauses #'/= arity)))))
 
-(defun paip-prologc-prolog-compile
+(cl-defun paip-prologc-prolog-compile
   (symbol &optional
-	  (clauses (paip-prologc-get-clauses symbol)))
+	  (clauses (paip-prolog-get-clauses symbol)))
   "Compile a symbol; make a separate function for each arity."
   (unless (null clauses)
     (let ((arity (paip-prologc-relation-arity
-		  (paip-prologc-clause-head (first clauses)))))
+		  (paip-prolog-clause-head (first clauses)))))
       ;; Compile the clauses with this arity
       (paip-prologc-compile-predicate
         symbol arity
@@ -166,11 +166,11 @@
 
 (defun paip-prologc-clauses-with-arity (clauses test arity)
   "Return all clauses whose head has given arity."
-  (cl-find-all arity clauses
-            :key (lambda (clause)
-                     (paip-prologc-relation-arity
-		      (paip-prologc-clause-head clause)))
-            :test test))
+  (paip-find-all arity clauses
+		 :key (lambda (clause)
+			(paip-prologc-relation-arity
+			 (paip-prolog-clause-head clause)))
+		 :test test))
 
 ;; (defun relation-arity (relation)
 ;;   "The number of arguments to a relation.
@@ -180,7 +180,7 @@
 (defun paip-prologc-relation-arity (relation)
   "The number of arguments to a relation.
   Example: (relation-arity '(p a b c)) => 3"
-  (length (args relation)))
+  (length (paip-prologc-args relation)))
 
 ;; (defun args (x) "The arguments of a relation" (rest x))
 
@@ -196,7 +196,7 @@
 (defun paip-prologc-make-parameters (arity)
   "Return the list (?arg1 ?arg2 ... ?arg-arity)"
   (loop for i from 1 to arity
-        collect (new-symbol '\?arg i)))
+        collect (paip-new-symbol '\?arg i)))
 
 ;; (defun make-predicate (symbol arity)
 ;;   "Return the symbol: symbol/arity"
@@ -204,7 +204,7 @@
 
 (defun paip-prologc-make-predicate (symbol arity)
   "Return the symbol: symbol/arity"
-  (symbol symbol '/ arity))
+  (paip-symbol symbol '/ arity))
 
 ;; (defun make-= (x y) `(= ,x ,y))
 
@@ -217,7 +217,7 @@
 
 (defun paip-prologc-compile-call (predicate args cont)
   "Compile a call to a prolog predicate."
-  `(,predicate ,@args ,cont))
+  `(,paip-prolog-predicate ,@args ,cont))
 
 ;; (defun prolog-compiler-macro (name)
 ;;   "Fetch the compiler macro for a Prolog predicate."
@@ -253,7 +253,7 @@
   (cond ((paip-variable-p arg) arg)
         ((not (paip-prologc-has-variable-p arg)) `',arg)
         ((paip-prologc-proper-listp arg)
-         `(list .,(mapcar 'paip-prologc-compile-arg arg)))
+         `(list .,(cl-mapcar 'paip-prologc-compile-arg arg)))
         (t `(cons ,(paip-prologc-compile-arg (first arg))
                   ,(paip-prologc-compile-arg (rest arg))))))
 
@@ -263,7 +263,7 @@
 
 (defun paip-prologc-has-variable-p (x)
   "Is there a variable anywhere in the expression x?"
-  (cl-find-if-anywhere 'variable-p x))
+  (paip-find-if-anywhere 'paip-variable-p x))
 
 ;; (defun proper-listp (x)
 ;;   "Is x a proper (non-dotted) list?"
@@ -291,12 +291,12 @@
   "Undo any bindings that need undoing.
   If there are any, bind the trail before we start."
   (if (paip-length=1 compiled-exps)
-      paip-prologc-compiled-exps
-      `((let ((old-trail (fill-pointer paip-prologc-*trail*)))
-          ,(first paip-prologc-compiled-exps)
-          ,@(cl-loop for exp in (rest paip-prologc-compiled-exps)
-                  collect '(paip-prologc-undo-bindings! old-trail)
-                  collect exp)))))
+      compiled-exps
+      `((let ((old-trail (paipx-fill-pointer paip-prologc-*trail*)))
+          ,(first compiled-exps)
+          ,@(cl-loop for exp in (rest compiled-exps)
+		     collect '(paip-prologc-undo-bindings! old-trail)
+		     collect exp)))))
 
 ;; (defun bind-unbound-vars (parameters exp)
 ;;   "If there are any variables in exp (besides the parameters)
@@ -316,7 +316,7 @@
 		   (paip-prolog-variables-in exp)
 		   parameters)))
     (if exp-vars
-        `(let ,(mapcar (lambda (var) `(,var (?)))
+        `(let ,(cl-mapcar (lambda (var) `(,var (\?)))
                        exp-vars)
            ,exp)
       exp)))
@@ -342,14 +342,14 @@
 
 (cl-defun paip-prologc-make-anonymous
     (exp &optional
-	 (anon-vars (anonymous-variables-in exp)))
+	 (anon-vars (paip-prologc-anonymous-variables-in exp)))
   "Replace variables that are only used once with ?."
   (cond ((consp exp)
          (paip-reuse-cons
 	  (paip-prologc-make-anonymous (first exp) anon-vars)
 	  (paip-prologc-make-anonymous (rest exp) anon-vars)
                      exp))
-        ((member exp anon-vars) '?)
+        ((member exp anon-vars) '\?)
         (t exp)))
 
 ;; (defun anonymous-variables-in (tree)
@@ -384,7 +384,7 @@
      (cl-multiple-value-bind (new-seen-once new-seen-more)
          (paip-prologc-anon-vars-in (first tree) seen-once seen-more)
        (paip-prologc-anon-vars-in (rest tree) new-seen-once new-seen-more)))
-    ((not (variable-p tree)) (cl-values seen-once seen-more))
+    ((not (paip-variable-p tree)) (cl-values seen-once seen-more))
     ((member tree seen-once)
      (cl-values (delete tree seen-once) (cons tree seen-more)))
     ((member tree seen-more)
@@ -472,7 +472,7 @@
   "X is a variable, and Y may be."
   (let* ((xb (paip-prologc-follow-binding x bindings))
          (x1 (if xb (cdr xb) x))
-         (yb (if (variable-p y)
+         (yb (if (paip-variable-p y)
 		 (paip-prologc-follow-binding y bindings)))
          (y1 (if yb (cdr yb) y)))
     (cond                                                 ; Case:
@@ -488,15 +488,15 @@
        ;; i.e. x is an ?arg variable
        (if (and (paip-variable-p y1) (null yb))
            (cl-values 't
-		      (paip-prologc-extend-bindings y1 x1 bindings))	; 4
+		      (paip-extend-bindings y1 x1 bindings))	; 4
            (cl-values
 	    `(paip-prologc-unify!
 	      ,x1
 	      ,(paip-prologc-compile-arg y1 bindings))
-                   (paip-prologc-extend-bindings x1 y1 bindings))))    ; 5,6
+                   (paip-extend-bindings x1 y1 bindings))))    ; 5,6
       ((not (null yb))
        (paip-prologc-compile-unify-variable y1 x1 bindings))
-      (t (cl-values 't (paip-prologc-extend-bindings x1 y1 bindings)))))) ; 8,9
+      (t (cl-values 't (paip-extend-bindings x1 y1 bindings)))))) ; 8,9
 
 ;; (defun bind-variables-in (exp bindings)
 ;;   "Bind all variables in exp to themselves, and add that to
@@ -510,8 +510,8 @@
   "Bind all variables in exp to themselves, and add that to
   bindings (except for variables already bound)."
   (cl-dolist (var (paip-prolog-variables-in exp))
-    (unless (paip-prologc-get-binding var bindings)
-      (setf bindings (paip-prologc-extend-bindings var var bindings))))
+    (unless (paip-get-binding var bindings)
+      (setf bindings (paip-extend-bindings var var bindings))))
   bindings)
 
 ;; (defun follow-binding (var bindings)
@@ -524,7 +524,7 @@
 
 (defun paip-prologc-follow-binding (var bindings)
   "Get the ultimate binding of var according to bindings."
-  (let ((b (paip-prologc-get-binding var bindings)))
+  (let ((b (paip-get-binding var bindings)))
     (if (eq (car b) (cdr b))
         b
         (or (paip-prologc-follow-binding (cdr b) bindings)
@@ -550,14 +550,14 @@
   "Generate code for an argument to a goal in the body."
   (cond ((eq arg '\?) '(\?))
         ((paip-variable-p arg)
-         (let ((binding (paip-prologc-get-binding arg bindings)))
+         (let ((binding (paip-get-binding arg bindings)))
            (if (and (not (null binding))
-                    (not (eq arg (paip-prologc-binding-val binding))))
-             (paip-prologc-compile-arg (paip-prologc-binding-val binding) bindings)
+                    (not (eq arg (paip-binding-val binding))))
+             (paip-prologc-compile-arg (paip-binding-val binding) bindings)
              arg)))
         ((not (paip-find-if-anywhere 'paip-variable-p arg)) `',arg)
         ((paip-prologc-proper-listp arg)
-         `(list .,(mapcar (lambda (a)
+         `(list .,(cl-mapcar (lambda (a)
 			    (paip-prologc-compile-arg a bindings))
                           arg)))
         (t `(cons ,(paip-prologc-compile-arg (first arg) bindings)
@@ -573,8 +573,8 @@
   "Extend bindings to include any unbound variables in goal."
   (let ((variables (cl-remove-if
 		    (lambda (v) (assoc v bindings))
-		    (paip-prologc-variables-in goal))))
-    (nconc (mapcar 'paip-prologc-self-cons variables) bindings)))
+		    (paip-prolog-variables-in goal))))
+    (nconc (cl-mapcar 'paip-prologc-self-cons variables) bindings)))
 
 ;; (defun self-cons (x) (cons x x))
 
@@ -593,7 +593,7 @@
 
 (paip-prologc-def-prolog-compiler-macro = (goal body cont bindings)
   "Compile a goal which is a call to =."
-  (let ((args (args goal)))
+  (let ((args (paip-prologc-args goal)))
     (if (/= (length args) 2)
         :pass ;; decline to handle this goal
         (cl-multiple-value-bind (code1 bindings1)
@@ -620,12 +620,12 @@
     parms                  
     (paip-prologc-compile-body
       (nconc
-        (mapcar 'paip-prologc-make-=
+        (cl-mapcar 'paip-prologc-make-=
 		parms
-		(args (paip-prologc-clause-head clause)))
-        (paip-prologc-clause-body clause))
+		(paip-prologc-args (paip-prolog-clause-head clause)))
+        (paip-prolog-clause-body clause))
       cont
-      (mapcar 'paip-prologc-self-cons parms))))                    ;***
+      (cl-mapcar 'paip-prologc-self-cons parms))))                    ;***
 
 ;; (defvar *uncompiled* nil 
 ;;   "Prolog symbols that have not been compiled.")
@@ -647,13 +647,13 @@
 (defun paip-prologc-add-clause (clause)
   "Add a clause to the data base, indexed by head's predicate."
   ;; The predicate must be a non-variable symbol.
-  (let ((pred (predicate
-	       (paip-prologc-clause-head clause))))
+  (let ((pred (paip-prolog-predicate
+	       (paip-prolog-clause-head clause))))
     (assert (and (symbolp pred) (not (paip-variable-p pred))))
-    (pushnew pred paip-prologc-*db-predicates*)
+    (pushnew pred paip-prolog-*db-predicates*)
     (pushnew pred paip-prologc-*uncompiled*)                          ;***
     (setf (get pred 'clauses)
-          (nconc (paip-prologc-get-clauses pred) (list clause)))
+          (nconc (paip-prolog-get-clauses pred) (list clause)))
     pred))
 
 ;; (defun top-level-prove (goals)
@@ -673,19 +673,19 @@
 (defun paip-prologc-top-level-prove (goals)
   "Prove the list of goals by compiling and calling it."
   ;; First redefine top-level-query
-  (paip-prologc-clear-predicate
+  (paip-prolog-clear-predicate
    'paip-prologc-top-level-query)
   (let ((vars (delete '\?
-		      (paip-prologc-variables-in goals))))
-    (add-clause
-     `((paip-prologc-top-level-query)
+		      (paip-prolog-variables-in goals))))
+    (paip-prolog-add-clause
+     `((top-level-query)
        ,@goals
        (paip-prologc-show-prolog-vars
-	,(mapcar 'symbol-name vars)
+	,(cl-mapcar 'symbol-name vars)
 	,vars))))
   ;; Now run it
   (paip-prologc-run-prolog
-   'paip-prologc-top-level-query/0 'ignore)
+   'top-level-query/0 'paip-prologc-ignore)
   (paipx-message
    (format "\nNo."))
   (cl-values))
@@ -706,7 +706,7 @@
   ;; First compile anything else that needs it
   (paip-prologc-prolog-compile-symbols)
   ;; Reset the trail and the new variable counter
-  (setf (fill-pointer paip-prologc-*trail*) 0)
+  (setf (paipx-fill-pointer paip-prologc-*trail*) 0)
   (setf paip-prologc-*var-counter* 0)
   ;; Finally, call the query
   (catch 'paip-prologc-top-level-prove
@@ -719,7 +719,7 @@
 ;;   (setf *uncompiled* (set-difference *uncompiled* symbols)))
 
 (cl-defun paip-prologc-prolog-compile-symbols
-    (&optional (symbols *uncompiled*))
+    (&optional (symbols paip-prologc-*uncompiled*))
   "Compile a list of Prolog symbols.
   By default, the list is all symbols that need it."
   (mapc 'paip-prologc-prolog-compile symbols)
@@ -804,16 +804,18 @@
   "Compile all the clauses for a given symbol/arity
   into a single LISP function."
   (let ((paip-prologc-*predicate*
-	 (paip-prologc-make-predicate symbol arity))	;***
+	 (paip-prologc-make-predicate symbol arity)) ;***
         (parameters
 	 (paip-prologc-make-parameters arity)))
-    (paip-prologc-compile
-     (eval
-      `(defun ,paip-prologc-*predicate* (,@parameters cont)
+    ;;(compile
+    (eval
+     `(defun ,paip-prologc-*predicate* (,@parameters cont)
 	.,(paip-prologc-maybe-add-undo-bindings
-	   (mapcar (lambda (clause)
-		       (paip-prologc-compile-clause parameters clause 'cont))
-	    clauses)))))))
+	   (cl-mapcar (lambda (clause)
+			(paip-prologc-compile-clause parameters clause 'cont))
+		      clauses))))))
+;; [YF] We may be able to byte-compile this function.
+;; (paip-prologc-compile-predicate 'top-level-query 0 (get 'clauses 'top-level-query))
 
 ;; (defun compile-body (body cont bindings)
 ;;   "Compile the body of a clause."
@@ -847,29 +849,35 @@
   (cond
    ((null body)
     `(funcall ,cont))
-   ((eq (first body) '\?)		;*** 
+   ((eq (first body) '!)		;*** 
     `(progn
        ,(paip-prologc-compile-body (rest body) cont bindings) ;***
        (cl-return-from ,paip-prologc-*predicate* nil)))	      ;***
    (t (let* ((goal (first body))
 	     (macro (paip-prologc-prolog-compiler-macro
-		     (paip-prologc-predicate goal)))
+		     (paip-prolog-predicate goal)))
 	     (macro-val (if macro 
 			    (funcall macro goal (rest body) 
 				     cont bindings))))
         (if (and macro (not (eq macro-val :pass)))
             macro-val
 	  `(,(paip-prologc-make-predicate
-	      (paip-prologc-predicate goal)
+	      (paip-prolog-predicate goal)
 	      (paip-prologc-relation-arity goal))
-	    ,@(mapcar (lambda (arg)
-			(paip-prologc-compile-arg arg bindings))
-		      (args goal))
+	    ,@(cl-mapcar (lambda (arg)
+			   (paip-prologc-compile-arg arg bindings))
+			 (paip-prologc-args goal))
 	    ,(if (null (rest body))
 		 cont
 	       `(lambda ()
 		  ,(paip-prologc-compile-body 
 		    (rest body) cont
 		    (paip-prologc-bind-new-variables bindings goal))))))))))
+
+(defmacro \?- (&rest goals)
+  `(paip-prologc-top-level-prove
+    ',(paip-prolog-replace-?-vars goals)))
+;; [YF] Overwriting this with the prologc top-level.
+
 
 (provide 'paip-prologc)
