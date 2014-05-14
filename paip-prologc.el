@@ -16,12 +16,12 @@
 
 ;; (defstruct var name (binding unbound))
 
-(cl-defstruct paip-prologc-var name (binding unbound))
+(cl-defstruct paip-prologc-var name (binding paip-prologc-unbound))
 
 ;; (defun bound-p (var) (not (eq (var-binding var) unbound)))
 
 (defun paip-prologc-bound-p (var)
-  (not (eq (paip-prologc-var-binding var) unbound)))
+  (not (eq (paip-prologc-var-binding var) paip-prologc-unbound)))
 
 ;; (defmacro deref (exp)
 ;;   "Follow pointers for bound variables."
@@ -48,7 +48,8 @@
 
 (defun paip-prologc-unify! (x y)
   "Destructively unify two expressions"
-  (cond ((eql (deref x) (deref y)) t)
+  (cond ((eql (paip-prologc-deref x)
+	      (paip-prologc-deref y)) t)
         ((paip-prologc-var-p x)
 	 (paip-prologc-set-binding! x y))
         ((paip-prologc-var-p y)
@@ -99,7 +100,7 @@
   "Set var's binding to value, after saving the variable
   in the trail.  Always returns t."
   (unless (eq var value)
-    (paipx-vector-push-extend var *trail*)
+    (paipx-vector-push-extend var paip-prologc-*trail*)
     (setf (paip-prologc-var-binding var) value))
   t)
 
@@ -127,7 +128,7 @@
 (cl-defstruct (paip-prologc-var (:constructor \? ())
                 (:print-function print-var))
   (name (cl-incf paip-prologc-*var-counter*))
-  (binding unbound))
+  (binding paip-prologc-unbound))
 
 ;; (defun prolog-compile (symbol &optional
 ;;                        (clauses (get-clauses symbol)))
@@ -155,7 +156,8 @@
       ;; Compile all the clauses with any other arity
       (paip-prologc-prolog-compile
         symbol
-	(paip-prologc-clauses-with-arity clauses '/= arity)))))
+	(paip-prologc-clauses-with-arity clauses (paip-complement '=)
+					 arity)))))
 
 ;; (defun clauses-with-arity (clauses test arity)
 ;;   "Return all clauses whose head has given arity."
@@ -217,7 +219,7 @@
 
 (defun paip-prologc-compile-call (predicate args cont)
   "Compile a call to a prolog predicate."
-  `(,paip-prolog-predicate ,@args ,cont))
+  `(,predicate ,@args ,cont))
 
 ;; (defun prolog-compiler-macro (name)
 ;;   "Fetch the compiler macro for a Prolog predicate."
@@ -670,19 +672,37 @@
 ;;   (format t "~&No.")
 ;;   (values))
 
+;; (defun paip-prologc-top-level-prove (goals)
+;;   "Prove the list of goals by compiling and calling it."
+;;   ;; First redefine top-level-query
+;;   (paip-prolog-clear-predicate
+;;    'paip-prologc-top-level-query)
+;;   (let ((vars (delete '\?
+;; 		      (paip-prolog-variables-in goals))))
+;;     (paip-prolog-add-clause
+;;      `((top-level-query)
+;;        ,@goals
+;;        (show-prolog-vars
+;; 	,(cl-mapcar 'symbol-name vars)
+;; 	,vars))))
+;;   ;; Now run it
+;;   (paip-prologc-run-prolog
+;;    'top-level-query/0 'paip-prologc-ignore)
+;;   (paipx-message
+;;    (format "\nNo."))
+;;   (cl-values))
+
 (defun paip-prologc-top-level-prove (goals)
   "Prove the list of goals by compiling and calling it."
   ;; First redefine top-level-query
   (paip-prolog-clear-predicate
-   'paip-prologc-top-level-query)
+   'top-level-query)
   (let ((vars (delete '\?
 		      (paip-prolog-variables-in goals))))
-    (paip-prolog-add-clause
+    (paip-prologc-add-clause
      `((top-level-query)
        ,@goals
-       (paip-prologc-show-prolog-vars
-	,(cl-mapcar 'symbol-name vars)
-	,vars))))
+       )))
   ;; Now run it
   (paip-prologc-run-prolog
    'top-level-query/0 'paip-prologc-ignore)
@@ -723,8 +743,9 @@
   "Compile a list of Prolog symbols.
   By default, the list is all symbols that need it."
   (mapc 'paip-prologc-prolog-compile symbols)
-  (setf paip-prologc-*uncompiled*
-	(cl-set-difference paip-prologc-*uncompiled* symbols)))
+;;  (setf paip-prologc-*uncompiled*
+;;	(cl-set-difference paip-prologc-*uncompiled* symbols))
+  )
 
 ;; (defun ignore (&rest args)
 ;;   (declare (ignore args))
@@ -747,7 +768,7 @@
 ;;       (funcall cont)
 ;;       (throw 'top-level-prove nil)))
 
-(defun paip-prologc-show-prolog-vars/2 (var-names vars cont)
+(defun show-prolog-vars/2 (var-names vars cont)
   "Display the variables, and prompt the user to see
   if we should continue.  If not, return to the top level."
   (if (null vars)
@@ -759,7 +780,7 @@
 	     (format "\n%s = %s"
 		     name
 		     (paip-prologc-deref-exp var)))))
-  (if (paip-prologc-continue-p)
+  (if (paip-prolog-continue-p)
       (funcall cont)
       (throw 'paip-prologc-top-level-prove nil)))
 
@@ -774,7 +795,7 @@
 
 (defun paip-prologc-deref-exp (exp)
   "Build something equivalent to EXP with variables dereferenced."
-  (if (atom (deref exp))
+  (if (atom (paip-prologc-deref exp))
       exp
       (paip-reuse-cons
         (paip-prologc-deref-exp (first exp))
