@@ -790,15 +790,15 @@
   (if (null vars)
       (paipx-message
        (format "\nYes"))
-      (cl-loop for name in var-names
-            for var in vars do
-            (paipx-message
-	     (format "\n%s = %s"
-		     name
-		     (paip-prologc-deref-exp var)))))
+    (cl-loop for name in var-names
+	     for var in vars do
+	     (paipx-message
+	      (format "\n%s = %s"
+		      name
+		      (paip-prologc-deref-exp var)))))
   (if (paip-prolog-continue-p)
       (funcall cont)
-      (throw 'paip-prologc-top-level-prove nil)))
+    (throw 'paip-prologc-top-level-prove nil)))
 
 ;; (defun deref-exp (exp)
 ;;   "Build something equivalent to EXP with variables dereferenced."
@@ -847,10 +847,12 @@
     ;;(compile
     (eval
      `(cl-defun ,paip-prologc-*predicate* (,@parameters cont)
-	.,(paip-prologc-maybe-add-undo-bindings
-	   (cl-mapcar (lambda (clause)
-			(paip-prologc-compile-clause parameters clause 'cont))
-		      clauses))))))
+	(lexical-let ((c cont))
+	  .,(paip-prologc-maybe-add-undo-bindings
+	     (cl-mapcar (lambda (clause)
+			  (paip-prologc-compile-clause parameters clause 'c))
+			clauses)))))))
+
 ;; [YF] We may be able to byte-compile this function.
 ;; (paip-prologc-compile-predicate 'top-level-query 0 (get 'clauses 'top-level-query))
 
@@ -881,35 +883,66 @@
 ;;                            (rest body) cont
 ;;                            (bind-new-variables bindings goal))))))))))
 
+;; (defun paip-prologc-compile-body (body cont bindings)
+;;   "Compile the body of a clause."
+;;   (cond
+;;    ((null body)
+;;     `(funcall ,cont))
+;;    ((eq (first body) '!)		;*** 
+;;     `(progn
+;;        ,(paip-prologc-compile-body (rest body) cont bindings) ;***
+;;        (cl-return-from ,paip-prologc-*predicate* nil)))	      ;***
+;;    (t (let* ((goal (first body))
+;; 	     (macro (paip-prologc-prolog-compiler-macro
+;; 		     (paip-prolog-predicate goal)))
+;; 	     (macro-val (if macro 
+;; 			    (funcall macro goal (rest body) 
+;; 				     cont bindings))))
+;;         (if (and macro (not (eq macro-val :pass)))
+;;             macro-val
+;; 	  `(,(paip-prologc-make-predicate
+;; 	      (paip-prolog-predicate goal)
+;; 	      (paip-prologc-relation-arity goal))
+;; 	    ,@(cl-mapcar (lambda (arg)
+;; 			   (paip-prologc-compile-arg arg bindings))
+;; 			 (paip-prologc-args goal))
+;; 	    ,(if (null (rest body))
+;; 		 cont
+;; 	       `(lambda ()
+;; 		  ,(paip-prologc-compile-body 
+;; 		    (rest body) cont
+;; 		    (paip-prologc-bind-new-variables bindings goal))))))))))
+
 (defun paip-prologc-compile-body (body cont bindings)
   "Compile the body of a clause."
-  (cond
-   ((null body)
-    `(funcall ,cont))
-   ((eq (first body) '!)		;*** 
-    `(progn
-       ,(paip-prologc-compile-body (rest body) cont bindings) ;***
-       (cl-return-from ,paip-prologc-*predicate* nil)))	      ;***
-   (t (let* ((goal (first body))
-	     (macro (paip-prologc-prolog-compiler-macro
-		     (paip-prolog-predicate goal)))
-	     (macro-val (if macro 
-			    (funcall macro goal (rest body) 
-				     cont bindings))))
-        (if (and macro (not (eq macro-val :pass)))
-            macro-val
-	  `(,(paip-prologc-make-predicate
-	      (paip-prolog-predicate goal)
-	      (paip-prologc-relation-arity goal))
-	    ,@(cl-mapcar (lambda (arg)
-			   (paip-prologc-compile-arg arg bindings))
-			 (paip-prologc-args goal))
-	    ,(if (null (rest body))
-		 cont
-	       `(lambda ()
-		  ,(paip-prologc-compile-body 
-		    (rest body) cont
-		    (paip-prologc-bind-new-variables bindings goal))))))))))
+  (lexical-let ((c cont))
+    (cond
+     ((null body)
+      `(funcall ,c))
+     ((eq (first body) '!)		;*** 
+      `(progn
+	 ,(paip-prologc-compile-body (rest body) c bindings) ;***
+	 (cl-return-from ,paip-prologc-*predicate* nil)))       ;***
+     (t (let* ((goal (first body))
+	       (macro (paip-prologc-prolog-compiler-macro
+		       (paip-prolog-predicate goal)))
+	       (macro-val (if macro 
+			      (funcall macro goal (rest body) 
+				       c bindings))))
+	  (if (and macro (not (eq macro-val :pass)))
+	      macro-val
+	    `(,(paip-prologc-make-predicate
+		(paip-prolog-predicate goal)
+		(paip-prologc-relation-arity goal))
+	      ,@(cl-mapcar (lambda (arg)
+			     (paip-prologc-compile-arg arg bindings))
+			   (paip-prologc-args goal))
+	      ,(if (null (rest body))
+		   c
+		 `(lambda ()
+		    ,(paip-prologc-compile-body 
+		      (rest body) c
+		      (paip-prologc-bind-new-variables bindings goal)))))))))))
 
 (defmacro \?- (&rest goals)
   `(paip-prologc-top-level-prove

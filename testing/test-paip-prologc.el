@@ -4,6 +4,7 @@
 (require 'ert)
 (require 'paip-prologc)
 
+(ert-deftest test-paip-prologc-basic0 ()
 ;; CL's prologc behaviour:
 ;;
 ;; (clear-db)
@@ -27,11 +28,7 @@
   (<- (likes Sandy Kim))
   (<- (likes Robin cats))
   (\?- (likes Sandy \?who))
-paip-prologc-*trail*
-(debug-on-entry 'paip-prologc-set-binding!)
-(cancel-debug-on-entry 'paip-prologc-set-binding!)
-(debug-on-entry 'paip-prologc-undo-bindings!)
-(cancel-debug-on-entry 'paip-prologc-undo-bindings!)
+  )
 
 (ert-deftest test-paip-prologc-basic ()
   (paip-prolog-clear-db)
