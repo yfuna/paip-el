@@ -56,7 +56,7 @@
 
 (defun paip-requires (&rest files)
   "The arguments are files that are required to run an application."
-  (mapc #'paip-load-paip-file files))
+  (mapc 'paip-load-paip-file files))
 ;; [YF] I'm not sure if I will use this function in elisp version
 ;; because elisp has load-path and the require function.
 ;;

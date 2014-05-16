@@ -150,5 +150,30 @@
   ;; Yes.
   )
 
+(ert-deftest paip-prologc-unify! ()
+  (debug-on-entry 'paip-prologc-unify!)
+  (cancel-debug-on-entry 'paip-prologc-unify!)
+  (paip-prologc-unify! `(,(\?) + 1) `(2 + ,(\?)))
+  (let ((\?x (\?))
+	(\?y (\?)))
+    (paip-prologc-unify! `(,\?x ,\?y a) `(,\?y ,\?x ,\?x)))
+  (paip-prologc-unify! 1 1)
+  (paip-prologc-unify! (\?) 1)
+  (pp
+   (let ((\?x (\?))
+	 (\?y (\?))
+	 (\?z (\?)))
+     (paip-prologc-unify!
+      `(,\?x ,\?y ,\?z) `((,\?y ,\?z ) (,\?x ,\?z) (,\?x ,\?y)))))
+  (pp paip-prologc-*trail*)
+  (2 .
+     [[cl-struct-paip-prologc-var 4
+				  [cl-struct-paip-prologc-var 5 a]]
+      [cl-struct-paip-prologc-var 5 a]
+      nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil])
+
+  (setf (paipx-fill-pointer paip-prologc-*trail*) 0)
+  )
+
 (provide 'test-paip-prolog)
 

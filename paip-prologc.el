@@ -16,7 +16,19 @@
 
 ;; (defstruct var name (binding unbound))
 
-(cl-defstruct paip-prologc-var name (binding paip-prologc-unbound))
+;; (cl-defstruct paip-prologc-var name (binding paip-prologc-unbound))
+;; 
+;; [YF] We have more advanced implementation of this structure
+;; below. I should comment out this def for the structure. Having two
+;; diffrent definition for a structure in a same file is really
+;; confusing at least for me...
+
+(cl-defstruct (paip-prologc-var (:constructor \? ())
+                (:print-function print-var))
+  (name (cl-incf paip-prologc-*var-counter*))
+  (binding paip-prologc-unbound))
+;; [YF] I moved this one from below. So please look below if you need
+;; the original definition.
 
 ;; (defun bound-p (var) (not (eq (var-binding var) unbound)))
 
@@ -64,10 +76,13 @@
 ;;   (setf (var-binding var) value)
 ;;   t)
 
-(defun paip-prologc-set-binding! (var value)
-  "Set var's binding to value.  Always succeeds (returns t)."
-  (setf (paip-prologc-var-binding var) value)
-  t)
+;; (defun paip-prologc-set-binding! (var value)
+;;   "Set var's binding to value.  Always succeeds (returns t)."
+;;   (setf (paip-prologc-var-binding var) value)
+;;   t)
+;;
+;; [YF] We have more complicated implementation of set-binding!
+;; below. So I commented out this one to avoid any confusion.
 
 ;; (defun print-var (var stream depth)
 ;;   (if (or (and *print-level*
@@ -124,11 +139,10 @@
 ;;                 (:print-function print-var))
 ;;   (name (incf *var-counter*))
 ;;   (binding unbound))
-
-(cl-defstruct (paip-prologc-var (:constructor \? ())
-                (:print-function print-var))
-  (name (cl-incf paip-prologc-*var-counter*))
-  (binding paip-prologc-unbound))
+;; 
+;; [YF] I should move this definition somewhere sufficiently above
+;; because defstructure macro create several functions that other
+;; definition for operators use.
 
 ;; (defun prolog-compile (symbol &optional
 ;;                        (clauses (get-clauses symbol)))
@@ -294,7 +308,7 @@
   If there are any, bind the trail before we start."
   (if (paip-length=1 compiled-exps)
       compiled-exps
-      `((let ((old-trail (paipx-fill-pointer paip-prologc-*trail*)))
+      `((lexical-let ((old-trail (paipx-fill-pointer paip-prologc-*trail*)))
           ,(first compiled-exps)
           ,@(cl-loop for exp in (rest compiled-exps)
 		     collect '(paip-prologc-undo-bindings! old-trail)
@@ -318,7 +332,7 @@
 		   (paip-prolog-variables-in exp)
 		   parameters)))
     (if exp-vars
-        `(let ,(cl-mapcar (lambda (var) `(,var (\?)))
+        `(lexical-let ,(cl-mapcar (lambda (var) `(,var (\?)))
                        exp-vars)
            ,exp)
       exp)))
@@ -830,7 +844,7 @@
 	 (paip-prologc-make-parameters arity)))
     ;;(compile
     (eval
-     `(defun ,paip-prologc-*predicate* (,@parameters cont)
+     `(cl-defun ,paip-prologc-*predicate* (,@parameters cont)
 	.,(paip-prologc-maybe-add-undo-bindings
 	   (cl-mapcar (lambda (clause)
 			(paip-prologc-compile-clause parameters clause 'cont))
