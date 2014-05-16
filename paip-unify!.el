@@ -118,4 +118,81 @@
  "Return something that unifies with both x and y (or fail)."
  (paip-unify-subst-bindings (paip-unify-unify x y) x))
 
-(provide 'paip-unify)
+
+;;;;;;;;;
+
+;; (defvar *var-counter* 0)
+
+(defvar paip-unify!-*var-counter* 0)
+
+;; (defconstant unbound "Unbound")
+
+(defconst paip-unify!-unbound "Unbound")
+
+;; (cl-defstruct paip-prologc-var name (binding paip-prologc-unbound))
+
+(cl-defstruct (paip-unify!-var (:constructor \? ())
+                (:print-function print-var))
+  (name (cl-incf paip-prologc-*var-counter*))
+  (binding paip-prologc-unbound))
+
+(defmacro paip-unify!-deref (exp)
+  "Follow pointers for bound variables."
+  `(progn (cl-loop while (and (paip-unify!-var-p ,exp)
+			      (paip-unify!-bound-p ,exp))
+             do (setf ,exp (paip-unify!-var-binding ,exp)))
+          ,exp))
+
+;; (defun unify! (x y)
+;;   "Destructively unify two expressions"
+;;   (cond ((eql (deref x) (deref y)) t)
+;;         ((var-p x) (set-binding! x y))
+;;         ((var-p y) (set-binding! y x))
+;;         ((and (consp x) (consp y))
+;;          (and (unify! (first x) (first y))
+;;               (unify! (rest x) (rest y))))
+;;         (t nil)))
+
+(defun paip-prologc-unify! (x y)
+  "Destructively unify two expressions"
+  (cond ((eql (paip-prologc-deref x)
+	      (paip-prologc-deref y)) t)
+        ((paip-prologc-var-p x)
+	 (paip-prologc-set-binding! x y))
+        ((paip-prologc-var-p y)
+	 (paip-prologc-set-binding! y x))
+        ((and (consp x) (consp y))
+         (and (paip-prologc-unify! (first x) (first y))
+              (paip-prologc-unify! (rest x) (rest y))))
+        (t nil)))
+
+;; (defun set-binding! (var value)
+;;   "Set var's binding to value, after saving the variable
+;;   in the trail.  Always returns t."
+;;   (unless (eq var value)
+;;     (vector-push-extend var *trail*)
+;;     (setf (var-binding var) value))
+;;   t)
+
+(defun paip-unify!-set-binding! (var value)
+  "Set var's binding to value, after saving the variable
+  in the trail.  Always returns t."
+  (unless (eq var value)
+    (paipx-vector-push-extend var paip-unify!-*trail*)
+    (setf (paip-unify!-var-binding var) value))
+  t)
+
+;; (defun undo-bindings! (old-trail)
+;;   "Undo all bindings back to a given point in the trail."
+;;   (loop until (= (fill-pointer *trail*) old-trail)
+;;      do (setf (var-binding (vector-pop *trail*)) unbound)))
+
+(defun paip-unify!-undo-bindings! (old-trail)
+  "Undo all bindings back to a given point in the trail."
+  (cl-loop until (= (paipx-fill-pointer paip-unify!-*trail*) old-trail)
+	   do (setf (paip-unify!-var-binding
+		     (paipx-vector-pop paip-unify!-*trail*))
+		    paip-unify!-unbound)))
+
+
+(provide 'paip-unify!)

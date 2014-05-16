@@ -114,7 +114,7 @@
 (defun paip-prologc-set-binding! (var value)
   "Set var's binding to value, after saving the variable
   in the trail.  Always returns t."
-  (unless (eq var value)
+  (unless (eq (paip-prologc-var-binding var) value)
     (paipx-vector-push-extend var paip-prologc-*trail*)
     (setf (paip-prologc-var-binding var) value))
   t)
@@ -716,7 +716,9 @@
     (paip-prologc-add-clause
      `((top-level-query)
        ,@goals
-       )))
+       (show-prolog-vars
+	,(cl-mapcar 'symbol-name vars)
+ 	,vars))))
   ;; Now run it
   (paip-prologc-run-prolog
    'top-level-query/0 'paip-prologc-ignore)

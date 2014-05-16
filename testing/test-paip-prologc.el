@@ -4,6 +4,35 @@
 (require 'ert)
 (require 'paip-prologc)
 
+;; CL's prologc behaviour:
+;;
+;; (clear-db)
+;; (<- (likes Kim Robin))
+;; (<- (likes Sandy Lee))
+;; (<- (likes Sandy Kim))
+;; (<- (likes Robin cats))
+;; (?- (likes Sandy ?who))
+;; ?WHO = LEE
+;;
+;; (fill-pointer *trail*) 
+;; => 1
+;; (var-name (elt *trail* 0))
+;; => 1
+;; (var-binding (elt *trail* 0))
+;; => LEE
+
+  (paip-prolog-clear-db)
+  (<- (likes Kim Robin))
+  (<- (likes Sandy Lee))
+  (<- (likes Sandy Kim))
+  (<- (likes Robin cats))
+  (\?- (likes Sandy \?who))
+paip-prologc-*trail*
+(debug-on-entry 'paip-prologc-set-binding!)
+(cancel-debug-on-entry 'paip-prologc-set-binding!)
+(debug-on-entry 'paip-prologc-undo-bindings!)
+(cancel-debug-on-entry 'paip-prologc-undo-bindings!)
+
 (ert-deftest test-paip-prologc-basic ()
   (paip-prolog-clear-db)
   (<- (likes Kim Robin))
@@ -159,13 +188,42 @@
     (paip-prologc-unify! `(,\?x ,\?y a) `(,\?y ,\?x ,\?x)))
   (paip-prologc-unify! 1 1)
   (paip-prologc-unify! (\?) 1)
-  (pp
-   (let ((\?x (\?))
+  (let ((\?x (\?))
 	 (\?y (\?))
 	 (\?z (\?)))
      (paip-prologc-unify!
-      `(,\?x ,\?y ,\?z) `((,\?y ,\?z ) (,\?x ,\?z) (,\?x ,\?y)))))
+      `(,\?x ,\?y ,\?z) `((,\?y ,\?z ) (,\?x ,\?z) (,\?x ,\?y))))
   (pp paip-prologc-*trail*)
+  (3 .
+     [[cl-struct-paip-prologc-var 12
+				  ([cl-struct-paip-prologc-var 13
+							       (#2
+								[cl-struct-paip-prologc-var 14
+											    (#2 #4)])]
+				   [cl-struct-paip-prologc-var 14
+							       (#2
+								[cl-struct-paip-prologc-var 13
+											    (#2 #4)])])]
+      [cl-struct-paip-prologc-var 13
+				  ([cl-struct-paip-prologc-var 12
+							       (#2
+								[cl-struct-paip-prologc-var 14
+											    (#4 #2)])]
+				   [cl-struct-paip-prologc-var 14
+							       ([cl-struct-paip-prologc-var 12
+											    (#2 #4)]
+								#2)])]
+      [cl-struct-paip-prologc-var 14
+				  ([cl-struct-paip-prologc-var 12
+							       ([cl-struct-paip-prologc-var 13
+											    (#4 #2)]
+								#2)]
+				   [cl-struct-paip-prologc-var 13
+							       ([cl-struct-paip-prologc-var 12
+											    (#4 #2)]
+								#2)])]
+      nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil])
+
   (2 .
      [[cl-struct-paip-prologc-var 4
 				  [cl-struct-paip-prologc-var 5 a]]
