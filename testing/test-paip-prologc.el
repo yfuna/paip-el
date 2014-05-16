@@ -36,6 +36,7 @@
   (<- (likes Sandy Lee))
   (<- (likes Sandy Kim))
   (<- (likes Robin cats))
+;;  (<- (likes \?x \?x))
   (<- (likes Sandy \?x) (likes \?x cats))
   (<- (likes Kim \?x) (likes \?x Lee) (likes \?x Kim))
   (\?- (likes Sandy \?who))

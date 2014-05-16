@@ -16,6 +16,8 @@
 ;; (defun clause-head (clause) (first clause))
 
 (defun paip-prolog-clause-head (clause) (first clause))
+;; [YF] Ex1: ((likes Sam Robin)): head is (likes Sam Robin).
+;; [YF] Ex2: ((likes Kim \?x) (likes \?x Lee) (likes \?x Kim)): head is (likes Kim \?x).
 
 ;; (defun clause-body (clause) (rest clause))
 
@@ -29,6 +31,8 @@
 ;; (defun predicate (relation) (first relation))
 
 (defun paip-prolog-predicate (relation) (first relation))
+;; [YF] Ex. : relation is (likes Sam Robin), predicate is likes
+
 
 ;; (defun args (x) "The arguments of a relation" (rest x))
 

@@ -60,6 +60,8 @@
 
 (defun paip-prologc-unify! (x y)
   "Destructively unify two expressions"
+  (paipx-message (format "\nUnify!:x=%s, y=%s" x y))
+  (paipx-message (format "\n*trail*:%s" paip-prologc-*trail*))
   (cond ((eql (paip-prologc-deref x)
 	      (paip-prologc-deref y)) t)
         ((paip-prologc-var-p x)
@@ -114,7 +116,9 @@
 (defun paip-prologc-set-binding! (var value)
   "Set var's binding to value, after saving the variable
   in the trail.  Always returns t."
-  (unless (eq (paip-prologc-var-binding var) value)
+;;  (unless (eq (paip-prologc-var-binding var) value)
+  (paipx-message (format "\nSet-binding!:var=%s, val=%s" var value))
+  (unless (eq var value)
     (paipx-vector-push-extend var paip-prologc-*trail*)
     (setf (paip-prologc-var-binding var) value))
   t)
@@ -497,7 +501,7 @@
        (paip-prologc-compile-unify x1 y1 bindings))
       ((paip-find-anywhere x1 y1) (cl-values nil bindings))       ; 11
       ((consp y1)                                         ; 7,10
-       (cl-values `(unify! ,x1
+       (cl-values `(paip-prologc-unify! ,x1
 			   ,(paip-prologc-compile-arg y1 bindings))
                (paip-prologc-bind-variables-in y1 bindings)))
       ((not (null xb))
@@ -610,14 +614,15 @@
 (paip-prologc-def-prolog-compiler-macro = (goal body cont bindings)
   "Compile a goal which is a call to =."
   (let ((args (paip-prologc-args goal)))
-    (if (/= (length args) 2)
-        :pass ;; decline to handle this goal
+    (if (= (length args) 2)
         (cl-multiple-value-bind (code1 bindings1)
             (paip-prologc-compile-unify
 	     (first args) (second args) bindings)
           (paip-prologc-compile-if
             code1
-            (paip-prologc-compile-body body cont bindings1))))))
+            (paip-prologc-compile-body body cont bindings1)))
+      :pass ;; decline to handle this goal
+      )))
 
 ;; (defun compile-clause (parms clause cont)
 ;;   "Transform away the head, and compile the resulting body."
@@ -632,7 +637,7 @@
 
 (defun paip-prologc-compile-clause (parms clause cont)
   "Transform away the head, and compile the resulting body."
-  (paip-prologc-bind-unbound-vars       
+  (paip-prologc-bind-unbound-vars
     parms                  
     (paip-prologc-compile-body
       (nconc
@@ -759,8 +764,8 @@
   "Compile a list of Prolog symbols.
   By default, the list is all symbols that need it."
   (mapc 'paip-prologc-prolog-compile symbols)
-;;  (setf paip-prologc-*uncompiled*
-;;	(cl-set-difference paip-prologc-*uncompiled* symbols))
+  (setf paip-prologc-*uncompiled*
+	(cl-set-difference paip-prologc-*uncompiled* symbols))
   )
 
 ;; (defun ignore (&rest args)
@@ -841,12 +846,13 @@
   "Compile all the clauses for a given symbol/arity
   into a single LISP function."
   (let ((paip-prologc-*predicate*
-	 (paip-prologc-make-predicate symbol arity)) ;***
+	 (paip-prologc-make-predicate symbol arity)) ;*** ; likes/2 or something
         (parameters
-	 (paip-prologc-make-parameters arity)))
+	 (paip-prologc-make-parameters arity))) ; \?arg1 \?arg2 ...
     ;;(compile
     (eval
      `(cl-defun ,paip-prologc-*predicate* (,@parameters cont)
+	(paipx-message (format "\n%s: params=%s" ',paip-prologc-*predicate* ',parameters))
 	(lexical-let ((c cont))
 	  .,(paip-prologc-maybe-add-undo-bindings
 	     (cl-mapcar (lambda (clause)
@@ -944,9 +950,14 @@
 		      (rest body) c
 		      (paip-prologc-bind-new-variables bindings goal)))))))))))
 
+;; (defmacro \?- (&rest goals)
+;;   `(paip-prologc-top-level-prove
+;;     ',(paip-prolog-replace-?-vars goals)))
+
 (defmacro \?- (&rest goals)
   `(paip-prologc-top-level-prove
-    ',(paip-prolog-replace-?-vars goals)))
+    ',goals))
+
 ;; [YF] Overwriting this with the prologc top-level.
 
 
