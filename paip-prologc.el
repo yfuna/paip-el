@@ -60,8 +60,8 @@
 
 (defun paip-prologc-unify! (x y)
   "Destructively unify two expressions"
-  (paipx-message (format "\nUnify!:x=%s, y=%s" x y))
-  (paipx-message (format "\n*trail*:%s" paip-prologc-*trail*))
+;;  (paipx-message (format "\nUnify!:x=%s, y=%s" x y))
+;;  (paipx-message (format "\n*trail*:%s" paip-prologc-*trail*))
   (cond ((eql (paip-prologc-deref x)
 	      (paip-prologc-deref y)) t)
         ((paip-prologc-var-p x)
@@ -117,10 +117,12 @@
   "Set var's binding to value, after saving the variable
   in the trail.  Always returns t."
 ;;  (unless (eq (paip-prologc-var-binding var) value)
-  (paipx-message (format "\nSet-binding!:var=%s, val=%s" var value))
+;;  (paipx-message (format "\nSet-binding!:var=%s, val=%s" var value))
   (unless (eq var value)
     (paipx-vector-push-extend var paip-prologc-*trail*)
-    (setf (paip-prologc-var-binding var) value))
+    (setf (paip-prologc-var-binding var) value)
+;;    (paipx-message (format "\n*trail*:%s" paip-prologc-*trail*))
+    )
   t)
 
 ;; (defun undo-bindings! (old-trail)
@@ -130,6 +132,7 @@
 
 (defun paip-prologc-undo-bindings! (old-trail)
   "Undo all bindings back to a given point in the trail."
+;;  (paipx-message (format "\nUndo-binding!:old-trail=%s" old-trail))
   (cl-loop until (= (paipx-fill-pointer paip-prologc-*trail*) old-trail)
 	   do (setf (paip-prologc-var-binding
 		     (paipx-vector-pop paip-prologc-*trail*))
@@ -513,7 +516,7 @@
 	    `(paip-prologc-unify!
 	      ,x1
 	      ,(paip-prologc-compile-arg y1 bindings))
-                   (paip-extend-bindings x1 y1 bindings))))    ; 5,6
+	    (paip-extend-bindings x1 y1 bindings))))    ; 5,6
       ((not (null yb))
        (paip-prologc-compile-unify-variable y1 x1 bindings))
       (t (cl-values 't (paip-extend-bindings x1 y1 bindings)))))) ; 8,9
@@ -845,18 +848,24 @@
 (defun paip-prologc-compile-predicate (symbol arity clauses)
   "Compile all the clauses for a given symbol/arity
   into a single LISP function."
-  (let ((paip-prologc-*predicate*
-	 (paip-prologc-make-predicate symbol arity)) ;*** ; likes/2 or something
-        (parameters
-	 (paip-prologc-make-parameters arity))) ; \?arg1 \?arg2 ...
+  (let* ((paip-prologc-*predicate*
+	  (paip-prologc-make-predicate symbol arity)) ;*** ; likes/2 or something
+	 (parameters
+	  (paip-prologc-make-parameters arity)) ; \?arg1 \?arg2 ...
+	 (parameters-lex
+	  (mapcar (lambda (x)
+		    (paip-symbol x "-lex")) parameters)) ; \?arg1-lex \?arg2-lex ...
+	 (parameter-bindings
+	  (cl-mapcar 'list parameters-lex parameters)) ; ((\?arg1-lex \?arg1) ... )
+	 ) 
     ;;(compile
     (eval
      `(cl-defun ,paip-prologc-*predicate* (,@parameters cont)
-	(paipx-message (format "\n%s: params=%s" ',paip-prologc-*predicate* ',parameters))
-	(lexical-let ((c cont))
+;;	(paipx-message (format "\n%s: params=%s" ',paip-prologc-*predicate* ',parameters))
+	(lexical-let ,(append parameter-bindings '((c cont)))
 	  .,(paip-prologc-maybe-add-undo-bindings
 	     (cl-mapcar (lambda (clause)
-			  (paip-prologc-compile-clause parameters clause 'c))
+			  (paip-prologc-compile-clause parameters-lex clause 'c))
 			clauses)))))))
 
 ;; [YF] We may be able to byte-compile this function.
@@ -950,13 +959,13 @@
 		      (rest body) c
 		      (paip-prologc-bind-new-variables bindings goal)))))))))))
 
-;; (defmacro \?- (&rest goals)
-;;   `(paip-prologc-top-level-prove
-;;     ',(paip-prolog-replace-?-vars goals)))
-
 (defmacro \?- (&rest goals)
   `(paip-prologc-top-level-prove
-    ',goals))
+    ',(paip-prolog-replace-?-vars goals)))
+
+;; (defmacro \?- (&rest goals)
+;;   `(paip-prologc-top-level-prove
+;;     ',goals))
 
 ;; [YF] Overwriting this with the prologc top-level.
 
