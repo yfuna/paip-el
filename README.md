@@ -51,7 +51,7 @@ The index below gives the chapter in the book, file name, implementation status,
 |       7 | [paip-student.el](https://github.com/yfuna/paip-el/blob/master/paip-student.el)   | ✓  |      | The Student Program                                               |
 |       8 | [paip-macsyma.el](https://github.com/yfuna/paip-el/blob/master/paip-macsyma.el)   | ✓  |      | The Macsyma Program                                               |
 |       8 | [paip-macsymar.el](https://github.com/yfuna/paip-el/blob/master/paip-macsymar.el) | ✓  |      | Simplification and integration rules for Macsyma                  |
-|    9-10 |                                                                                   |       |      | no files; important functions in auxfns.el                        |
+|    9-10 |                                                                                   |       |      | no files; important functions in paip.el                        |
 |      11 | [paip-unify.el](https://github.com/yfuna/paip-el/blob/master/paip-unify.el)       | ✓  |      | Unification functions                                             |
 |      11 | [paip-prolog1.el](https://github.com/yfuna/paip-el/blob/master/paip-prolog1.el)   | ✓  |      | First version of Prolog interpreter                               |
 |      11 | [paip-prolog.el](https://github.com/yfuna/paip-el/blob/master/paip-prolog.el)     | ✓  |      | Final version of Prolog interpreter                               |
