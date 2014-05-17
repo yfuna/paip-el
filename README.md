@@ -13,3 +13,14 @@ Please note that:
 
 While it is very early in the development of the modules, all feedback is welcome via github messages and/or as github issues.
 
+[CL to EL Porting Tips](https://github.com/yfuna/paip-el/wiki/CL-to-EL-Porting-Tips) is available on the project wiki.
+
+Installation
+------------
+
+Put all elisp files in your load-path and require what you use. For example,
+
+```
+(require 'paip-prolog)
+```
+
