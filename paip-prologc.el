@@ -10,6 +10,11 @@
 ;; (requires "prolog")
 (require 'paip-prolog)
 
+;; [YF] My emacs reported a nesting exceeds error because the
+;; max-lisp-eval-depth of my environement was 600. 1000 works fine.
+(if (< max-lisp-eval-depth 1000)
+    (setq max-lisp-eval-depth 1000))
+
 ;; (defconstant unbound "Unbound")
 
 (defconst paip-prologc-unbound "Unbound")
@@ -861,8 +866,8 @@
     ;;(compile
     (eval
      `(cl-defun ,paip-prologc-*predicate* (,@parameters cont)
-;;	(paipx-message (format "\n%s: params=%s" ',paip-prologc-*predicate* ',parameters))
 	(lexical-let ,(append parameter-bindings '((c cont)))
+;;	  (paipx-message (format "\n***%s: params=%s" ',paip-prologc-*predicate* (list ,@parameters-lex)))
 	  .,(paip-prologc-maybe-add-undo-bindings
 	     (cl-mapcar (lambda (clause)
 			  (paip-prologc-compile-clause parameters-lex clause 'c))
