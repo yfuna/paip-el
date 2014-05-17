@@ -4,32 +4,6 @@
 (require 'ert)
 (require 'paip-prologc)
 
-(ert-deftest test-paip-prologc-basic0 ()
-;; CL's prologc behaviour:
-;;
-;; (clear-db)
-;; (<- (likes Kim Robin))
-;; (<- (likes Sandy Lee))
-;; (<- (likes Sandy Kim))
-;; (<- (likes Robin cats))
-;; (?- (likes Sandy ?who))
-;; ?WHO = LEE
-;;
-;; (fill-pointer *trail*) 
-;; => 1
-;; (var-name (elt *trail* 0))
-;; => 1
-;; (var-binding (elt *trail* 0))
-;; => LEE
-
-  (paip-prolog-clear-db)
-  (<- (likes Kim Robin))
-  (<- (likes Sandy Lee))
-  (<- (likes Sandy Kim))
-  (<- (likes Robin cats))
-  (\?- (likes Sandy \?who))
-  )
-
 (ert-deftest test-paip-prologc-basic ()
   (paip-prolog-clear-db)
   (<- (likes Kim Robin))
@@ -92,11 +66,11 @@
   (<- (iright \?left \?right (\?left \?right . \?rest)))
   (<- (iright \?left \?right (\?x . \?rest)) 
       (iright \?left \?right \?rest))
-  (<- (equal \?x \?x))
+  (<- (= \?x \?x))
   (<- (zebra \?h \?w \?z)
       ;; Each house is of the form:
       ;; (house nationality pet cigarette drink house-color)
-      (equal \?h ((house norwegian \? \? \? \? )	;1,10
+      (= \?h ((house norwegian \? \? \? \? )	;1,10
 	     \? 
 	     (house \? \? \? milk \? ) \? \? ))	; 9
       (member (house englishman \? \? \? red) \?h)	; 2
@@ -123,6 +97,44 @@
   ;; \?zebra-owner = japanese
   ;; No.
   )
+
+(ert-deftest test-paip-prologc-zebra ()
+  (paip-prolog-clear-db)
+  (<- (member \?item (\?item . \?rest)))
+  (<- (member \?item (\?x . \?rest)) (member \?item \?rest))
+  (<- (nextto \?x \?y \?list) (iright \?x \?y \?list))
+  (<- (nextto \?x \?y \?list) (iright \?y \?x \?list))
+  (<- (iright \?left \?right (\?left \?right . \?rest)))
+  (<- (iright \?left \?right (\?x . \?rest)) 
+      (iright \?left \?right \?rest))
+  (<- (= \?x \?x))
+  (<- (zebra \?h \?w \?z)
+      ;; Each house is of the form:
+      ;; (house nationality pet cigarette drink house-color)
+      (= \?h ((house norwegian \? \? \? \? )	;1,10
+	     \? 
+	     (house \? \? \? milk \? ) \? \? ))	; 9
+      (member (house englishman \? \? \? red) \?h)	; 2
+      (member (house spaniard dog \? \? \? ) \?h)	; 3
+      (member (house \? \? \? coffee green) \?h)	; 4
+      (member (house ukrainian \? \? tea \? ) \?h)	; 5
+      (iright (house \? \? \? \? ivory)		; 6
+	      (house \? \? \? \? green) \?h)
+      (member (house \? snails winston \? \? ) \?h)	; 7
+      (member (house \? \? kools \? yellow) \?h)	; 8
+      (nextto (house \? \? chesterfield \? \? )	;11
+	      (house \? fox \? \? \? ) \?h)
+      (nextto (house \? \? kools \? \? )	;12
+	      (house \? horse \? \? \? ) \?h)
+      (member (house \? \? luckystrike oj \? ) \?h)	       ;13
+      (member (house japanese \? parliaments \? \? ) \?h)  ;14
+      (nextto (house norwegian \? \? \? \? )	       ;15
+	      (house \? \? \? \? blue) \?h)
+      (member (house \?w \? \? water \? ) \?h)    ;Q1
+      (member (house \?z zebra \? \? \? ) \?h))  ;Q2
+  (\?- (zebra \?houses \?water-drinker \?zebra-owner))
+  )
+
 
 (ert-deftest test-from-wikipedia ()
   (<- (cat tom))
@@ -175,60 +187,6 @@
   (<- (playsAirGuitar mia) (listens2Music mia))
   (\?- (playsAirGuitar yolanda))
   ;; Yes.
-  )
-
-(ert-deftest paip-prologc-unify! ()
-  (debug-on-entry 'paip-prologc-unify!)
-  (cancel-debug-on-entry 'paip-prologc-unify!)
-  (paip-prologc-unify! `(,(\?) + 1) `(2 + ,(\?)))
-  (let ((\?x (\?))
-	(\?y (\?)))
-    (paip-prologc-unify! `(,\?x ,\?y a) `(,\?y ,\?x ,\?x)))
-  (paip-prologc-unify! 1 1)
-  (paip-prologc-unify! (\?) 1)
-  (let ((\?x (\?))
-	 (\?y (\?))
-	 (\?z (\?)))
-     (paip-prologc-unify!
-      `(,\?x ,\?y ,\?z) `((,\?y ,\?z ) (,\?x ,\?z) (,\?x ,\?y))))
-  (pp paip-prologc-*trail*)
-  (3 .
-     [[cl-struct-paip-prologc-var 12
-				  ([cl-struct-paip-prologc-var 13
-							       (#2
-								[cl-struct-paip-prologc-var 14
-											    (#2 #4)])]
-				   [cl-struct-paip-prologc-var 14
-							       (#2
-								[cl-struct-paip-prologc-var 13
-											    (#2 #4)])])]
-      [cl-struct-paip-prologc-var 13
-				  ([cl-struct-paip-prologc-var 12
-							       (#2
-								[cl-struct-paip-prologc-var 14
-											    (#4 #2)])]
-				   [cl-struct-paip-prologc-var 14
-							       ([cl-struct-paip-prologc-var 12
-											    (#2 #4)]
-								#2)])]
-      [cl-struct-paip-prologc-var 14
-				  ([cl-struct-paip-prologc-var 12
-							       ([cl-struct-paip-prologc-var 13
-											    (#4 #2)]
-								#2)]
-				   [cl-struct-paip-prologc-var 13
-							       ([cl-struct-paip-prologc-var 12
-											    (#4 #2)]
-								#2)])]
-      nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil])
-
-  (2 .
-     [[cl-struct-paip-prologc-var 4
-				  [cl-struct-paip-prologc-var 5 a]]
-      [cl-struct-paip-prologc-var 5 a]
-      nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil])
-
-  (setf (paipx-fill-pointer paip-prologc-*trail*) 0)
   )
 
 (provide 'test-paip-prolog)
