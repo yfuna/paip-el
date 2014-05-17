@@ -33,7 +33,6 @@ The Files
 |       - | README.md        | WIP   |      | This file: explanation and index                                  |                     |
 |       - | paip-examples.el | WIP   |      | A list of example inputs taken from the book                      |                     |
 |       - | paip-tutor.el    | Done  |      | An interpreter for running the examples                           |                     |
-|       - |                  |       |      |                                                                   |                     |
 |       - | paip.el          | Done  |      | Auxiliary functions; load this before anything else (auxfns.lisp) |                     |
 |       - | paipx.el         | Done  |      | Additional auxiliary functions for EL port                        |                     |
 |       1 | paip-intro.el    | Done  |      | A few simple definitions                                          |                     |
