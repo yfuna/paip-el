@@ -27,6 +27,9 @@ Put all elisp files in your load-path and require what you use. For example,
 
 The Files
 ---------
+
+The index below gives the chapter in the book, file name, implementation status, test coverage, and original & EL port's short description for each file.
+
 | Chapter | Filename                                                                          | Impl. | Test | Original Description                                              | EL port Description |
 |---------|-----------------------------------------------------------------------------------|-------|------|-------------------------------------------------------------------|---------------------|
 |       - | [README.md](https://github.com/yfuna/paip-el/blob/master/README.md)               | WIP   |      | This file: explanation and index                                  |                     |
