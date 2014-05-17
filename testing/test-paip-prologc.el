@@ -92,11 +92,11 @@
   (<- (iright \?left \?right (\?left \?right . \?rest)))
   (<- (iright \?left \?right (\?x . \?rest)) 
       (iright \?left \?right \?rest))
-  (<- (= \?x \?x))
+  (<- (equal \?x \?x))
   (<- (zebra \?h \?w \?z)
       ;; Each house is of the form:
       ;; (house nationality pet cigarette drink house-color)
-      (= \?h ((house norwegian \? \? \? \? )	;1,10
+      (equal \?h ((house norwegian \? \? \? \? )	;1,10
 	     \? 
 	     (house \? \? \? milk \? ) \? \? ))	; 9
       (member (house englishman \? \? \? red) \?h)	; 2
