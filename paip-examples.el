@@ -841,24 +841,26 @@
 
   (:section "13.2 Objects")
   "Now we're ready to get started."
-  ((requires "clos"))
-  ((setf acct (new-account "J. Random Customer" 1000.00)) @ 438)
-  ((send acct 'withdraw 500.00) => 500.0)
-  ((send acct 'deposit 123.45) => 623.45)
-  ((send acct 'name) => "J. Random Customer")
-  ((send acct 'balance) => 623.45)
+  ((require 'paip-clos))
+  ((setf acct (paip-clos-new-account "J. Random Customer" 1000.00)) @ 438)
+  ((paip-clos-send acct 'withdraw 500.00) => 500.0)
+  ((paip-clos-send acct 'deposit 123.45) => 623.45)
+  ((paip-clos-send acct 'name) => "J. Random Customer")
+  ((paip-clos-send acct 'balance) => 623.45)
 
   (:section "13.4 Classes")
   "Now we define the class ACCOUNT with the define-class macro."
-  ((define-class account (name &optional (balance 0.00))
-        ((interest-rate .06))
-     (withdraw (amt) (if (<= amt balance)
-                       (decf balance amt)
-                       'insufficient-funds))
-     (deposit  (amt) (incf balance amt))
-     (balance  ()    balance)
-     (name     ()    name)
-     (interest ()    (incf balance (* interest-rate balance)))) @ 440)
+  ((paip-clos-define-class
+    paip-examples-account (name &optional (balance 0.00))
+    ((interest-rate .06))
+    (withdraw (amt) (if (<= amt balance)
+			(decf balance amt)
+		      'insufficient-funds))
+    (deposit  (amt) (cl-incf balance amt))
+    (balance  ()    balance)
+    (name     ()    name)
+    (interest ()    (cl-incf
+		     balance (* interest-rate balance)))) @ 440)
   "Here are the generic functions defined by this macro:"
   ((setf acct2 (account "A. User" 2000.00)))
   ((deposit acct2 42.00) => 2042.0)
@@ -867,15 +869,16 @@
   ((balance acct) => 623.45)
 
   (:section "13.5 Delegation")
-  ((define-class password-account (password acct) ()
-     (change-password (pass new-pass)
-                      (if (equal pass password)
-                        (setf password new-pass)
-                        'wrong-password))
-     (otherwise (pass &rest args)
-                (if (equal pass password)
-                  (apply message acct args)
-                  'wrong-password))))
+  ((paip-examples-define-class
+    paip-examples-password-account (password acct) ()
+    (change-password (pass new-pass)
+		     (if (equal pass password)
+			 (setf password new-pass)
+		       'wrong-password))
+    (otherwise (pass &rest args)
+	       (if (equal pass password)
+		   (apply message acct args)
+		 'wrong-password))))
   "Now we see how the class PASSWORD-ACCOUNT can be used to provide protection"
   "for an existing account:"
   ((setf acct3 (password-account "secret" acct2)) @ 441)
@@ -889,30 +892,30 @@
   "we use the names account*, name*, balance*, interest-rate*.  If you were"
   "doing a real application, not just some examples, you would choose one"
   "implementation and get to use the regular names."
-  ; ?????? some problems here
+					; ?????? some problems here
   ((defclass account* ()
      ((name :initarg :name :reader name*)
       (balance :initarg :balance :initform 0.00 :accessor balance*)
       (interest-rate :allocation :class :initform .06 
                      :reader interest-rate*))) @ 445)
   ((setf a1 (make-instance 'account* :balance 5000.00
-                          :name "Fred")) @ 446)
+			   :name "Fred")) @ 446)
   ((name* a1) => "Fred")
   ((balance* a1) => 5000.0)
   ((interest-rate* a1) => 0.06)
   ((defmethod withdraw* ((acct account*) amt)
      (if (< amt (balance* acct))
-       (decf (balance* acct) amt)
+	 (decf (balance* acct) amt)
        'insufficient-funds)) @ 446)
   ((defclass limited-account (account*)
      ((limit :initarg :limit :reader limit))))
   ((defmethod withdraw* ((acct limited-account) amt)
      (if (> amt (limit acct))
-       'over-limit
+	 'over-limit
        (call-next-method))))
   ((setf a2 (make-instance 'limited-account
-                          :name "A. Thrifty Spender"
-                          :balance 500.00 :limit 100.00)) @ 447)
+			   :name "A. Thrifty Spender"
+			   :balance 500.00 :limit 100.00)) @ 447)
   ((name* a2) => "A. Thrifty Spender")
   ((withdraw* a2 200.00) => OVER-LIMIT)
   ((withdraw* a2 20.00) => 480.0)
@@ -921,27 +924,27 @@
   ((defclass problem ()
      ((states :initarg :states :accessor problem-states))) @ 449)
   ((defmethod searcher ((prob problem))
-  "Find a state that solves the search problem."
-  (cond ((no-states-p prob) fail)
-        ((goal-p prob) (current-state prob))
-        (t (let ((current (pop-state prob)))
-             (setf (problem-states prob)
-                   (problem-combiner
-                     prob
-                     (problem-successors prob current)
-                     (problem-states prob))))
-           (searcher prob)))))
+     "Find a state that solves the search problem."
+     (cond ((no-states-p prob) fail)
+	   ((goal-p prob) (current-state prob))
+	   (t (let ((current (pop-state prob)))
+		(setf (problem-states prob)
+		      (problem-combiner
+		       prob
+		       (problem-successors prob current)
+		       (problem-states prob))))
+	      (searcher prob)))))
   ((defmethod current-state ((prob problem))
-    "The current state is the first of the possible states."
-    (first (problem-states prob))))
+     "The current state is the first of the possible states."
+     (first (problem-states prob))))
 
   ((defmethod pop-state ((prob problem))
-  "Remove and return the current state."
-  (pop (problem-states prob))))
+     "Remove and return the current state."
+     (pop (problem-states prob))))
 
   ((defmethod no-states-p ((prob problem))
-  "Are there any more unexplored states?"
-  (null (problem-states prob))))
+     "Are there any more unexplored states?"
+     (null (problem-states prob))))
 
   ((defmethod searcher :before ((prob problem))
      (dbg 'search "~&;; Search: ~a" (problem-states prob))) @ 450)
@@ -950,7 +953,7 @@
      ((goal :initarg :goal :reader problem-goal))))
 
   ((defmethod goal-p ((prob eql-problem))
-  (eql (current-state prob) (problem-goal prob))))
+     (eql (current-state prob) (problem-goal prob))))
 
   ((defclass dfs-problem (problem) ()
      (:documentation "Depth-first search problem.")))
@@ -976,7 +979,7 @@
      (binary-tree-problem eql-problem bfs-problem) ()))
 
   ((setf p1 (make-instance 'binary-tree-eql-bfs-problem 
-                          :states '(1) :goal 12)))
+			   :states '(1) :goal 12)))
   ((searcher p1) => 12)
 
   ((defclass best-problem (problem) ()
@@ -1004,7 +1007,7 @@
      ()))
 
   ((setf p3 (make-instance 'binary-tree-eql-best-beam-problem 
-                          :states '(1) :goal 12 :beam-width 3)))
+			   :states '(1) :goal 12 :beam-width 3)))
 
   ((searcher p3) => 12)
 
@@ -1018,8 +1021,8 @@
      (neighbors city)))
 
   ((setf p4 (make-instance 'trip-problem 
-                          :states (list (city 'new-york)) 
-                          :goal (city 'san-francisco))))
+			   :states (list (city 'new-york)) 
+			   :goal (city 'san-francisco))))
 
   ((searcher p4) =>
    (SAN-FRANCISCO 122.26 37.47))
