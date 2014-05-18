@@ -55,8 +55,8 @@ The index below gives the chapter in the book, file name, implementation status,
 |      11 | [paip-unify.el](https://github.com/yfuna/paip-el/blob/master/paip-unify.el)       | ✓  |      | Unification functions                                             |
 |      11 | [paip-prolog1.el](https://github.com/yfuna/paip-el/blob/master/paip-prolog1.el)   | ✓  |      | First version of Prolog interpreter                               |
 |      11 | [paip-prolog.el](https://github.com/yfuna/paip-el/blob/master/paip-prolog.el)     | ✓  |      | Final version of Prolog interpreter                               |
-|      12 | paip-prologc1.el                                                                  | n/a |      | First version of Prolog compiler                                  |
-|      12 | paip-prologc2.el                                                                  | n/a |      | Second version of Prolog compiler                                 |
+|      12 | paip-prologc1.el                                                                  | Wont |      | First version of Prolog compiler. I see no value to port this half-baked software. Use paip-prologc.el instead                                  |
+|      12 | paip-prologc2.el                                                                  | Wont |      | Second version of Prolog compiler. I see no value to port this half-baked software. Use paip-prologc.el instead                                  |
 |      12 | [paip-prologc.el](https://github.com/yfuna/paip-el/blob/master/paip-prologc.el)   | ✓  |      | Final version of Prolog compiler                                  |
 |      12 | [paip-prologcp.el](https://github.com/yfuna/paip-el/blob/master/paip-prologcp.el) | ✓  |      | Primitives for Prolog compiler                                    |
 |      13 | paip-clos.el                                                                      |       |      | Some object-oriented and CLOS code                                |
