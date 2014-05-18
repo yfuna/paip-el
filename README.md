@@ -1,7 +1,7 @@
 paip-el
 =======
 
-This code is a port of the Common Lisp programs found in the book [Paradigms of Artificial Intelligence Programming](http://norvig.com/paip.html) written by Peter Norvig. The goal of this project is to enable Emacs extension developers to easily use the programming techniques in PAIP. This project focuses on providing the developers with good modular software tools, rather than helping them to understand AI programming techniques. If you would like to learn it, I recommend you install the [SBCL](http://www.sbcl.org/), a Common Lisp implementation, and run and hack the original code by Norvig in Common Lisp.
+This code is a port of the Common Lisp programs found in the book [Paradigms of Artificial Intelligence Programming](http://norvig.com/paip.html) written by Peter Norvig. The goal of this project is to enable Emacs extension developers to easily use the programming techniques in PAIP. This project focuses on providing the developers with good modular software tools, rather than helping them to understand AI programming techniques. If you would like to learn it, I recommend you install the [SBCL](http://www.sbcl.org/), a Common Lisp implementation, run and hack the original code by Norvig in Common Lisp.
 
 The original source was all written by Peter Norvig, and the copyright belongs to him.
 
