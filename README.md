@@ -85,5 +85,7 @@ The index below gives the chapter in the book, file name, implementation status,
 |      23 | paip-compopt.el                                                                   |       |      | Peephole optimizers for compile3.el                               |
 |      24 | paip-loop.el                                                                      |       |      | Load this first if your Lisp doesn't support ANSI LOOP            |
 
+License
+-------
 
-
+All contents here is copyright by Yosuke Funahashi and is released under the GNU General Public License.
