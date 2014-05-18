@@ -32,33 +32,33 @@ The index below gives the chapter in the book, file name, implementation status,
 
 | **Chapter** | **Filename**                                                                          | **I** | **T** | **Description**                                              |
 |---------|-----------------------------------------------------------------------------------|-------|------|-------------------------------------------------------------------|
-|       - | [README.md](https://github.com/yfuna/paip-el/blob/master/README.md)               | WIP   |      | This file: explanation and index                                  |
-|       - | [paip-examples.el](https://github.com/yfuna/paip-el/blob/master/paip-examples.el) | WIP   |      | A list of example inputs taken from the book                      |
-|       - | [paip-tutor.el](https://github.com/yfuna/paip-el/blob/master/paip-tutor.el)       | ✓  |      | An interpreter for running the examples                           |
-|       - | [paip.el](https://github.com/yfuna/paip-el/blob/master/paip.el)                   | ✓  |      | Auxiliary functions; load this before anything else (auxfns.lisp) |
-|       - | [paipx.el](https://github.com/yfuna/paip-el/blob/master/paipx.el)                 | ✓  |      | Additional auxiliary functions for EL port                        |
-|       1 | [paip-intro.el](https://github.com/yfuna/paip-el/blob/master/paip-intro.el)       | ✓  |      | A few simple definitions                                          |
-|       2 | [paip-simple.el](https://github.com/yfuna/paip-el/blob/master/paip-simple.el)     | ✓  |      | Random sentence generator (two versions)                          |
-|       3 | [paip-overview.el](https://github.com/yfuna/paip-el/blob/master/paip-overview.el) | ✓  |      | 14 versions of LENGTH and other examples                          |
-|       4 | [paip-gps1.el](https://github.com/yfuna/paip-el/blob/master/paip-gps1.el)         | ✓  |      | Simple version of General Problem Solver                          |
-|       4 | [paip-gps.el](https://github.com/yfuna/paip-el/blob/master/paip-gps.el)           | ✓  |      | Final version of General Problem Solver                           |
-|       5 | [paip-eliza1.el](https://github.com/yfuna/paip-el/blob/master/paip-eliza1.el)     | ✓  |      | Basic version of Eliza program                                    |
-|       5 | [paip-eliza.el](https://github.com/yfuna/paip-el/blob/master/paip-eliza.el)       | ✓  |      | Eliza with more rules; different reader                           |
-|       6 | [paip-patmatch.el](https://github.com/yfuna/paip-el/blob/master/paip-patmatch.el) | ✓  |      | Pattern Matching Utility                                          |
-|       6 | [paip-eliza-pm.el](https://github.com/yfuna/paip-el/blob/master/paip-eliza-pm.el) | ✓  |      | Version of Eliza using utilities                                  |
-|       6 | [paip-search.el](https://github.com/yfuna/paip-el/blob/master/paip-search.el)     | ✓  |      | Search Utility                                                    |
-|       6 | [paip-gps-srch.el](https://github.com/yfuna/paip-el/blob/master/paip-srch.el)     | ✓  |      | Version of GPS using the search utility                           |
-|       7 | [paip-student.el](https://github.com/yfuna/paip-el/blob/master/paip-student.el)   | ✓  |      | The Student Program                                               |
-|       8 | [paip-macsyma.el](https://github.com/yfuna/paip-el/blob/master/paip-macsyma.el)   | ✓  |      | The Macsyma Program                                               |
-|       8 | [paip-macsymar.el](https://github.com/yfuna/paip-el/blob/master/paip-macsymar.el) | ✓  |      | Simplification and integration rules for Macsyma                  |
+|       - | [README.md](README.md)               | WIP   |      | This file: explanation and index                                  |
+|       - | [paip-examples.el](paip-examples.el) | WIP   |      | A list of example inputs taken from the book                      |
+|       - | [paip-tutor.el](paip-tutor.el)       | ✓  |      | An interpreter for running the examples                           |
+|       - | [paip.el](paip.el)                   | ✓  |      | Auxiliary functions; load this before anything else (auxfns.lisp) |
+|       - | [paipx.el](paipx.el)                 | ✓  |      | Additional auxiliary functions for EL port                        |
+|       1 | [paip-intro.el](paip-intro.el)       | ✓  |      | A few simple definitions                                          |
+|       2 | [paip-simple.el](paip-simple.el)     | ✓  |      | Random sentence generator (two versions)                          |
+|       3 | [paip-overview.el](paip-overview.el) | ✓  |      | 14 versions of LENGTH and other examples                          |
+|       4 | [paip-gps1.el](paip-gps1.el)         | ✓  |      | Simple version of General Problem Solver                          |
+|       4 | [paip-gps.el](paip-gps.el)           | ✓  |      | Final version of General Problem Solver                           |
+|       5 | [paip-eliza1.el](paip-eliza1.el)     | ✓  |      | Basic version of Eliza program                                    |
+|       5 | [paip-eliza.el](paip-eliza.el)       | ✓  |      | Eliza with more rules; different reader                           |
+|       6 | [paip-patmatch.el](paip-patmatch.el) | ✓  |      | Pattern Matching Utility                                          |
+|       6 | [paip-eliza-pm.el](paip-eliza-pm.el) | ✓  |      | Version of Eliza using utilities                                  |
+|       6 | [paip-search.el](paip-search.el)     | ✓  |      | Search Utility                                                    |
+|       6 | [paip-gps-srch.el](paip-srch.el)     | ✓  |      | Version of GPS using the search utility                           |
+|       7 | [paip-student.el](paip-student.el)   | ✓  |      | The Student Program                                               |
+|       8 | [paip-macsyma.el](paip-macsyma.el)   | ✓  |      | The Macsyma Program                                               |
+|       8 | [paip-macsymar.el](paip-macsymar.el) | ✓  |      | Simplification and integration rules for Macsyma                  |
 |    9-10 |                                                                                   |       |      | no files; important functions in paip.el                        |
-|      11 | [paip-unify.el](https://github.com/yfuna/paip-el/blob/master/paip-unify.el)       | ✓  |      | Unification functions                                             |
-|      11 | [paip-prolog1.el](https://github.com/yfuna/paip-el/blob/master/paip-prolog1.el)   | ✓  |      | First version of Prolog interpreter                               |
-|      11 | [paip-prolog.el](https://github.com/yfuna/paip-el/blob/master/paip-prolog.el)     | ✓  |      | Final version of Prolog interpreter                               |
+|      11 | [paip-unify.el](paip-unify.el)       | ✓  |      | Unification functions                                             |
+|      11 | [paip-prolog1.el](paip-prolog1.el)   | ✓  |      | First version of Prolog interpreter                               |
+|      11 | [paip-prolog.el](paip-prolog.el)     | ✓  |      | Final version of Prolog interpreter                               |
 |      12 | paip-prologc1.el                                                                  | Wont |      | First version of Prolog compiler. I see no value to port this half-baked software. Use paip-prologc.el instead                                  |
 |      12 | paip-prologc2.el                                                                  | Wont |      | Second version of Prolog compiler. I see no value to port this half-baked software. Use paip-prologc.el instead                                  |
-|      12 | [paip-prologc.el](https://github.com/yfuna/paip-el/blob/master/paip-prologc.el)   | ✓  |      | Final version of Prolog compiler                                  |
-|      12 | [paip-prologcp.el](https://github.com/yfuna/paip-el/blob/master/paip-prologcp.el) | ✓  |      | Primitives for Prolog compiler                                    |
+|      12 | [paip-prologc.el](paip-prologc.el)   | ✓  |      | Final version of Prolog compiler                                  |
+|      12 | [paip-prologcp.el](paip-prologcp.el) | ✓  |      | Primitives for Prolog compiler                                    |
 |      13 | paip-clos.el                                                                      |       |      | Some object-oriented and CLOS code                                |
 |      14 | paip-krep1.el                                                                     |       |      | Knowledge Representation code: first version                      |
 |      14 | paip-krep2.el                                                                     |       |      | Knowledge Representation code with conjunctions                   |
