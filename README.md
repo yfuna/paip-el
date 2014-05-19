@@ -32,7 +32,7 @@ The index below gives the chapter in the book, file name, implementation status,
 
 | **Chapter** | **Filename**                                                                          | **I** | **T** | **Description**                                              |
 |---------|-----------------------------------------------------------------------------------|-------|------|-------------------------------------------------------------------|
-|       - | [README.md](README.md)               | WIP   |      | This file: explanation and index                                  |
+|       - | [README.md](README.md)               | ✓   |      | This file: explanation and index                                  |
 |       - | [paip-examples.el](paip-examples.el) | WIP   |      | A list of example inputs taken from the book                      |
 |       - | [paip-tutor.el](paip-tutor.el)       | ✓  |      | An interpreter for running the examples                           |
 |       - | [paip.el](paip.el)                   | ✓  |      | Auxiliary functions; load this before anything else (auxfns.lisp) |
