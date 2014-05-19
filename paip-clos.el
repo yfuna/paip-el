@@ -113,19 +113,19 @@
 ;;   "Return the method that implements message for this object."
 ;;   (funcall object message))
 
-(defun paip-clos-get-method (object message1)
+(defun paip-clos-get-method (object message)
   "Return the method that implements message for this object."
-  (funcall object message1))
+  (funcall object message))
 
 ;; (defun send (object message &rest args)
 ;;   "Get the function to implement the message,
 ;;   and apply the function to the args."
 ;;   (apply (get-method object message) args))
 
-(defun paip-clos-send (object message2 &rest args)
+(defun paip-clos-send (object message &rest args)
   "Get the function to implement the message,
   and apply the function to the args."
-  (apply (paip-clos-get-method object message2) args))
+  (apply (paip-clos-get-method object message) args))
 
 ;; ;;; ==============================
 
@@ -160,8 +160,8 @@
        (mapcar 'paip-clos-ensure-generic-fn ',(mapcar 'first methods))
        (cl-defun ,class ,inst-vars
 	 (lexical-let ,inst-var-lex-binding
-	   (lambda (message3)
-	     (case message3
+	   (lambda (message)
+	     (case message
 	       ,@(mapcar 'paip-clos-make-clause methods))))))))
 
 ;; (defun make-clause (clause)
@@ -181,10 +181,10 @@
 ;;       (setf (symbol-function message) fn)
 ;;       (setf (get message 'generic-fn) fn))))
 
-(defun paip-clos-ensure-generic-fn (message4)
+(defun paip-clos-ensure-generic-fn (message)
   "Define an object-oriented dispatch function for a message,
   unless it has already been defined as one."
-  (lexical-let ((m message4))
+  (lexical-let ((m message))
     (unless (paip-clos-generic-fn-p m)
       (let ((fn (lambda (object &rest args)
 		  (apply (paip-clos-get-method object m) args))))

@@ -891,15 +891,20 @@
   ((balance acct) => 623.45)
 
   (:section "13.5 Delegation")
+  ;; [YF] Examples in this section won't work with paip-clos.el. The
+  ;; 'message' symbol in the next example doesn't capture the value of
+  ;; 'message' variable in the define-class macro. This is because the
+  ;; use of the 'message' symbol confilicts with the CL-lib's lexical
+  ;; scope implementation.
   ((paip-clos-define-class
-    paip-examples-password-account (password acct) ()
+    password-account (password acct) ()
     (change-password (pass new-pass)
 		     (if (equal pass password)
 			 (setf password new-pass)
 		       'wrong-password))
     (otherwise (pass &rest args)
 	       (if (equal pass password)
-		   (apply message acct args)
+		   (apply message acct args) ; [YF] ***
 		 'wrong-password))))
   "Now we see how the class PASSWORD-ACCOUNT can be used to provide protection"
   "for an existing account:"
