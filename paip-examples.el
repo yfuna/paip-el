@@ -872,7 +872,8 @@
   (:section "13.4 Classes")
   "Now we define the class ACCOUNT with the define-class macro."
   ((paip-clos-define-class
-    paip-examples-account (name &optional (balance 0.00))
+    paip-clos-account
+    (name &optional (balance 0.00))
     ((interest-rate .06))
     (withdraw (amt) (if (<= amt balance)
 			(decf balance amt)
@@ -883,14 +884,14 @@
     (interest ()    (cl-incf
 		     balance (* interest-rate balance)))) @ 440)
   "Here are the generic functions defined by this macro:"
-  ((setf acct2 (account "A. User" 2000.00)))
+  ((setf acct2 (paip-clos-account "A. User" 2000.00)))
   ((deposit acct2 42.00) => 2042.0)
   ((interest acct2) => 2164.52)
   ((balance acct2) => 2164.52 @ 441)
   ((balance acct) => 623.45)
 
   (:section "13.5 Delegation")
-  ((paip-examples-define-class
+  ((paip-clos-define-class
     paip-examples-password-account (password acct) ()
     (change-password (pass new-pass)
 		     (if (equal pass password)

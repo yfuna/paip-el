@@ -27,6 +27,10 @@
 
 ;; ;;;; File clos.lisp: Object-oriented programming examples
 
+(eval-when-compile
+  (require 'cl-lib))
+(require 'paip)
+
 ;; (defstruct account 
 ;;   (name "") (balance 0.00) (interest-rate .06))
 
@@ -109,19 +113,19 @@
 ;;   "Return the method that implements message for this object."
 ;;   (funcall object message))
 
-(defun paip-clos-get-method (object message)
+(defun paip-clos-get-method (object message1)
   "Return the method that implements message for this object."
-  (funcall object message))
+  (funcall object message1))
 
 ;; (defun send (object message &rest args)
 ;;   "Get the function to implement the message,
 ;;   and apply the function to the args."
 ;;   (apply (get-method object message) args))
 
-(defun paip-clos-send (object message &rest args)
+(defun paip-clos-send (object message2 &rest args)
   "Get the function to implement the message,
   and apply the function to the args."
-  (apply (paip-clos-get-method object message) args))
+  (apply (paip-clos-get-method object message2) args))
 
 ;; ;;; ==============================
 
@@ -145,17 +149,20 @@
 ;;            (case message
 ;;              ,@(mapcar #'make-clause methods))))))
 
-(defmacro paip-clos-define-class (class inst-vars class-vars &body methods)
+(cl-defmacro paip-clos-define-class (class inst-vars class-vars &body methods)
   "Define a class for object-oriented programming."
   ;; Define constructor and generic functions for methods
-  `(lexical-let ,class-vars
-     (mapcar paip-clos-ensure-generic-fn ',(mapcar 'first methods))
-     ;; **** Here I need to create lexical binding for inst-vars. It
-     ;; requires lambda-agrs parse...
-     (cl-defun ,class ,inst-vars
-       (lambda (message)
-	 (case message
-	   ,@(mapcar 'paip-clos-make-clause methods))))))
+  (let*
+      ((inst-var-list (paipx-pickup-vars (cons inst-vars nil)))
+       (inst-var-lex-binding
+	(cl-mapcar 'list inst-var-list inst-var-list)))
+    `(lexical-let ,class-vars
+       (mapcar 'paip-clos-ensure-generic-fn ',(mapcar 'first methods))
+       (cl-defun ,class ,inst-vars
+	 (lexical-let ,inst-var-lex-binding
+	   (lambda (message3)
+	     (case message3
+	       ,@(mapcar 'paip-clos-make-clause methods))))))))
 
 ;; (defun make-clause (clause)
 ;;   "Translate a message from define-class into a case clause."
@@ -163,7 +170,7 @@
 
 (defun paip-clos-make-clause (clause)
   "Translate a message from define-class into a case clause."
-  `(,(first clause) (lambda ,(second clause) .,(rest2 clause))))
+  `(,(first clause) (lambda ,(second clause) .,(paip-rest2 clause))))
 
 ;; (defun ensure-generic-fn (message)
 ;;   "Define an object-oriented dispatch function for a message,
@@ -174,14 +181,15 @@
 ;;       (setf (symbol-function message) fn)
 ;;       (setf (get message 'generic-fn) fn))))
 
-(defun paip-clos-ensure-generic-fn (message)
+(defun paip-clos-ensure-generic-fn (message4)
   "Define an object-oriented dispatch function for a message,
   unless it has already been defined as one."
-  (unless (paip-clos-generic-fn-p message)
-    (let ((fn (lambda (object &rest args)
-		(apply (paip-clos-get-method object message) args))))
-      (setf (symbol-function message) fn)
-      (setf (get message 'paip-clos-generic-fn) fn))))
+  (lexical-let ((m message4))
+    (unless (paip-clos-generic-fn-p m)
+      (let ((fn (lambda (object &rest args)
+		  (apply (paip-clos-get-method object m) args))))
+	(setf (symbol-function m) fn)
+	(setf (get m 'paip-clos-generic-fn) fn)))))
 
 ;; (defun generic-fn-p (fn-name)
 ;;   "Is this a generic function?"

@@ -178,6 +178,92 @@
   (should (equal (paipx-fill-pointer fa)
 		 1)))
 
+(defun paipx-pickup-vars (arg-obj)  ; arg-obj: (arglist result-list)
+  (second (paipx-pickup-non-required-vars
+	   (paipx-pickup-required-vars arg-obj))))
+
+(defun paipx-pickup-non-required-vars (arg-obj)
+  (lexical-let ((arglist (first arg-obj))
+		(result-list (second arg-obj)))
+    (if (null arglist)
+	arg-obj
+      (cl-case (first arglist)
+	('&optional
+	 (paipx-pickup-optional-vars (list (rest arglist) result-list)))
+	('&rest
+	 (paipx-pickup-rest-vars (list (rest arglist) result-list)))
+	('&key
+	 (paipx-pickup-keyword-vars (list (rest arglist) result-list)))
+	('&aux
+	 (paipx-pickup-aux-vars (list (rest arglist) result-list)))
+	('&allow-other-keys
+	 (paipx-pickup-non-required-vars (list (rest arglist) result-list)))
+	))))
+
+(defun paipx-pickup-required-vars (arg-obj)
+  (lexical-let ((arglist (first arg-obj))
+		(result-list (second arg-obj)))
+    (cond ((null arglist) arg-obj)
+	  ((cl-find (first arglist) '(&optional &rest &key &aux &allow-other-keys))
+	   arg-obj)
+	  (t (paipx-pickup-required-vars
+	      (list (rest arglist) (push (first arglist) result-list)))))))
+
+(defun paipx-pickup-rest-vars (arg-obj)
+  (lexical-let ((arglist (first arg-obj))
+		(result-list (second arg-obj)))
+    (cond ((null arglist) arg-obj)
+	  ((cl-find (first arglist) '(&optional &rest &key &aux &allow-other-keys))
+	   arg-obj)
+	  (t (paipx-pickup-non-required-vars
+	      (list (rest arglist)
+		    (push
+		     (first arglist)
+		     result-list)))))))
+
+(defun paipx-pickup-optional-vars (arg-obj)
+  (lexical-let ((arglist (first arg-obj))
+		(result-list (second arg-obj)))
+    (cond ((null arglist) arg-obj)
+	  ((cl-find (first arglist) '(&optional &rest &key &aux &allow-other-keys))
+	   (paipx-pickup-non-required-vars arg-obj))
+	  (t (paipx-pickup-optional-vars
+	      (list (rest arglist)
+		    (push
+		     (if (atom (first arglist))
+			 (first arglist)
+		       (first (first arglist)))
+		     result-list)))))))
+
+(defun paipx-pickup-aux-vars (arg-obj)
+  (lexical-let ((arglist (first arg-obj))
+		(result-list (second arg-obj)))
+    (cond ((null arglist) arg-obj)
+	  ((cl-find (first arglist) '(&optional &rest &key &aux &allow-other-keys))
+	   (paipx-pickup-non-required-vars arg-obj))
+	  (t (paipx-pickup-aux-vars
+	      (list (rest arglist)
+		    (push
+		     (if (atom (first arglist))
+			 (first arglist)
+		       (first (first arglist)))
+		     result-list)))))))
+
+(defun paipx-pickup-keyword-vars (arg-obj)
+  (lexical-let ((arglist (first arg-obj))
+		(result-list (second arg-obj)))
+    (cond ((null arglist) arg-obj)
+	  ((cl-find (first arglist) '(&optional &rest &key &aux &allow-other-keys))
+	   (paipx-pickup-non-required-vars arg-obj))
+	  (t (paipx-pickup-keyword-vars
+	      (list (rest arglist)
+		    (push
+		     (cond ((atom (first arglist)) (first arglist))
+			   ((atom (first (first arglist)))
+			    (first (first arglist)))
+			   (t (second (first (first arglist)))))
+		     result-list)))))))
+
 (provide 'paipx)
 
 ;;; paipx.el ends here
