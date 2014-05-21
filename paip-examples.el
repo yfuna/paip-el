@@ -1083,12 +1083,12 @@
   "Here we show how to index facts in a kind of table that makes it easy to"
   "add, delete, and retrieve entries.  We will develop an extension of the"
   "trie or discrimination tree data structure built in section 10.5 (page 344)."
-  ((requires "krep1"))
+  ((require 'paip-krep1))
   "Now we define a function to test the indexing routine.  Compare the output"
   "with figure 14.1 on page 474."
   ((test-index) @ 478)
   "Here is an example of fetching from the index"
-  ((fetch '(p ! c)) @ 480 =>
+  ((paip-krep1-fetch '(p ! c)) @ 480 =>
    (((P B C) (P A C))
     ((P A !X))))
   "We can make a change to rename variables before indexing facts."
