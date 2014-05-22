@@ -32,7 +32,7 @@ The index below gives the chapter in the book, file name, implementation status,
 
 | **Chapter** | **Filename**                                                                          | **I** | **T** | **Description**                                              |
 |---------|-----------------------------------------------------------------------------------|-------|------|-------------------------------------------------------------------|
-|       - | [README.md](README.md)               | WIP   |      | This file: explanation and index                                  |
+|       - | [README.md](README.md)               | ✓   |      | This file: explanation and index                                  |
 |       - | [paip-examples.el](paip-examples.el) | WIP   |      | A list of example inputs taken from the book                      |
 |       - | [paip-tutor.el](paip-tutor.el)       | ✓  |      | An interpreter for running the examples                           |
 |       - | [paip.el](paip.el)                   | ✓  |      | Auxiliary functions; load this before anything else (auxfns.lisp) |
@@ -59,8 +59,8 @@ The index below gives the chapter in the book, file name, implementation status,
 |      12 | paip-prologc2.el                                                                  | Wont |      | Second version of Prolog compiler. I see no value to port this half-baked software. Use paip-prologc.el instead                                  |
 |      12 | [paip-prologc.el](paip-prologc.el)   | ✓  |      | Final version of Prolog compiler                                  |
 |      12 | [paip-prologcp.el](paip-prologcp.el) | ✓  |      | Primitives for Prolog compiler                                    |
-|      13 | [paip-clos.el](paip-clos.el)                                                                      | WIP      |      | Some object-oriented and CLOS code                                |
-|      14 | paip-krep1.el                                                                     |       |      | Knowledge Representation code: first version                      |
+|      13 | [paip-clos.el](paip-clos.el)                                                                      | ✓      |      | Some object-oriented and CLOS code                                |
+|      14 | [paip-krep1.el](paip-krep1.el)                                                                     |  WIP     |      | Knowledge Representation code: first version                      |
 |      14 | paip-krep2.el                                                                     |       |      | Knowledge Representation code with conjunctions                   |
 |      14 | paip-krep.el                                                                      |       |      | Final KR code: worlds and attached functions                      |
 |      15 | paip-cmacsyma.el                                                                  |       |      | Efficient Macsyma with canonical form                             |
