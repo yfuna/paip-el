@@ -1086,7 +1086,7 @@
   ((require 'paip-krep1))
   "Now we define a function to test the indexing routine.  Compare the output"
   "with figure 14.1 on page 474."
-  ((test-index) @ 478)
+  ((paip-krep1-test-index) @ 478)
   "Here is an example of fetching from the index"
   ((paip-krep1-fetch '(p ! c)) @ 480 =>
    (((P B C) (P A C))
