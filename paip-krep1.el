@@ -172,7 +172,8 @@
   "Return (or create) the nlist for this atom in dtree."
   (or (paip-lookup atom
 		   (paip-krep1-dtree-atoms dtree))
-      (let ((new (paip-krep1-make-empty-nlist)))
+      (lexical-let
+	  ((new (paip-krep1-make-empty-nlist)))
         (push (cons atom new)
 	      (paip-krep1-dtree-atoms dtree))
         new)))
@@ -189,8 +190,8 @@
 ;;     (values)))
 
 (defun paip-krep1-test-index ()
-  (let ((props '((p a b) (p a c) (p a ?x) (p b c)
-                 (p b (f c)) (p a (f . ?x)))))
+  (let ((props '((p a b) (p a c) (p a \?x) (p b c)
+                 (p b (f c)) (p a (f . \?x)))))
     (paip-krep1-clear-dtrees)
     (mapc 'paip-krep1-index props)
     (let ((print-circle t))
@@ -239,6 +240,9 @@
 (defun paip-krep1-dtree-fetch (pat dtree var-list-in var-n-in best-list best-n)
   "Return two values: a list-of-lists of possible matches to pat,
   and the number of elements in the list-of-lists."
+  (paipx-message
+   (format "\nfetch:\n  pat=%s\n  dtree=%s\n  var-list-n=%s\n  var-n-in=%s\n  best-list=%s\n  best-n=%s\n"
+	   pat dtree var-list-in var-n-in best-list best-n))
   (lexical-let ((pat pat)
 		(dtree dtree)
 		(var-list-in var-list-in)
@@ -246,7 +250,9 @@
 		(best-list best-list)
 		(best-n best-n))
       (if (or (null dtree) (null pat) (paip-variable-p pat))
-	  (cl-values best-list best-n)
+	  (progn
+	    (paipx-message (format "\nfetch-return1: (%s %s)\n" best-list best-n))
+	    (cl-values best-list best-n))
 	(lexical-let* ((var-nlist (paip-krep1-dtree-var dtree))
 		       (var-n (+ var-n-in (paip-krep1-nlist-n var-nlist)))
 		       (var-list (if (null (paip-krep1-nlist-list var-nlist))
@@ -254,7 +260,10 @@
 				   (cons (paip-krep1-nlist-list var-nlist)
 					 var-list-in))))
 	  (cond
-	   ((>= var-n best-n) (cl-values best-list best-n))
+	   ((>= var-n best-n)
+	    (progn
+	      (paipx-message (format "\nfetch-return2: (%s %s)\n" best-list best-n))
+	      (cl-values best-list best-n)))
 	   ((atom pat) (paip-krep1-dtree-atom-fetch
 			pat dtree var-list var-n
 			best-list best-n))
@@ -280,16 +289,32 @@
 (defun paip-krep1-dtree-atom-fetch (atom dtree var-list var-n best-list best-n)
   "Return the answers indexed at this atom (along with the vars),
   or return the previous best answer, if it is better."
-  (let ((atom-nlist (paip-lookup
-		     atom
-		     (paip-krep1-dtree-atoms dtree))))
-    (cond
-      ((or (null atom-nlist) (null (paip-krep1-nlist-list atom-nlist)))
-       (cl-values var-list var-n))
-      ((and atom-nlist
-	    (< (cl-incf var-n (paip-krep1-nlist-n atom-nlist)) best-n))
-       (cl-values (cons (paip-krep1-nlist-list atom-nlist) var-list) var-n))
-      (t (cl-values best-list best-n)))))
+  (paipx-message
+   (format "\nfetch-atom:\n  atom=%s\n  dtree=%s\n  var-list=%s\n  var-n=%s\n  best-list=%s\n  best-n=%s\n"
+	   atom dtree var-list var-n best-list best-n))
+  (lexical-let
+      ((atom atom)
+       (dtree dtree)
+       (var-list var-list)
+       (var-n var-n)
+       (best-list best-list)
+       (best-n best-n))
+    (lexical-let ((atom-nlist (paip-lookup
+			       atom
+			       (paip-krep1-dtree-atoms dtree))))
+      (cond
+       ((or (null atom-nlist) (null (paip-krep1-nlist-list atom-nlist)))
+	(paipx-message (format "\nfetch-atom-return1: var-list=%s, var-n=%s)\n" var-list var-n))
+	(cl-values var-list var-n))
+       ((and atom-nlist
+	     (< (cl-incf var-n (paip-krep1-nlist-n atom-nlist)) best-n))
+	(lexical-let ((new-var-list
+		       (cons (paip-krep1-nlist-list atom-nlist) var-list)))
+	  (paipx-message (format "\nfetch-atom-return2: var-list=%s, var-n=%s)\n" new-var-list var-n))
+	  (cl-values  new-var-list var-n)))
+       (t
+	(paipx-message (format "\nfetch-atom-return3: best-list=%s, best-n=%s)\n" best-list best-n))
+	(cl-values best-list best-n))))))
 
 ;; ;;; ==============================
 
