@@ -60,8 +60,8 @@ The index below gives the chapter in the book, file name, implementation status,
 |      12 | [paip-prologc.el](paip-prologc.el)   | ✓  |      | Final version of Prolog compiler                                  |
 |      12 | [paip-prologcp.el](paip-prologcp.el) | ✓  |      | Primitives for Prolog compiler                                    |
 |      13 | [paip-clos.el](paip-clos.el)                                                                      | ✓      |      | Some object-oriented and CLOS code                                |
-|      14 | [paip-krep1.el](paip-krep1.el)                                                                     |  WIP     |      | Knowledge Representation code: first version                      |
-|      14 | paip-krep2.el                                                                     |       |      | Knowledge Representation code with conjunctions                   |
+|      14 | [paip-krep1.el](paip-krep1.el)                                                                     |  ✓     |      | Knowledge Representation code: first version                      |
+|      14 | [paip-krep2.el](paip-krep2.el)                                                                     | WIP      |      | Knowledge Representation code with conjunctions                   |
 |      14 | paip-krep.el                                                                      |       |      | Final KR code: worlds and attached functions                      |
 |      15 | paip-cmacsyma.el                                                                  |       |      | Efficient Macsyma with canonical form                             |
 |      16 | paip-mycin.el                                                                     |       |      | The Emycin expert system shell                                    |
