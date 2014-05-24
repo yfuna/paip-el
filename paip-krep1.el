@@ -334,10 +334,13 @@
 (defun paip-krep1-mapc-retrieve (fn query)
   "For every fact that matches the query,
   apply the function to the binding list."
-  (cl-dolist (bucket (fetch query))
+  (cl-dolist (bucket (car (paip-krep1-fetch query))) ; [YF] fetch
+						     ; returns pseudo
+						     ; multiple value.
     (cl-dolist (answer bucket)
-      (lexical-let ((bindings (unify query answer)))
-        (unless (eq bindings fail)
+      (paipx-message (format "\nmapc-retrieve: answer=%s" answer))
+      (let ((bindings (paip-unify-unify query answer)))
+        (unless (eq bindings paip-fail)
           (funcall fn bindings))))))
 
 ;; ;;; ==============================
@@ -353,8 +356,9 @@
   "Find all facts that match query.  Return a list of bindings."
   (let ((answers nil))
     (paip-krep1-mapc-retrieve
-     (lambda (bindings) (push bindings answers))
-                   query)
+     (lambda (bindings)
+       (push bindings answers))
+     query)
     answers))
 
 ;; (defun retrieve-matches (query)
@@ -367,7 +371,7 @@
   "Find all facts that match query.
   Return a list of expressions that match the query."
   (mapcar (lambda (bindings)
-	    (paip-subst-bindings bindings query))
+	    (paip-unify-subst-bindings bindings query))
           (paip-krep1-retrieve query)))
 
 ;; ;;; ==============================
@@ -394,7 +398,7 @@
          (vars-and-vals
 	  (mapcar
 	   (lambda (var)
-	     (list var `(paip-subst-bindings ,bindings ',var)))
+	     (list var `(paip-unify-subst-bindings ,bindings ',var)))
 	   variables)))
     `(paip-krep1-mapc-retrieve
       (lambda (,bindings)
