@@ -7,15 +7,15 @@ The original source was all written by Peter Norvig, and the copyright belongs t
 
 Please note that:
 
-- It's under development,
-- It's incomplete,
+- The software modules are under development,
+- They're incomplete,
 - Not all the stuff, functions and macros, here works.
 
 While it is very early in the development of the modules, all feedback is welcome via github messages and/or as github issues.
 
 [CL to EL Porting Tips](https://github.com/yfuna/paip-el/wiki/CL-to-EL-Porting-Tips) is available on the project wiki.
 
-Installation
+Usage
 ------------
 
 Put all elisp files in your load-path and require what you use. For example,
