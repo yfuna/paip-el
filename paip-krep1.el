@@ -28,6 +28,12 @@
 
 ;; ;;; krep1.lisp: Knowledge representation code; first version.
 
+;; [YF] I use not paip-krep1 but paip-krep as the prefix for this
+;; file, paip-krep2.el, and paip-kerep.el. This is because krep2 is an
+;; update for krep1 and krep is an update for krep2. I'm not sure
+;; about what this incosistency of a file name and prefix will cause
+;; for ELM system. Let's see.
+
 (eval-when-compile
   (require 'cl-lib))
 
@@ -42,17 +48,17 @@
 ;;   "Create a new, empty nlist."
 ;;   (cons 0 nil))
 
-(defun paip-krep1-make-empty-nlist () 
+(defun paip-krep-make-empty-nlist () 
   "Create a new, empty nlist."
   (cons 0 nil))
 
 ;; (defun nlist-n (x) "The number of elements in an nlist." (car x))
 ;; (defun nlist-list (x) "The elements in an nlist." (cdr x))
 
-(defun paip-krep1-nlist-n (x)
+(defun paip-krep-nlist-n (x)
   "The number of elements in an nlist."
   (car x))
-(defun paip-krep1-nlist-list (x)
+(defun paip-krep-nlist-list (x)
   "The elements in an nlist."
   (cdr x))
 
@@ -62,7 +68,7 @@
 ;;   (push item (cdr nlist))
 ;;   nlist)
 
-(defun paip-krep1-nlist-push (item nlist)
+(defun paip-krep-nlist-push (item nlist)
   "Add a new element to an nlist."
   (cl-incf (car nlist))
   (push item (cdr nlist))
@@ -73,8 +79,8 @@
 ;; (defstruct (dtree (:type vector))
 ;;   (first nil) (rest nil) (atoms nil) (var (make-empty-nlist)))
 
-(cl-defstruct (paip-krep1-dtree (:type vector))
-  (first nil) (rest nil) (atoms nil) (var (paip-krep1-make-empty-nlist)))
+(cl-defstruct (paip-krep-dtree (:type vector))
+  (first nil) (rest nil) (atoms nil) (var (paip-krep-make-empty-nlist)))
 
 ;; ;;; ==============================
 
@@ -82,7 +88,7 @@
 ;; ;; to a global *predicates* - norvig Jun 11 1996
 ;; (defvar *predicates* nil)
 
-(defvar paip-krep1-*predicates* nil)
+(defvar paip-krep-*predicates* nil)
 
 ;; (defun get-dtree (predicate)
 ;;   "Fetch (or make) the dtree for this predicate."
@@ -90,12 +96,12 @@
 ;; 	(t (push predicate *predicates*)
 ;; 	   (setf (get predicate 'dtree) (make-dtree)))))
 
-(defun paip-krep1-get-dtree (predicate)
+(defun paip-krep-get-dtree (predicate)
   "Fetch (or make) the dtree for this predicate."
   (cond ((get predicate 'dtree))
-	(t (push predicate paip-krep1-*predicates*)
+	(t (push predicate paip-krep-*predicates*)
 	   (setf (get predicate 'dtree)
-		 (make-paip-krep1-dtree)))))
+		 (make-paip-krep-dtree)))))
 
 ;; (defun clear-dtrees ()
 ;;   "Remove all the dtrees for all the predicates."
@@ -103,11 +109,11 @@
 ;;     (setf (get predicate 'dtree) nil))
 ;;   (setf *predicates* nil))
 
-(defun paip-krep1-clear-dtrees ()
+(defun paip-krep-clear-dtrees ()
   "Remove all the dtrees for all the predicates."
-  (dolist (predicate paip-krep1-*predicates*)
+  (dolist (predicate paip-krep-*predicates*)
     (setf (get predicate 'dtree) nil))
-  (setf paip-krep1-*predicates* nil))
+  (setf paip-krep-*predicates* nil))
 
 ;; ;;; ==============================
 
@@ -116,11 +122,11 @@
 ;;   it is stored in the predicate's dtree."
 ;;   (dtree-index key key (get-dtree (predicate key))))
 
-(defun paip-krep1-index (key)
+(defun paip-krep-index (key)
   "Store key in a dtree node.  Key must be (predicate . args);
   it is stored in the predicate's dtree."
-  (paip-krep1-dtree-index key key
-			  (paip-krep1-get-dtree
+  (paip-krep-dtree-index key key
+			  (paip-krep-get-dtree
 			   (paip-prolog-predicate key))))
 
 ;; (defun dtree-index (key value dtree)
@@ -139,27 +145,27 @@
 ;;     (t ;; Make sure there is an nlist for this atom, and add to it
 ;;      (nlist-push value (lookup-atom key dtree)))))
 
-(defun paip-krep1-dtree-index (key value dtree)
+(defun paip-krep-dtree-index (key value dtree)
   "Index value under all atoms of key in dtree."
   (cond
    ((consp key)				; index on both first and rest
-    (paip-krep1-dtree-index
+    (paip-krep-dtree-index
      (first key) value
-     (or (paip-krep1-dtree-first dtree)
-	 (setf (paip-krep1-dtree-first dtree)
-	       (make-paip-krep1-dtree))))
-    (paip-krep1-dtree-index
+     (or (paip-krep-dtree-first dtree)
+	 (setf (paip-krep-dtree-first dtree)
+	       (make-paip-krep-dtree))))
+    (paip-krep-dtree-index
      (rest key) value
-     (or (paip-krep1-dtree-rest dtree)
-	 (setf (paip-krep1-dtree-rest dtree)
-	       (make-paip-krep1-dtree)))))
+     (or (paip-krep-dtree-rest dtree)
+	 (setf (paip-krep-dtree-rest dtree)
+	       (make-paip-krep-dtree)))))
    ((null key))				; don't index on nil
-   ((paip-variable-p key)			; index a variable
-    (paip-krep1-nlist-push
-     value (paip-krep1-dtree-var dtree)))
+   ((paip-variable-p key)		; index a variable
+    (paip-krep-nlist-push
+     value (paip-krep-dtree-var dtree)))
    (t ;; Make sure there is an nlist for this atom, and add to it
-    (paip-krep1-nlist-push value
-			   (paip-krep1-lookup-atom key dtree)))))
+    (paip-krep-nlist-push value
+			  (paip-krep-lookup-atom key dtree)))))
 
 ;; (defun lookup-atom (atom dtree)
 ;;   "Return (or create) the nlist for this atom in dtree."
@@ -168,14 +174,14 @@
 ;;         (push (cons atom new) (dtree-atoms dtree))
 ;;         new)))
 
-(defun paip-krep1-lookup-atom (atom dtree)
+(defun paip-krep-lookup-atom (atom dtree)
   "Return (or create) the nlist for this atom in dtree."
   (or (paip-lookup atom
-		   (paip-krep1-dtree-atoms dtree))
+		   (paip-krep-dtree-atoms dtree))
       (lexical-let
-	  ((new (paip-krep1-make-empty-nlist)))
+	  ((new (paip-krep-make-empty-nlist)))
         (push (cons atom new)
-	      (paip-krep1-dtree-atoms dtree))
+	      (paip-krep-dtree-atoms dtree))
         new)))
 
 ;; ;;; ==============================
@@ -189,14 +195,14 @@
 ;;            :circle t :array t :pretty t)
 ;;     (values)))
 
-(defun paip-krep1-test-index ()
+(defun paip-krep-test-index ()
   (let ((props '((p a b) (p a c) (p a \?x) (p b c)
                  (p b (f c)) (p a (f . \?x)))))
-    (paip-krep1-clear-dtrees)
-    (mapc 'paip-krep1-index props)
+    (paip-krep-clear-dtrees)
+    (mapc 'paip-krep-index props)
     (let ((print-circle t))
       (paipx-message
-       (pp (list props (paip-krep1-get-dtree 'p)))))
+       (pp (list props (paip-krep-get-dtree 'p)))))
     (cl-values)))
 
 ;; ;;; ==============================
@@ -207,12 +213,12 @@
 ;;   (dtree-fetch query (get-dtree (predicate query))
 ;;                nil 0 nil most-positive-fixnum))
 
-(defun paip-krep1-fetch (query)
+(defun paip-krep-fetch (query)
   "Return a list of buckets potentially matching the query,
   which must be a relation of form (predicate . args)."
-  (paip-krep1-dtree-fetch query
-			  (paip-krep1-get-dtree (paip-prolog-predicate query))
-               nil 0 nil most-positive-fixnum))
+  (paip-krep-dtree-fetch query
+			 (paip-krep-get-dtree (paip-prolog-predicate query))
+			 nil 0 nil most-positive-fixnum))
 
 ;; ;;; ==============================
 
@@ -237,7 +243,7 @@
 ;;                (dtree-fetch (rest pat) (dtree-rest dtree)
 ;;                             var-list var-n list1 n1)))))))
 
-(defun paip-krep1-dtree-fetch (pat dtree var-list-in var-n-in best-list best-n)
+(defun paip-krep-dtree-fetch (pat dtree var-list-in var-n-in best-list best-n)
   "Return two values: a list-of-lists of possible matches to pat,
   and the number of elements in the list-of-lists."
   (paipx-message
@@ -249,31 +255,31 @@
 		(var-n-in var-n-in)
 		(best-list best-list)
 		(best-n best-n))
-      (if (or (null dtree) (null pat) (paip-variable-p pat))
+    (if (or (null dtree) (null pat) (paip-variable-p pat))
+	(progn
+	  (paipx-message (format "\nfetch-return1: (%s %s)\n" best-list best-n))
+	  (cl-values best-list best-n))
+      (lexical-let* ((var-nlist (paip-krep-dtree-var dtree))
+		     (var-n (+ var-n-in (paip-krep-nlist-n var-nlist)))
+		     (var-list (if (null (paip-krep-nlist-list var-nlist))
+				   var-list-in
+				 (cons (paip-krep-nlist-list var-nlist)
+				       var-list-in))))
+	(cond
+	 ((>= var-n best-n)
 	  (progn
-	    (paipx-message (format "\nfetch-return1: (%s %s)\n" best-list best-n))
-	    (cl-values best-list best-n))
-	(lexical-let* ((var-nlist (paip-krep1-dtree-var dtree))
-		       (var-n (+ var-n-in (paip-krep1-nlist-n var-nlist)))
-		       (var-list (if (null (paip-krep1-nlist-list var-nlist))
-				     var-list-in
-				   (cons (paip-krep1-nlist-list var-nlist)
-					 var-list-in))))
-	  (cond
-	   ((>= var-n best-n)
-	    (progn
-	      (paipx-message (format "\nfetch-return2: (%s %s)\n" best-list best-n))
-	      (cl-values best-list best-n)))
-	   ((atom pat) (paip-krep1-dtree-atom-fetch
-			pat dtree var-list var-n
-			best-list best-n))
-	   (t (cl-multiple-value-bind (list1 n1)
-		  (paip-krep1-dtree-fetch
-		   (first pat) (paip-krep1-dtree-first dtree)
-		   var-list var-n best-list best-n)
-		(paip-krep1-dtree-fetch
-		 (rest pat) (paip-krep1-dtree-rest dtree)
-		 var-list var-n list1 n1))))))))
+	    (paipx-message (format "\nfetch-return2: (%s %s)\n" best-list best-n))
+	    (cl-values best-list best-n)))
+	 ((atom pat) (paip-krep-dtree-atom-fetch
+		      pat dtree var-list var-n
+		      best-list best-n))
+	 (t (cl-multiple-value-bind (list1 n1)
+		(paip-krep-dtree-fetch
+		 (first pat) (paip-krep-dtree-first dtree)
+		 var-list var-n best-list best-n)
+	      (paip-krep-dtree-fetch
+	       (rest pat) (paip-krep-dtree-rest dtree)
+	       var-list var-n list1 n1))))))))
 
 ;; (defun dtree-atom-fetch (atom dtree var-list var-n best-list best-n)
 ;;   "Return the answers indexed at this atom (along with the vars),
@@ -286,7 +292,7 @@
 ;;        (values (cons (nlist-list atom-nlist) var-list) var-n))
 ;;       (t (values best-list best-n)))))
 
-(defun paip-krep1-dtree-atom-fetch (atom dtree var-list var-n best-list best-n)
+(defun paip-krep-dtree-atom-fetch (atom dtree var-list var-n best-list best-n)
   "Return the answers indexed at this atom (along with the vars),
   or return the previous best answer, if it is better."
   (paipx-message
@@ -301,15 +307,15 @@
        (best-n best-n))
     (lexical-let ((atom-nlist (paip-lookup
 			       atom
-			       (paip-krep1-dtree-atoms dtree))))
+			       (paip-krep-dtree-atoms dtree))))
       (cond
-       ((or (null atom-nlist) (null (paip-krep1-nlist-list atom-nlist)))
+       ((or (null atom-nlist) (null (paip-krep-nlist-list atom-nlist)))
 	(paipx-message (format "\nfetch-atom-return1: var-list=%s, var-n=%s)\n" var-list var-n))
 	(cl-values var-list var-n))
        ((and atom-nlist
-	     (< (cl-incf var-n (paip-krep1-nlist-n atom-nlist)) best-n))
+	     (< (cl-incf var-n (paip-krep-nlist-n atom-nlist)) best-n))
 	(lexical-let ((new-var-list
-		       (cons (paip-krep1-nlist-list atom-nlist) var-list)))
+		       (cons (paip-krep-nlist-list atom-nlist) var-list)))
 	  (paipx-message (format "\nfetch-atom-return2: var-list=%s, var-n=%s)\n" new-var-list var-n))
 	  (cl-values  new-var-list var-n)))
        (t
@@ -320,7 +326,7 @@
 
 ;; (proclaim '(inline mapc-retrieve))
 
-(cl-proclaim '(inline paip-krep1-mapc-retrieve))
+(cl-proclaim '(inline paip-krep-mapc-retrieve))
 
 ;; (defun mapc-retrieve (fn query)
 ;;   "For every fact that matches the query,
@@ -331,10 +337,10 @@
 ;;         (unless (eq bindings fail)
 ;;           (funcall fn bindings))))))
 
-(defun paip-krep1-mapc-retrieve (fn query)
+(defun paip-krep-mapc-retrieve (fn query)
   "For every fact that matches the query,
   apply the function to the binding list."
-  (cl-dolist (bucket (car (paip-krep1-fetch query))) ; [YF] fetch
+  (cl-dolist (bucket (car (paip-krep-fetch query))) ; [YF] fetch
 						     ; returns pseudo
 						     ; multiple value.
     (cl-dolist (answer bucket)
@@ -352,10 +358,10 @@
 ;;                    query)
 ;;     answers))
 
-(defun paip-krep1-retrieve (query)
+(defun paip-krep-retrieve (query)
   "Find all facts that match query.  Return a list of bindings."
   (let ((answers nil))
-    (paip-krep1-mapc-retrieve
+    (paip-krep-mapc-retrieve
      (lambda (bindings)
        (push bindings answers))
      query)
@@ -367,12 +373,12 @@
 ;;   (mapcar #'(lambda (bindings) (subst-bindings bindings query))
 ;;           (retrieve query)))
 
-(defun paip-krep1-retrieve-matches (query)
+(defun paip-krep-retrieve-matches (query)
   "Find all facts that match query.
   Return a list of expressions that match the query."
   (mapcar (lambda (bindings)
 	    (paip-unify-subst-bindings bindings query))
-          (paip-krep1-retrieve query)))
+          (paip-krep-retrieve query)))
 
 ;; ;;; ==============================
 
@@ -391,7 +397,7 @@
 ;;              ,@body))
 ;;        ,query)))
 
-(cl-defmacro paip-krep1-query-bind (variables query &body body)
+(cl-defmacro paip-krep-query-bind (variables query &body body)
   "Execute the body for each match to the query.
   Within the body, bind each variable."
   (let* ((bindings (cl-gensym "BINDINGS"))
@@ -400,10 +406,10 @@
 	   (lambda (var)
 	     (list var `(paip-unify-subst-bindings ,bindings ',var)))
 	   variables)))
-    `(paip-krep1-mapc-retrieve
+    `(paip-krep-mapc-retrieve
       (lambda (,bindings)
-	  (let ,vars-and-vals
-	    ,@body))
+	(let ,vars-and-vals
+	  ,@body))
       ,query)))
 
 (provide 'paip-krep1)

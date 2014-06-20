@@ -26,7 +26,7 @@
 ;; ;;; Code from Paradigms of Artificial Intelligence Programming
 ;; ;;; Copyright (c) 1991 Peter Norvig
 
-;; ;;; krep1.lisp: Knowledge representation code; second version.
+;; ;;; krep2.lisp: Knowledge representation code; second version.
 ;; ;;; Fixes problem with renaming variables; adds conjunctions.
 
 (eval-when-compile
@@ -36,10 +36,10 @@
 
 (require 'paip-krep1)
 
-;; [YF] I use paip-krep1 in place of paip-krep2 as the prefix for
-;; names in this file. This is because this file is an update of
-;; paip-krep1 module, which overwrites some operators in
-;; paip-krep1.el.
+;; [YF] I use paip-krep in place of paip-krep2 as the prefix for names
+;; in this file. This is because this file is an update of paip-krep1
+;; module, which overwrites some operators in paip-krep1.el, and maybe
+;; overwritten by paip-krep.el.
 
 ;; (defun index (key)
 ;;   "Store key in a dtree node.  Key must be (predicate . args);
@@ -47,12 +47,12 @@
 ;;   (dtree-index key (rename-variables key)    ; store unique vars
 ;;                (get-dtree (predicate key))))
 
-(defun paip-krep1-index (key)
+(defun paip-krep-index (key)
   "Store key in a dtree node.  Key must be (predicate . args);
   it is stored in the predicate's dtree."
-  (paip-krep1-dtree-index key
-			  (paip-prolog-rename-variables key) ; store unique vars
-               (paip-krep1-get-dtree (paip-krep1-predicate key))))
+  (paip-krep-dtree-index key
+			 (paip-prolog-rename-variables key) ; store unique vars
+			 (paip-krep-get-dtree (paip-krep-predicate key))))
 
 ;; ;;; ==============================
 
@@ -61,7 +61,7 @@
 
 ;; (defvar *search-cut-off* nil "Has the search been stopped?")
 
-(defvar paip-krep1-*search-cut-off* nil "Has the search been stopped?")
+(defvar paip-krep-*search-cut-off* nil "Has the search been stopped?")
 
 ;; (defun prove-all (goals bindings depth)
 ;;   "Find a solution to the conjunction of goals."
@@ -70,12 +70,12 @@
 ;;         ((null goals) bindings)
 ;;         (t (prove (first goals) bindings (rest goals) depth))))
 
-(defun paip-krep1-prove-all (goals bindings depth)
+(defun paip-krep-prove-all (goals bindings depth)
   "Find a solution to the conjunction of goals."
   ;; This version just passes the depth on to PROVE.
   (cond ((eq bindings paip-fail) paip-fail)
         ((null goals) bindings)
-        (t (paip-krep1-prove
+        (t (paip-krep-prove
 	    (first goals) bindings (rest goals) depth))))
 
 ;; (defun prove (goal bindings other-goals depth)
@@ -99,28 +99,28 @@
 ;;             (funcall clauses (rest goal) bindings
 ;;                      other-goals depth)))))   ;***
 
-(defun paip-krep1-prove (goal bindings other-goals depth)
+(defun paip-krep-prove (goal bindings other-goals depth)
   "Return a list of possible solutions to goal."
   ;; Check if the depth bound has been exceeded
-  (if (= depth 0)				  ;***
-      (progn (setf paip-krep1-*search-cut-off* t) ;***
-             paip-fail)				  ;***
-      (lexical-let ((clauses (paip-prolog-get-clauses
-		      (paip-prolog-predicate goal))))
-        (if (listp clauses)
-            (some
-	     (lambda (clause)
-	       (lexical-let ((new-clause (paip-prolog-rename-variables clause)))
-		 (paip-krep1-prove-all
-		  (append (paip-prolog-clause-body new-clause) other-goals)
-		  (paip-unify-unify goal
-				    (paip-prolog-clause-head new-clause) bindings)
-		  (- depth 1))))	;***
-	     clauses)
-            ;; The predicate's "clauses" can be an atom:
-            ;; a primitive function to call
-            (funcall clauses (rest goal) bindings
-                     other-goals depth))))) ;***
+  (if (= depth 0)				 ;***
+      (progn (setf paip-krep-*search-cut-off* t) ;***
+             paip-fail)				 ;***
+    (lexical-let ((clauses (paip-prolog-get-clauses
+			    (paip-prolog-predicate goal))))
+      (if (listp clauses)
+	  (some
+	   (lambda (clause)
+	     (lexical-let ((new-clause (paip-prolog-rename-variables clause)))
+	       (paip-krep-prove-all
+		(append (paip-prolog-clause-body new-clause) other-goals)
+		(paip-unify-unify goal
+				  (paip-prolog-clause-head new-clause) bindings)
+		(- depth 1))))		;***
+	   clauses)
+	;; The predicate's "clauses" can be an atom:
+	;; a primitive function to call
+	(funcall clauses (rest goal) bindings
+		 other-goals depth))))) ;***
 
 ;; ;;; ==============================
 
@@ -131,11 +131,11 @@
 ;; (defparameter *depth-max* most-positive-fixnum
 ;;   "The deepest we will ever search.")
 
-(defvar paip-krep1-*depth-start* 5
+(defvar paip-krep-*depth-start* 5
   "The depth of the first round of iterative search.")
-(defvar paip-krep1-*depth-incr* 5 
+(defvar paip-krep-*depth-incr* 5 
   "Increase each iteration of the search by this amount.")
-(defvar paip-krep1-*depth-max* most-positive-fixnum
+(defvar paip-krep-*depth-max* most-positive-fixnum
   "The deepest we will ever search.")
 
 ;; ;;; ==============================
@@ -150,17 +150,17 @@
 ;;   (format t "~&No.")
 ;;   (values))
 
-(defun paip-krep1-top-level-prove (goals)
+(defun paip-krep-top-level-prove (goals)
   (lexical-let ((all-goals
-          `(,@goals (paip-krep1-show-prolog-vars
-		     ,@(paip-prolog-variables-in goals)))))
+		 `(,@goals (paip-krep-show-prolog-vars
+			    ,@(paip-prolog-variables-in goals)))))
     (cl-loop for depth
-	     from paip-krep1-*depth-start*
-	     to paip-krep1-*depth-max*
-	     by paip-krep1-*depth-incr*
-          while (lexical-let ((paip-krep1-*search-cut-off* nil))
-                  (paip-krep1-prove-all all-goals no-bindings depth)
-                  paip-krep1-*search-cut-off*)))
+	     from paip-krep-*depth-start*
+	     to paip-krep-*depth-max*
+	     by paip-krep-*depth-incr*
+	     while (lexical-let ((paip-krep-*search-cut-off* nil))
+		     (paip-krep-prove-all all-goals no-bindings depth)
+		     paip-krep-*search-cut-off*)))
   (paipx-message "\nNo.")
   (cl-values))
 
@@ -181,21 +181,21 @@
 ;;             fail
 ;;             (prove-all other-goals bindings depth)))))
 
-(defun paip-krep1-show-prolog-vars (vars bindings other-goals depth)
+(defun paip-krep-show-prolog-vars (vars bindings other-goals depth)
   "Print each variable with its binding.
   Then ask the user if more solutions are desired."
   (if (> depth *depth-incr*)
       fail
-      (progn
-        (if (null vars)
-            (paipx-message "\nYes")
-            (cl-dolist (var vars)
-              (paipx-message
-	       (format "\n%s = %s" var
-		       (paip-unify-subst-bindings bindings var)))))
-        (if (paip-prolog-continue-p)
-            paip-fail
-            (paip-krep1-prove-all other-goals bindings depth)))))
+    (progn
+      (if (null vars)
+	  (paipx-message "\nYes")
+	(cl-dolist (var vars)
+	  (paipx-message
+	   (format "\n%s = %s" var
+		   (paip-unify-subst-bindings bindings var)))))
+      (if (paip-prolog-continue-p)
+	  paip-fail
+	(paip-krep-prove-all other-goals bindings depth)))))
 
 ;; ;;; ==============================
 
@@ -207,11 +207,11 @@
 ;;       (mapc #'add-fact (args fact))
 ;;       (index fact)))
 
-(defun paip-krep1-add-fact (fact)
+(defun paip-krep-add-fact (fact)
   "Add the fact to the data base."
-  (if (eq (paip-krep1-predicate fact) 'and)
+  (if (eq (paip-krep-predicate fact) 'and)
       (mapc 'add-fact (args fact))
-      (paip-krep1-index fact)))
+      (paip-krep-index fact)))
 
 ;; ;;; ==============================
 
@@ -221,12 +221,12 @@
 ;;       (retrieve-conjunction (args query) (list bindings))
 ;;       (retrieve query bindings)))
 
-(cl-defun paip-krep1-retrieve-fact (query &optional (bindings no-bindings))
+(cl-defun paip-krep-retrieve-fact (query &optional (bindings no-bindings))
   "Find all facts that match query.  Return a list of bindings."
-  (if (eq (paip-krep1-predicate query) 'and)
-      (paip-krep1-retrieve-conjunction
+  (if (eq (paip-krep-predicate query) 'and)
+      (paip-krep-retrieve-conjunction
        (args query) (list bindings))
-      (paip-krep1-retrieve query bindings)))
+    (paip-krep-retrieve query bindings)))
 
 ;; (defun retrieve-conjunction (conjuncts bindings-lists)
 ;;   "Return a list of binding lists satisfying the conjuncts."
@@ -241,15 +241,15 @@
 ;;                      bindings)))))
 ;;     bindings-lists))
 
-(defun paip-krep1-retrieve-conjunction (conjuncts bindings-lists)
+(defun paip-krep-retrieve-conjunction (conjuncts bindings-lists)
   "Return a list of binding lists satisfying the conjuncts."
   (mapcan
    (lambda (bindings)
      (cond ((eq bindings paip-fail) paip-nil)
 	   ((null conjuncts) (list bindings))
-	   (t (paip-krep1-retrieve-conjunction
+	   (t (paip-krep-retrieve-conjunction
 	       (rest conjuncts)
-	       (paip-krep1-retrieve-fact
+	       (paip-krep-retrieve-fact
 		(paip-unify-subst-bindings bindings
 					   (first conjuncts))
 		bindings)))))
@@ -266,10 +266,10 @@
 ;;         (unless (eq new-bindings fail)
 ;;           (funcall fn new-bindings))))))
 
-(cl-defun paip-krep1-mapc-retrieve (fn query &optional (bindings no-bindings))
+(cl-defun paip-krep-mapc-retrieve (fn query &optional (bindings no-bindings))
   "For every fact that matches the query,
   apply the function to the binding list."
-  (cl-dolist (bucket (car (paip-krep1-fetch query)))
+  (cl-dolist (bucket (car (paip-krep-fetch query)))
     (cl-dolist (answer bucket)
       (lexical-let ((new-bindings (paip-unify-unify query answer bindings)))
         (unless (eq new-bindings paip-fail)
@@ -282,12 +282,12 @@
 ;;                    query bindings)
 ;;     answers))
 
-(cl-defun paip-krep1-retrieve (query &optional (bindings no-bindings))
+(cl-defun paip-krep-retrieve (query &optional (bindings no-bindings))
   "Find all facts that match query.  Return a list of bindings."
   (lexical-let ((answers nil))
     (mapc-retrieve
      (lambda (bindings) (push bindings answers))
-                   query bindings)
+     query bindings)
     answers))
 
 
@@ -299,23 +299,23 @@
 ;;   (mapcar #'(lambda (bindings) (subst-bindings bindings query))
 ;;           (retrieve-fact query)))
 
-(defun paip-krep1-retrieve-bagof (query)
+(defun paip-krep-retrieve-bagof (query)
   "Find all facts that match query.
   Return a list of queries with bindings filled in."
   (mapcar (lambda (bindings)
 	    (paip-unify-subst-bindings bindings query))
-          (paip-krep1--retrieve-fact query)))
+          (paip-krep--retrieve-fact query)))
 
 ;; (defun retrieve-setof (query)
 ;;   "Find all facts that match query.
 ;;   Return a list of unique queries with bindings filled in."
 ;;   (remove-duplicates (retrieve-bagof query) :test #'equal))
 
-(defun paip-krep1-retrieve-setof (query)
+(defun paip-krep-retrieve-setof (query)
   "Find all facts that match query.
   Return a list of unique queries with bindings filled in."
   (cl-remove-duplicates
-   (paip-krep1-retrieve-bagof query) :test 'equal))
+   (paip-krep-retrieve-bagof query) :test 'equal))
 
 ;; ;;; ==============================
 
@@ -326,7 +326,7 @@
 ;;   `(setf (get ',pred 'attached-fn)
 ;;          #'(lambda ,args .,body)))
 
-(cl-defmacro paip-krep1-def-attached-fn (pred args &body body)
+(cl-defmacro paip-krep-def-attached-fn (pred args &body body)
   "Define the attached function for a primitive."
   `(setf (get ',pred 'attached-fn)
          (lambda ,args .,body)))
