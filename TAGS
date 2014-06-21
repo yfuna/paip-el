@@ -1,0 +1,563 @@
+
+paip-clos.el,358
+(defun paip-clos-account-withdraw 46,1551
+(defun paip-clos-account-deposit 56,1899
+(defun paip-clos-account-interest 66,2244
+(defun paip-clos-get-method 116,3918
+(defun paip-clos-send 125,4237
+(defun paip-clos-withdraw 136,4612
+(defun paip-clos-make-clause 171,6005
+(defun paip-clos-ensure-generic-fn 184,6570
+(defun paip-clos-generic-fn-p 199,7131
+
+paip-eliza-pm.el,82
+(defun paip-eliza-pm-eliza 45,1413
+(defun paip-eliza-pm-use-eliza-rules 58,1892
+
+paip-eliza.el,207
+(defun paip-eliza-read-line-no-punct 43,1512
+(defun paip-eliza-punctuation-p 55,1790
+(defun paip-eliza-eliza 69,2214
+(defun paip-eliza-print-with-spaces 79,2497
+(defvar paip-eliza-*eliza-rules*226,8713
+
+paip-eliza1.el,306
+(defun paip-eliza1-variable-p 43,1440
+(defun paip-eliza1-segment-pattern-p 80,3126
+(defun paip-eliza1-rule-pattern 174,7322
+(defun paip-eliza1-rule-responses 178,7422
+(defvar paip-eliza1-*eliza-rules*202,8349
+(defun paip-eliza1-use-eliza-rules 239,9790
+(defun paip-eliza1-switch-viewpoint 255,10364
+
+paip-examples.el,618
+(defexamples 1 31,1101
+(defexamples 2 124,5224
+(defexamples 3 157,6613
+(defexamples 4 249,10969
+(defexamples 5 465,20014
+(defexamples 6 507,22320
+(defexamples 7 588,27362
+(defexamples 8 623,29156
+(defexamples 9 705,33381
+(defexamples 10 725,34139
+(defexamples 11 740,34751
+(defexamples 12 847,39759
+(defexamples 13 856,40128
+(defexamples 14 1077,48172
+(defexamples 15 1141,50938
+(defexamples 16 1168,52230
+(defexamples 17 1176,52574
+(defexamples 18 1255,55088
+(defexamples 19 1311,57639
+(defexamples 20 1426,63000
+(defexamples 21 1599,69422
+(defexamples 22 1613,70001
+(defexamples 23 1674,72625
+
+paip-gps-srch.el,90
+(defun paip-gps-srch-gps-successors 79,2644
+(defun paip-gps-srch-applicable-ops 97,3166
+
+paip-gps.el,972
+(defvar paip-gps-*state* 42,1489
+(defvar paip-gps-*school-ops*47,1666
+(defun paip-gps-executing-p 76,2704
+(defun paip-gps-convert-op 91,3198
+(defvar paip-gps-*ops* 121,4174
+(defun paip-gps-achieve-all 149,5319
+(defun paip-gps-achieve 169,6137
+(defun paip-gps-apply-op 200,7419
+(defun paip-gps-appropriate-p 217,8225
+(defun paip-gps-use 229,8616
+(defvar paip-gps-*banana-ops*264,9869
+(defun paip-gps-make-maze-ops 298,10965
+(defun paip-gps-make-maze-op 310,11388
+(defvar paip-gps-*maze-ops*323,11884
+(defun paip-gps-action-p 345,12793
+(defun paip-gps-find-path 359,13290
+(defun paip-gps-destination 371,13710
+(defun paip-gps-make-block-ops 389,14238
+(defun paip-gps-move-op 408,14871
+(defun paip-gps-move-ons 420,15245
+(defun paip-gps-achieve-all 433,15591
+(defun paip-gps-achieve-each 448,16229
+(defun paip-gps-orderings 463,16709
+(defun paip-gps-achieve 479,17291
+(defun paip-gps-appropriate-ops 497,18170
+(defun paip-gps-permutations 524,19255
+
+paip-gps1.el,247
+(defvar paip-gps1-*state* 36,1262
+(defvar paip-gps1-*ops* 40,1393
+(defun paip-gps1-gps 52,1799
+(defun paip-gps1-achieve 63,2232
+(defun paip-gps1-appropriate-p 75,2669
+(defun paip-gps1-apply-op 87,3128
+(defvar paip-gps1-*school-ops*122,4497
+
+paip-intro.el,521
+(defun paip-intro-last-name 38,1314
+(defun paip-intro-first-name 46,1545
+(defvar paip-intro-*titles*66,2226
+(defun paip-intro-first-name 78,2599
+(defun paip-intro-numbers-and-negations 92,3030
+(defun paip-intro-number-and-negation 102,3334
+(defun paip-intro-atomprint 117,3774
+(defun paip-intro-power 133,4337
+(defun paip-intro-count-atoms 149,4898
+(defun paip-intro-count-anywhere 181,6122
+(defun paip-intro-dot-product 197,6649
+(defun paip-intro-dot-product 211,7066
+(defun paip-intro-dot-product 222,7381
+
+paip-krep.el,749
+(defparameter paip-krep-*primitives* 42,1378
+(defun paip-krep-add-fact 57,1904
+(defun paip-krep-fact-present-p 75,2504
+(defun paip-krep-run-attached-fn 85,2819
+(defun paip-krep-index-new-fact 96,3192
+(defun paip-krep-test-bears 114,3753
+(defmacro ?? 148,5004
+(defun paip-krep-replace-?-vars 260,9413
+(defvar paip-krep-*world* 276,9929
+(defun paip-krep-dtree-index-in-world 306,11349
+(defun paip-krep-nalist-push 335,12483
+(defun paip-krep-use-world 391,14437
+(defun paip-krep-use-new-world 409,15086
+(defun paip-krep-set-world-current 423,15608
+(defun paip-krep-mapc-retrieve-in-world 453,16729
+(defun paip-krep-retrieve-in-world 472,17443
+(defun paip-krep-retrieve-bagof-in-world 486,17956
+(defun paip-krep-nlist-delete 502,18502
+
+paip-krep1.el,657
+(defun paip-krep-make-empty-nlist 51,1714
+(defun paip-krep-nlist-n 58,1932
+(defun paip-krep-nlist-list 61,2012
+(defun paip-krep-nlist-push 71,2224
+(defvar paip-krep-*predicates* 91,2825
+(defun paip-krep-get-dtree 99,3074
+(defun paip-krep-clear-dtrees 112,3494
+(defun paip-krep-index 125,3928
+(defun paip-krep-dtree-index 148,4906
+(defun paip-krep-lookup-atom 177,5927
+(defun paip-krep-test-index 198,6551
+(defun paip-krep-fetch 216,7155
+(defun paip-krep-dtree-fetch 246,8577
+(defun paip-krep-dtree-atom-fetch 295,10600
+(defun paip-krep-mapc-retrieve 340,12334
+(defun paip-krep-retrieve 361,13090
+(defun paip-krep-retrieve-matches 376,13555
+
+paip-krep2.el,525
+(defun paip-krep-index 50,1830
+(defvar paip-krep-*search-cut-off* 64,2343
+(defun paip-krep-prove-all 73,2706
+(defun paip-krep-prove 102,4010
+(defvar paip-krep-*depth-start* 134,5167
+(defvar paip-krep-*depth-incr* 136,5256
+(defvar paip-krep-*depth-max* 138,5349
+(defun paip-krep-top-level-prove 153,5882
+(defun paip-krep-show-prolog-vars 184,6918
+(defun paip-krep-add-fact 210,7646
+(defun paip-krep-retrieve-conjunction 244,8940
+(defun paip-krep-retrieve-bagof 302,11041
+(defun paip-krep-retrieve-setof 314,11493
+
+paip-macsyma.el,1204
+(defun paip-variable-p 44,1642
+(defun paip-macsyma-exp-p 65,2214
+(defun paip-macsyma-exp-args 69,2290
+(defun paip-macsyma-binary-exp-p 74,2412
+(defun paip-macsyma-prefix->infix 86,2802
+(defvar paip-macsyma-*infix->prefix-rules*134,4245
+(defun paip-macsyma-infix->prefix 166,5465
+(defvar paip-macsyma-*simplification-rules* 190,6290
+(defun ^ 194,6421
+(defun paip-macsyma-simp 207,6819
+(defun paip-macsyma-simplify 217,7115
+(defun paip-macsyma-evaluable 240,8021
+(defun paip-macsyma-not-numberp 249,8394
+(defun paip-macsyma-simp-rule 257,8652
+(defun paip-macsyma-simp-fn 268,8991
+(defun paip-macsyma-set-simp-fn 273,9119
+(defun paip-macsyma-simplify-exp 287,9714
+(defun paip-macsyma-simplify-by-fn 313,10641
+(defun paip-macsyma-factorize 356,12208
+(defun paip-macsyma-unfactorize 399,13592
+(defun paip-macsyma-divide-factors 416,14311
+(defun paip-macsyma-free-of 434,14985
+(defun paip-find-anywhere 448,15538
+(defun paip-macsyma-integrate 481,17052
+(defun paip-macsyma-deriv-divides 548,19763
+(defun paip-macsyma-deriv 578,21043
+(defun paip-macsyma-integration-table 588,21369
+(defun paip-macsyma-in-integral-table? 599,21766
+(defun paip-macsyma-integrate-from-table 608,22036
+
+paip-overview.el,1775
+(defun paip-overview-tax-bracket 41,1494
+(defun paip-overview-determine-winner 60,2124
+(defun paip-overview-length1 74,2595
+(defun paip-overview-length1.1 87,3077
+(defun paip-overview-length2 101,3591
+(defun paip-overview-length3 115,4056
+(defun paip-overview-length4 126,4450
+(defun paip-overview-length5 134,4755
+(defun paip-overview-length6 145,5213
+(defun paip-overview-length7 157,5572
+(defun paip-overview-true 162,5657
+(defun paip-overview-length8 171,5840
+(defun paip-overview-length9 182,6089
+(defun paip-overview-length10 192,6293
+(defun paip-overview-length10-aux 200,6517
+(defun paip-overview-length12 227,7278
+(defun paip-overview-product 245,7751
+(defmacro paip-overview-while 261,8168
+(defmacro paip-overview-while 274,8553
+(defmacro paip-overview-while 286,8922
+(defun paip-overview-dprint 302,9344
+(defun paip-overview-pr-rest 315,9664
+(defun paip-overview-pr-rest 326,9922
+(defun paip-overview-same-shape-tree 339,10276
+(defun paip-overview-true 345,10453
+(defun paip-overview-english->french 355,10736
+(defvar paip-overview-*db* 380,11324
+(defun paip-overview-give-up 419,12801
+(defun paip-overview-average 432,13144
+(defun paip-overview-average 449,13607
+(defun paip-overview-sqr 465,13973
+(defun paip-overview-sqr 477,14188
+(defun paip-overview-sqr 489,14406
+(defun paip-overview-eat-porridge 503,14812
+(defmacro paip-overview-adder 516,15224
+(defun paip-overview-bank-account 529,15634
+(defun paip-overview-math-quiz 544,16149
+(defun paip-overview-problem 556,16578
+(defun paip-overview-math-quiz 570,17046
+(defun paip-overview-math-quiz 582,17454
+(defmacro paip-overview-while2 607,18350
+(defun paip-overview-length-r 627,18844
+(defun paip-overview-length-r 634,19028
+(defun paip-overview-length-r 641,19205
+
+paip-patmatch.el,735
+(defun paip-patmatch-segment-pattern-p 102,4294
+(defun paip-patmatch-single-pattern-p 114,4777
+(defun paip-patmatch-segment-matcher 125,5222
+(defun paip-patmatch-single-matcher 135,5660
+(defun paip-patmatch-segment-match-fn 145,6048
+(defun paip-patmatch-single-match-fn 155,6373
+(defun paip-patmatch-match-is 171,6953
+(defun paip-patmatch-match-and 190,7709
+(defun paip-patmatch-match-or 208,8457
+(defun paip-patmatch-match-not 225,9091
+(defun paip-patmatch-first-match-pos 280,11272
+(defun paip-patmatch-segment-match+ 293,11823
+(defun paip-patmatch-segment-match? 304,12251
+(defun paip-patmatch-match-if 320,12936
+(defun paip-patmatch-pat-match-abbrev 334,13543
+(defun paip-patmatch-expand-pat-match-abbrev 346,14084
+
+paip-prolog.el,925
+(defun paip-prolog-clause-head 39,1384
+(defun paip-prolog-clause-body 45,1638
+(defun paip-prolog-get-clauses 50,1795
+(defun paip-prolog-predicate 54,1905
+(defun paip-prolog-args 60,2089
+(defvar paip-prolog-*db-predicates* 65,2247
+(defmacro <- 72,2458
+(defun paip-variable-p 88,3129
+(defun paip-prolog-add-clause 92,3264
+(defun paip-prolog-clear-db 106,3843
+(defun paip-prolog-clear-predicate 114,4137
+(defun paip-prolog-rename-variables 124,4479
+(defun paip-prolog-unique-find-anywhere-if 144,5219
+(defun paip-prolog-find-anywhere-if 166,5946
+(defmacro \?- 175,6307
+(defun paip-prolog-prove-all 185,6634
+(defun paip-prolog-prove 207,7539
+(defun paip-prolog-top-level-prove 229,8367
+(defun paip-prolog-show-prolog-vars 249,8986
+(defun paip-prolog-continue-p 286,10141
+(defun paip-prolog-variables-in 294,10424
+(defun paip-prolog-non-anon-variable-p 301,10666
+(defun paip-prolog-replace-?-vars 312,11014
+
+paip-prolog1.el,736
+(defun paip-prolog1-clause-head 37,1270
+(defun paip-prolog1-clause-body 41,1375
+(defun paip-prolog1-get-clauses 46,1533
+(defun paip-prolog1-predicate 50,1644
+(defvar paip-prolog1-*db-predicates* 55,1793
+(defmacro <- 62,1988
+(defun paip-prolog1-add-clause 76,2495
+(defun paip-prolog1-clear-db 93,3087
+(defun paip-prolog1-clear-predicate 101,3384
+(defun paip-prolog1-prove 113,3882
+(defun paip-prolog1-prove-all 132,4657
+(defun paip-prolog1-rename-variables 146,5228
+(defun paip-prolog1-find-anywhere-if 191,6718
+(defmacro \?- 200,7065
+(defun paip-prolog1-top-level-prove 208,7319
+(defun paip-prolog1-show-prolog-solutions 222,7816
+(defun paip-prolog1-show-prolog-vars 240,8387
+(defun paip-prolog1-variables-in 255,8820
+
+paip-prologc.el,1943
+(defconst paip-prologc-unbound 41,1447
+(defun paip-prologc-bound-p 61,2178
+(defmacro paip-prologc-deref 70,2479
+(defun paip-prologc-unify! 87,3071
+(defun paip-prologc-print-var 122,4314
+(defvar paip-prologc-*trail* 132,4637
+(defun paip-prologc-set-binding! 142,4957
+(defun paip-prologc-undo-bindings! 159,5644
+(defvar paip-prologc-*var-counter* 169,6039
+(defun paip-prologc-clauses-with-arity 216,7835
+(defun paip-prologc-relation-arity 229,8251
+(defun paip-prologc-args 236,8486
+(defun paip-prologc-make-parameters 245,8722
+(defun paip-prologc-make-predicate 254,9002
+(defun paip-prologc-make-=260,9158
+(defun paip-prologc-compile-call 267,9330
+(defun paip-prologc-prolog-compiler-macro 276,9648
+(defun paip-prologc-compile-arg 300,10613
+(defun paip-prologc-has-variable-p 313,11151
+(defun paip-prologc-proper-listp 322,11428
+(defun paip-prologc-maybe-add-undo-bindings 339,12027
+(defun paip-prologc-bind-unbound-vars 361,12881
+(defmacro <- 377,13380
+(defun paip-prologc-anonymous-variables-in 408,14481
+(defun paip-prologc-anon-vars-in 428,15338
+(defun paip-prologc-compile-unify 460,16861
+(defun paip-prologc-compile-if 489,17960
+(defun paip-prologc-compile-unify-variable 520,19361
+(defun paip-prologc-bind-variables-in 558,21021
+(defun paip-prologc-follow-binding 574,21616
+(defun paip-prologc-compile-arg 598,22604
+(defun paip-prologc-bind-new-variables 621,23684
+(defun paip-prologc-self-cons 630,24020
+(defun paip-prologc-compile-clause 667,25361
+(defvar paip-prologc-*uncompiled* 683,25898
+(defun paip-prologc-add-clause 697,26456
+(defun paip-prologc-top-level-prove 743,28103
+(defun paip-prologc-run-prolog 774,29036
+(defun paip-prologc-ignore 804,30137
+(defun show-prolog-vars/2 821,30653
+(defun paip-prologc-deref-exp 846,31387
+(defvar paip-prologc-*predicate* 858,31748
+(defun paip-prologc-compile-predicate 874,32313
+(defun paip-prologc-compile-body 957,35681
+(defmacro \?- 988,36698
+
+paip-prologcp.el,553
+(defun paip-prologcp-read/1 42,1398
+(defun write/1 50,1591
+(defun nl/0 56,1721
+(defun =/2 =/264,1860
+(defun ===74,2157
+(defun paip-prologcp-deref-equal 89,2652
+(defun call/1 106,3223
+(defmacro with-paip-prologcp-undo-bindings 134,4012
+(defun not/1 152,4669
+(defun bagof/3 173,5504
+(defun paip-prologcp-deref-copy 196,6428
+(defun setof/3 219,7363
+(defun is/2 240,8197
+(defun paip-prologcp-unbound-var-p 251,8598
+(defun var/1 261,8886
+(defun lisp/2 272,9256
+(defun repeat/0 281,9550
+(defun numberp/1 324,10396
+(defun atom/1 332,10565
+
+paip-search.el,1215
+(defun paip-search-tree-search 46,1675
+(defun paip-search-depth-first-search 63,2322
+(defun paip-search-binary-tree 69,2563
+(defun paip-search-is 73,2681
+(defun paip-search-prepend 80,2841
+(defun paip-search-breadth-first-search 86,3088
+(defun paip-search-finite-binary-tree 97,3513
+(defun paip-search-diff 109,3876
+(defun paip-search-sorter 119,4198
+(defun paip-search-best-first-search 129,4591
+(defun paip-search-price-is-right 141,5086
+(defun paip-search-beam-search 161,5856
+(defvar paip-search-*cities*189,7137
+(defun paip-search-neighbors 209,8076
+(defun paip-search-city 221,8397
+(defun paip-search-trip 231,8701
+(defconst paip-search-earth-diameter 271,10044
+(defun paip-search-air-distance 281,10453
+(defun paip-search-xyz-coords 298,11164
+(defun paip-search-distance 313,11802
+(defun paip-search-deg->radians 323,12174
+(defun paip-search-path-saver 360,13624
+(defun paip-search-map-path 416,15451
+(defun paip-search-new-states 485,18382
+(defun paip-search-next2 495,18739
+(defun paip-search-find-path 582,23018
+(defun paip-search-better-path 590,23324
+(defun paip-search-insert-path 600,23688
+(defun paip-search-path-states 612,24095
+(defun paip-search-search-all 631,24723
+
+paip-simple.el,864
+(defun paip-simple-sentence 40,1458
+(defun paip-simple-noun-phrase 41,1554
+(defun paip-simple-verb-phrase 42,1639
+(defun paip-simple-Article 43,1728
+(defun paip-simple-Noun 44,1793
+(defun paip-simple-Verb 45,1873
+(defun paip-simple-one-of 53,2097
+(defun paip-simple-random-elt 61,2340
+(defun paip-simple-Adj* 73,2650
+(defun paip-simple-PP* 83,2858
+(defun paip-simple-PP 93,3206
+(defun paip-simple-Adj 94,3286
+(defun paip-simple-Prep 95,3369
+(defvar paip-simple-*simple-grammar*108,3791
+(defvar paip-simple-*grammar* 121,4246
+(defun paip-simple-rule-lhs 131,4537
+(defun paip-simple-rule-rhs 139,4713
+(defun paip-simple-rewrites 147,4946
+(defun paip-simple-generate 161,5406
+(defvar paip-simple-*bigger-grammar*186,6306
+(defun paip-simple-generate-tree 215,7240
+(defun paip-simple-generate-all 238,8051
+(defun paip-simple-combine-all 258,8798
+
+paip-student.el,1010
+(defun paip-student-exp-p 54,1615
+(defun paip-student-exp-args 58,1691
+(defvar paip-student-*student-rules*101,3437
+(defun paip-student-student 143,5117
+(defun paip-student-translate-to-expression 160,5801
+(defun paip-student-translate-pair 177,6496
+(defun paip-student-create-list-of-equations 190,7014
+(defun paip-student-noise-word-p 202,7464
+(defun paip-student-make-variable 210,7727
+(defun paip-student-solve-equations 219,8064
+(defun paip-student-solve 240,9004
+(defun paip-student-isolate 286,10969
+(defun paip-student-print-equations 335,12865
+(defconst paip-student-operators-and-inverses355,13343
+(defun paip-student-inverse-op 361,13502
+(defun paip-student-unknown-p 367,13658
+(defun paip-student-in-exp 376,13897
+(defun paip-student-no-unknown 394,14389
+(defun paip-student-one-unknown 412,15012
+(defun paip-student-commutative-p 430,15540
+(defun paip-student-solve-arithmetic 439,15852
+(defun paip-student-binary-exp-p 450,16198
+(defun paip-student-prefix->infix 462,16588
+
+paip-tutor.el,533
+(defvar paip-tutor-*chapters* 37,1241
+(defun paip-tutor-do-examples 49,1758
+(defmacro defexamples 69,2779
+(defun paip-tutor-do-chapter 94,3898
+(defun paip-tutor-add-chapter 132,5271
+(defun paip-tutor-find-chapter 149,5929
+(defun paip-tutor-do-example 204,8118
+(defun paip-tutor-do-documentation-examples 265,10567
+(defun paip-tutor-nearly-equal 287,11455
+(defun paip-tutor-set-chapter 328,13004
+(defun paip-tutor-set-page 336,13307
+(defun paip-tutor-display-example 350,13898
+(defun paip-tutor-display-section 358,14235
+
+paip-unify.el,236
+(defvar paip-unify-*occurs-check* 36,1237
+(defun paip-variable-p 51,1890
+(defun paip-unify-unify-variable 76,2971
+(defun paip-unify-occurs-check 96,3860
+(defun paip-unify-subst-bindings 119,4836
+(defun paip-unify-unifier 138,5577
+
+paip.el,2212
+(defun paip-requires 77,2820
+(defvar paip-*paip-files*98,3874
+(defvar paip-*paip-directory*120,5053
+(defvar paip-*paip-source* 131,5496
+(defvar paip-*paip-binary*149,6079
+(defun paip-paip-pathname 162,6592
+(defun paip-compile-all-paip-files 172,6891
+(defun paip-compile-paip-file 181,7209
+(defun paip-load-paip-file 199,7882
+(defalias 'paip-find-all-if paip-find-all-if411,15562
+(defun paip-partition-if 445,16905
+(defun paip-maybe-add 465,17624
+(defun paip-seq-ref 483,18225
+(defun paip-maybe-set-fill-pointer 499,18816
+(defun paip-symbol 517,19506
+(defun paip-new-symbol 528,19834
+(defun paip-last1 539,20134
+(defun paip-mappend 550,20462
+(defun paip-mklist 560,20800
+(defun paip-flatten 568,21023
+(defun paip-random-elt 576,21251
+(defun paip-member-equal 585,21473
+(defun compose 595,21743
+(defvar paip-*dbg-ids* 603,21947
+(defun paip-dbg 611,22229
+(defun paip-debug 620,22543
+(defun paip-undebug 629,22861
+(defun paip-dbg-indent 644,23380
+(defconst paip-fail 659,23797
+(defconst paip-no-bindings 663,23864
+(defun paip-match-variable 693,25215
+(defun paip-make-binding 702,25597
+(defun paip-binding-var 708,25752
+(defun paip-binding-val 716,25951
+(defun paip-get-binding 724,26169
+(defun paip-lookup 732,26424
+(defun paip-extend-bindings 745,26875
+(defun paip-variable-p 758,27309
+(defmacro paip-defun-memo 770,27636
+(defun paip-clear-memoize 817,29427
+(defmacro paip-delay 832,29851
+(defun paip-force 843,30275
+(defmacro paip-with-resource 906,32951
+(defun paip-queue-contents 924,33542
+(defun paip-make-queue 931,33709
+(defun paip-enqueue 943,33994
+(defun paip-dequeue 956,34290
+(defun paip-front 964,34472
+(defun paip-empty-queue-p 968,34584
+(defun paip-queue-nconc 975,34802
+(defun paip-reuse-cons 996,35400
+(defun paip-length=1008,35706
+(defun rest3 1016,35897
+(defun paip-unique-find-if-anywhere 1036,36545
+(defun paip-find-if-anywhere 1057,37306
+(defmacro paip-define-enumerated-type 1078,38090
+(defun paip-not-null 1094,38642
+(defun paip-first-or-nil 1100,38804
+(defun paip-first-or-self 1108,39045
+(defmacro paip-complement 1219,43452
+(defun paip-reduce* 1260,44949
+(defun paip-reduce-vect 1321,47023
+(defun paip-reduce-list 1407,50039
+
+paipx.el,596
+(defvar paipx-*paip-buffer*26,882
+(defmacro paipx-message 30,988
+(defmacro paipx-fill-pointer 61,2093
+(defun paipx-vector-push 65,2247
+(defmacro paipx-vector-push-extend 73,2582
+(defun paipx-vector-pop 88,3194
+(defalias 'paipx-length paipx-length128,4401
+(defun paipx-array-total-size 133,4629
+(defun paipx-pickup-vars 181,5838
+(defun paipx-pickup-non-required-vars 185,5994
+(defun paipx-pickup-required-vars 203,6571
+(defun paipx-pickup-rest-vars 212,6920
+(defun paipx-pickup-optional-vars 224,7289
+(defun paipx-pickup-aux-vars 238,7756
+(defun paipx-pickup-keyword-vars 252,8213
+
+paip-macsymar.el,0
