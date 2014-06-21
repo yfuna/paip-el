@@ -39,6 +39,8 @@
 
 ;; (defparameter *primitives* '(and sub ind rel val))
 
+(defparameter paip-krep-*primitives* '(and sub ind rel val))
+
 ;; (defun add-fact (fact)
 ;;   "Add the fact to the data base."
 ;;   (cond ((eq (predicate fact) 'and)
@@ -52,9 +54,27 @@
 ;;          (run-attached-fn fact)))
 ;;   t)
 
+(defun paip-krep-add-fact (fact)
+  "Add the fact to the data base."
+  (cond ((eq (paip-prolog-predicate fact) 'and)
+         (mapc 'add-fact (args fact)))
+        ((or (not (every 'atom (args fact)))
+             (some 'paip-variable-p (args fact))
+             (not (member (paip-prolog-predicate fact)
+			  paip-krep-*primitives*)))
+         (error "Ill-formed fact: ~a" fact))
+        ((not (paip-krep-fact-present-p fact))
+         (index fact)
+         (paip-krep-run-attached-fn fact)))
+  t)
+
 ;; (defun fact-present-p (fact)
 ;;   "Is this fact present in the data base?"
 ;;   (retrieve fact))
+
+(defun paip-krep-fact-present-p (fact)
+  "Is this fact present in the data base?"
+  (paip-krep-retrieve fact))
 
 ;; ;;; ==============================
 
@@ -62,12 +82,21 @@
 ;;   "Run the function associated with the predicate of this fact."
 ;;   (apply (get (predicate fact) 'attached-fn) (args fact)))
 
+(defun paip-krep-run-attached-fn (fact)
+  "Run the function associated with the predicate of this fact."
+  (apply (get (paip-prolog-predicate fact) 'attached-fn) (args fact)))
+
 ;; ;;; ==============================
 
 ;; (defun index-new-fact (fact)
 ;;   "Index the fact in the data base unless it is already there."
 ;;   (unless (fact-present-p fact)
 ;;     (index fact)))
+
+(defun paip-krep-index-new-fact (fact)
+  "Index the fact in the data base unless it is already there."
+  (unless (paip-krep-fact-present-p fact)
+    (paip-krep-index fact)))
 
 ;; ;;; ==============================
 
@@ -82,19 +111,46 @@
 ;;   (add-fact '(sub bear animal))
 ;;   (untrace index))
 
+(defun paip-krep-test-bears ()
+  (paip-krep-clear-dtrees)
+  (mapc 'paip-krep-add-fact
+        '((sub animal living-thing)
+          (sub living-thing thing) (sub polar-bear bear)
+          (sub grizzly bear) (ind Yogi bear) (ind Lars polar-bear)
+          (ind Helga grizzly)))
+  ;;(trace index)
+  (paip-krep-add-fact '(sub bear animal))
+  ;;(untrace index)
+  )
+
 ;; (defmacro a (&rest args)
 ;;   "Define a new individual and assert facts about it in the data base."
 ;;   `(add-fact ',(translate-exp (cons 'a args))))
 
+(cl-defmacro paip-krep-a (&rest args)
+  "Define a new individual and assert facts about it in the data base."
+  `(paip-krep-add-fact ',(paip-krep-translate-exp (cons 'a args))))
+
 ;; (defmacro each (&rest args)
 ;;   "Define a new category and assert facts about it in the data base."
 ;;   `(add-fact ',(translate-exp (cons 'each args))))
+
+(cl-defmacro each (&rest args)
+  "Define a new category and assert facts about it in the data base."
+  `(paip-krep-add-fact ',(paip-krep-translate-exp (cons 'each args))))
 
 ;; (defmacro ?? (&rest queries)
 ;;   "Return a list of answers satisfying the query or queries."
 ;;   `(retrieve-setof
 ;;      ',(translate-exp (maybe-add 'and (replace-?-vars queries))
 ;;                       :query)))
+
+(defmacro ?? (&rest queries)
+  "Return a list of answers satisfying the query or queries."
+  `(paip-krep-retrieve-setof
+     ',(paip-krep-translate-exp
+	(paip-maybe-add 'and (paip-prolog-replace-?-vars queries))
+                      :query)))
 
 ;; ;;; ==============================
 
@@ -144,6 +200,53 @@
 ;;       (translate exp) ;; Build up the list of conjuncts
 ;;       (maybe-add 'and (nreverse conjuncts)))))
 
+(cl-defun paip-krep-translate-exp (exp &optional query-mode-p)
+  "Translate exp into a conjunction of the four primitives."
+  (let ((conjuncts nil))
+    (cl-labels
+      ((paip-krep-collect-fact
+	(&rest terms) (push terms conjuncts))
+       (paip-krep-translate (exp)
+         ;; Figure out what kind of expression this is
+         (cond
+           ((atom exp) exp)
+           ((eq (first exp) 'a) (paip-krep-translate-a (rest exp)))
+           ((eq (first exp) 'each) (paip-krep-translate-each (rest exp)))
+           (t (apply 'paip-krep-collect-fact exp) exp)))
+
+       (paip-krep-translate-a (args)
+         ;; translate (A category [ind] (rel filler)*)
+         (let* ((category (pop args))
+                (self (cond ((and args (atom (first args)))
+                             (pop args))
+                            (query-mode-p (gentemp "?"))
+                            (t (gentemp (string category))))))
+           (paip-krep-collect-fact 'ind self category)
+           (dolist (slot args)
+             (paip-krep-translate-slot 'val self slot))
+           self))
+       (paip-krep-translate-each (args)
+         ;; translate (EACH category [(isa cat*)] (slot cat)*)
+         (let* ((category (pop args)))
+           (when (eq (paip-prologpredicate (first args)) 'isa)
+             (dolist (super (rest (pop args)))
+               (paip-krep-collect-fact 'sub category super)))
+           (dolist (slot args)
+             (paip-krep-translate-slot 'rel category slot))
+           category))
+
+       (paip-krep-translate-slot (primitive self slot)
+         ;; translate (relation value) into a REL or SUB
+         (assert (= (length slot) 2))
+         (paip-krep-collect-fact primitive
+				 (first slot) self
+				 (paip-krep-translate (second slot)))))
+
+      ;; Body of translate-exp:
+      (paip-krep-translate exp) ;; Build up the list of conjuncts
+      (paip-maybe-add 'and (nreverse conjuncts)))))
+
+
 ;; ;;; ==============================
 
 ;; (defun replace-?-vars (exp)
@@ -153,6 +256,15 @@
 ;;         (t (reuse-cons (replace-?-vars (first exp))
 ;;                        (replace-?-vars (rest exp))
 ;;                        exp))))
+
+(defun paip-krep-replace-?-vars (exp)
+  "Replace each ? in exp with a temporary var: ?123"
+  (cond ((eq exp '\?) (gentemp "?"))
+        ((atom exp) exp)
+        (t (paip-reuse-cons
+	    (paip-krep-replace-?-vars (first exp))
+	    (paip-krep-replace-?-vars (rest exp))
+	    exp))))
 
 ;; ;;;; Support for Multiple Worlds
 
