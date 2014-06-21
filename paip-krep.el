@@ -273,10 +273,18 @@
 
 ;; (defvar *world* 'W0 "The current world used by index and fetch.")
 
+(defvar paip-krep-*world* 'W0 "The current world used by index and fetch.")
+
 ;; (defun index-in-world (key &optional (world *world*))
 ;;   "Store key in a dtree node.  Key must be (predicate . args);
 ;;   it is stored in the dtree, indexed by the world."
 ;;   (dtree-index-in-world key key world (get-dtree (predicate key))))
+
+(cl-defun paip-krep-index-in-world (key &optional (world *world*))
+  "Store key in a dtree node.  Key must be (predicate . args);
+  it is stored in the dtree, indexed by the world."
+  (paip-krep-dtree-index-in-world key key world
+				  (get-dtree (paip-prolog-predicate key))))
 
 ;; (defun dtree-index-in-world (key value world dtree)
 ;;   "Index value under all atoms of key in dtree."
@@ -295,6 +303,23 @@
 ;;     (t ;; Make sure there is an nlist for this atom, and add to it
 ;;      (nalist-push world value (lookup-atom key dtree)))))
 
+(defun paip-krep-dtree-index-in-world (key value world dtree)
+  "Index value under all atoms of key in dtree."
+  (cond
+    ((consp key)			; index on both first and rest
+     (paip-krep-dtree-index-in-world (first key) value world
+			   (or (dtree-first dtree)
+			       (setf (dtree-first dtree) (make-dtree))))
+     (paip-krep-dtree-index-in-world (rest key) value world
+			   (or (dtree-rest dtree)
+			       (setf (dtree-rest dtree) (make-dtree)))))
+    ((null key))			; don't index on nil
+    
+    ((paip-variable-p key)			; index a variable
+     (paip-krep-nalist-push world value (dtree-var dtree)))
+    (t ;; Make sure there is an nlist for this atom, and add to it
+     (paip-krep-nalist-push world value (lookup-atom key dtree)))))
+
 ;; ;;; ==============================
 
 ;; (defun nalist-push (key val nalist)
@@ -307,10 +332,23 @@
 ;;         (push val (cdr pair))
 ;;         (push (list key val) (cdr nalist)))))
 
+(defun paip-krep-nalist-push (key val nalist)
+  "Index val under key in a numbered alist."
+  ;; An nalist is of the form (count (key val*)*)
+  ;; Ex: (6 (nums 1 2 3) (letters a b c))
+  (incf (car nalist))
+  (let ((pair (assoc key (cdr nalist))))
+    (if pair
+        (push val (cdr pair))
+        (push (list key val) (cdr nalist)))))
+
 ;; ;;; ==============================
 
 ;; (defstruct (world (:print-function print-world))
 ;;   name parents current)
+
+(cl-defstruct (world (:print-function paip-krep-print-world))
+  name parents current)
 
 ;; ;;; ==============================
 
@@ -323,7 +361,19 @@
 ;;                  (make-world :name name :parents parents
 ;;                              :current current)))))
 
+(cl-defun paip-krep-get-world (name &optional current (parents (list *world*)))
+  "Look up or create the world with this name.
+  If the world is new, give it the list of parents."
+  (cond ((paip-krep-world-p name) name) ; ok if it already is a world
+        ((get name 'world))
+        (t (setf (get name 'world)
+                 (make-paip-krep-world
+		  :name name :parents parents
+		  :current current)))))
+
 ;; (setf *world* (get-world 'W0 nil nil))
+
+(setf paip-krep-*world* (get-paip-krep-world 'W0 nil nil))
 
 ;; ;;; ==============================
 
@@ -338,12 +388,30 @@
 ;;     (set-world-current world t)
 ;;     (setf *world* world)))
 
+(defun paip-krep-use-world (world)
+  "Make this world current."
+  ;; If passed a name, look up the world it names
+  (setf world (paip-krep-get-world world))
+  (unless (eq world paip-krep-*world*)
+    ;; Turn the old world(s) off and the new one(s) on,
+    ;; unless we are already using the new world
+    (paip-krep-set-world-current paip-krep-*world* nil)
+    (paip-krep-set-world-current world t)
+    (setf paip-krep-*world* world)))
+
 ;; (defun use-new-world ()
 ;;   "Make up a new world and use it.
 ;;   The world inherits from the current world."
 ;;   (setf *world* (get-world (gensym "W")))
 ;;   (setf (world-current *world*) t)
 ;;   *world*)
+
+(defun paip-krep-use-new-world ()
+  "Make up a new world and use it.
+  The world inherits from the current world."
+  (setf paip-krep-*world* (get-world (gensym "W")))
+  (setf (paip-krep-world-current paip-krep-*world*) t)
+  paip-krep-*world*)
 
 ;; (defun set-world-current (world on/off)
 ;;   "Set the current field of world and its parents on or off."
@@ -352,11 +420,22 @@
 ;;   (dolist (parent (world-parents world))
 ;;     (set-world-current parent on/off)))
 
+(defun paip-krep-set-world-current (world on/off)
+  "Set the current field of world and its parents on or off."
+  ;; nil is off, anything else is on.
+  (setf (paip-krep-world-current world) on/off)
+  (dolist (parent (paip-krep-world-parents world))
+    (paip-krep-set-world-current parent on/off)))
+
 ;; ;;; ==============================
 
 ;; (defun print-world (world &optional (stream t) depth)
 ;;   (declare (ignore depth))
 ;;   (prin1 (world-name world) stream))
+
+(cl-defun paip-krep-print-world (world &optional (stream t) depth)
+  (declare (ignore depth))
+  (prin1 (paip-krep-world-name world) stream))
 
 ;; ;;; ==============================
 
@@ -371,6 +450,17 @@
 ;;             (unless (eq bindings fail)
 ;;               (funcall fn bindings))))))))
 
+(defun paip-krep-mapc-retrieve-in-world (fn query)
+  "For every fact in the current world that matches the query,
+  apply the function to the binding list."
+  (dolist (bucket (fetch query))
+    (dolist (world/entries bucket)
+      (when (world-current (first world/entries))
+        (dolist (answer (rest world/entries))
+          (let ((bindings (paip-unify-unify query answer)))
+            (unless (eq bindings fail)
+              (funcall fn bindings))))))))
+
 ;; (defun retrieve-in-world (query)
 ;;   "Find all facts that match query.  Return a list of bindings."
 ;;   (let ((answers nil))
@@ -379,11 +469,26 @@
 ;;       query)
 ;;     answers))
 
+(defun paip-krep-retrieve-in-world (query)
+  "Find all facts that match query.  Return a list of bindings."
+  (let ((answers nil))
+    (paip-krep-mapc-retrieve-in-world
+     '(lambda (bindings) (push bindings answers))
+     query)
+    answers))
+
 ;; (defun retrieve-bagof-in-world (query)
 ;;   "Find all facts in the current world that match query.
 ;;   Return a list of queries with bindings filled in."
 ;;   (mapcar #'(lambda (bindings) (subst-bindings bindings query))
 ;;           (retrieve-in-world query)))
+
+(defun paip-krep-retrieve-bagof-in-world (query)
+  "Find all facts in the current world that match query.
+  Return a list of queries with bindings filled in."
+  (mapcar '(lambda (bindings)
+	    (paip-unify-subst-bindings bindings query))
+          (paip-krep-retrieve-in-world query)))
 
 ;; ;;; ==============================
 
@@ -394,6 +499,13 @@
 ;;   (setf (cdr nlist) (delete item (cdr nlist) :count 1))
 ;;   nlist)
 
+(defun paip-krep-nlist-delete (item nlist)
+  "Remove an element from an nlist.
+  Assumes that item is present exactly once."
+  (decf (car nlist))
+  (setf (cdr nlist) (delete item (cdr nlist) :count 1))
+  nlist)
+
 ;; ;;; ==============================
 
 ;; ;;;; The attached functions:
@@ -403,16 +515,32 @@
 ;;   (query-bind (?super) `(sub ,category ?super)
 ;;     (add-fact `(ind ,individual ,?super))))
 
+(paip-krep-def-attached-fn ind (individual category)
+			   ;; Cache facts about inherited categories
+			   (query-bind (\?super) `(sub ,category \?super)
+			     (add-fact `(ind ,individual ,\?super))))
+
 ;; (def-attached-fn val (relation ind1 ind2)
 ;;   ;; Make sure the individuals are the right kinds
 ;;   (query-bind (?cat1 ?cat2) `(rel ,relation ?cat1 ?cat2)
 ;;     (add-fact `(ind ,ind1 ,?cat1))
 ;;     (add-fact `(ind ,ind2 ,?cat2))))
 
+(paip-krep-def-attached-fn val (relation ind1 ind2)
+			   ;; Make sure the individuals are the right kinds
+			   (query-bind (\?cat1 \?cat2) `(rel ,relation \?cat1 \?cat2)
+			     (paip-krep-add-fact `(ind ,ind1 ,\?cat1))
+			     (paip-krep-add-fact `(ind ,ind2 ,\?cat2))))
+
 ;; (def-attached-fn rel (relation cat1 cat2)
 ;;   ;; Run attached function for any IND's of this relation
 ;;   (query-bind (?a ?b) `(ind ,relation ?a ?b)
 ;;     (run-attached-fn `(ind ,relation ,?a ,?b))))
+
+(paip-krep-def-attached-fn rel (relation cat1 cat2)
+  ;; Run attached function for any IND's of this relation
+  (query-bind (\?a \?b) `(ind ,relation \?a \?b)
+    (paip-krep-run-attached-fn `(ind ,relation ,\?a ,\?b))))
 
 ;; (def-attached-fn sub (subcat supercat)
 ;;   ;; Cache SUB facts 
@@ -427,5 +555,19 @@
 ;;     (query-bind (?sub-sub) `(sub ?sub-sub ,supercat)
 ;;       (query-bind (?ind) `(ind ?ind ,?sub-sub)
 ;;         (index-new-fact `(ind ,?ind ,?super-super))))))
+
+(paip-krep-def-attached-fn sub (subcat supercat)
+  ;; Cache SUB facts 
+  (query-bind (\?super-super) `(sub ,supercat \?super-super)
+    (paip-krep-index-new-fact `(sub ,subcat ,\?super-super))
+    (query-bind (\?sub-sub) `(sub \?sub-sub ,subcat)
+      (index-new-fact `(sub ,\?sub-sub ,\?super-super))))
+  (query-bind (\?sub-sub) `(sub \?sub-sub ,subcat)
+    (paip-krep-index-new-fact `(sub ,\?sub-sub ,supercat)))
+  ;; Cache IND facts
+  (query-bind (\?super-super) `(sub ,subcat \?super-super)
+    (query-bind (\?sub-sub) `(sub \?sub-sub ,supercat)
+      (query-bind (\?ind) `(ind \?ind ,\?sub-sub)
+        (paip-krep-index-new-fact `(ind ,\?ind ,\?super-super))))))
 
 (provide 'paip-krep)
